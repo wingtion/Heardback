@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Options;
 
 namespace JobTrail.IntegrationTests.Api;
 
@@ -59,16 +58,6 @@ public sealed class ApiHostTests
     }
 
     [Fact]
-    public async Task Startup_MissingCorsOrigins_FailsFastWithValidationError()
-    {
-        await using var factory = new ApiFactory { ConfigureCorsOrigins = false };
-
-        var exception = Assert.Throws<OptionsValidationException>(() => factory.CreateClient());
-
-        Assert.Contains("allowed origin", exception.Message, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
     public async Task GetOpenApiDocument_DevelopmentEnvironment_ReturnsDocument()
     {
         await using var factory = new ApiFactory { Environment = "Development" };
@@ -88,20 +77,5 @@ public sealed class ApiHostTests
         using var response = await client.GetAsync(new Uri("/openapi/v1.json", UriKind.Relative), CancellationToken);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task GetHealth_FromConfiguredFrontendOrigin_AllowsCrossOrigin()
-    {
-        await using var factory = new ApiFactory();
-        using var client = factory.CreateClient();
-        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri("/health", UriKind.Relative));
-        request.Headers.Add("Origin", ApiFactory.FrontendOrigin);
-
-        using var response = await client.SendAsync(request, CancellationToken);
-
-        Assert.Equal(
-            ApiFactory.FrontendOrigin,
-            Assert.Single(response.Headers.GetValues("Access-Control-Allow-Origin")));
     }
 }

@@ -1,4 +1,3 @@
-using JobTrail.Api.Cors;
 using JobTrail.Modules.Applications;
 using JobTrail.Modules.Identity;
 using JobTrail.Modules.Insights;
@@ -12,7 +11,6 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi();
 builder.Services.AddHealthChecks();
-builder.Services.AddFrontendCors();
 
 builder.Services
     .AddIdentityModule()
@@ -33,8 +31,6 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
-
-app.UseCors(FrontendCors.PolicyName);
 
 app.MapHealthChecks("/health").AllowAnonymous();
 
