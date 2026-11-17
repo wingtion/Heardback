@@ -7,7 +7,7 @@ import { AUTH_API_PREFIX } from './auth-paths';
 import { AuthService } from './auth.service';
 
 /**
- * Adds the access token to JobTrail API requests (never to other hosts). On a 401 it refreshes the
+ * Adds the access token to Heardback API requests (never to other hosts). On a 401 it refreshes the
  * session once and retries the request once; if the refresh fails the original error is passed on.
  * If the session was already refreshed while the request was in flight, it just retries with the
  * newer token instead of rotating the cookie again.

@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <!-- Every module is referenced so the architecture tests can inspect all module assemblies. -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Heardback.Modules.Identity\Heardback.Modules.Identity.csproj" />
+    <ProjectReference Include="..\..\src\Heardback.Modules.Applications\Heardback.Modules.Applications.csproj" />
+    <ProjectReference Include="..\..\src\Heardback.Modules.Postings\Heardback.Modules.Postings.csproj" />
+    <ProjectReference Include="..\..\src\Heardback.Modules.Matching\Heardback.Modules.Matching.csproj" />
+    <ProjectReference Include="..\..\src\Heardback.Modules.Insights\Heardback.Modules.Insights.csproj" />
+  </ItemGroup>
+
+</Project>

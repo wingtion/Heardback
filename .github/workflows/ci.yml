@@ -24,17 +24,17 @@ jobs:
           global-json-file: global.json
 
       - name: Restore
-        run: dotnet restore JobTrail.slnx
+        run: dotnet restore Heardback.slnx
 
       - name: Check formatting
-        run: dotnet format JobTrail.slnx --verify-no-changes --no-restore
+        run: dotnet format Heardback.slnx --verify-no-changes --no-restore
 
       - name: Build
-        run: dotnet build JobTrail.slnx --configuration Release --no-restore
+        run: dotnet build Heardback.slnx --configuration Release --no-restore
 
       # Integration tests start a real Postgres via Testcontainers (Docker is available on ubuntu-latest).
       - name: Test
-        run: dotnet test --solution JobTrail.slnx --configuration Release --no-build
+        run: dotnet test --solution Heardback.slnx --configuration Release --no-build
 
   frontend:
     name: Frontend

@@ -1,4 +1,4 @@
-# JobTrail
+# Heardback
 
 A web app for job seekers to track every application in one place and get insight from that data:
 which channels actually get responses, how long companies take to reply, how well a CV matches a
@@ -25,9 +25,9 @@ Prerequisites: .NET 10 SDK, Node 22 (see `.nvmrc`), Docker.
 cp .env.example .env              # then set POSTGRES_PASSWORD
 
 # API secrets (stored outside the repo with dotnet user-secrets)
-cd src/JobTrail.Api
+cd src/Heardback.Api
 dotnet user-secrets set "Database:ConnectionString" \
-  "Host=localhost;Port=5432;Database=jobtrail;Username=jobtrail;Password=<POSTGRES_PASSWORD>"
+  "Host=localhost;Port=5432;Database=heardback;Username=heardback;Password=<POSTGRES_PASSWORD>"
 dotnet user-secrets set "Identity:Tokens:SigningKey" "$(openssl rand -base64 48)"
 dotnet user-secrets set "Identity:Invites:BootstrapAdminCode" "$(openssl rand -hex 8)"
 cd ../..
@@ -37,14 +37,14 @@ cd ../..
 
 ```bash
 docker compose up -d                       # Postgres 18
-dotnet run --project src/JobTrail.Api      # API on http://localhost:5080 (Scalar at /scalar); migrates on start
+dotnet run --project src/Heardback.Api      # API on http://localhost:5080 (Scalar at /scalar); migrates on start
 cd web && npm ci && npm start              # app on http://localhost:4200, proxies /api to the API
 ```
 
 ### First admin
 
 Registration needs an invite code. The very first account uses the bootstrap code from user-secrets
-(`dotnet user-secrets list --project src/JobTrail.Api`) and becomes the admin. After that the bootstrap
+(`dotnet user-secrets list --project src/Heardback.Api`) and becomes the admin. After that the bootstrap
 code stops working. The admin then creates invite codes with `POST /api/admin/invite-codes`. Until the
 UI exists, use Scalar (`http://localhost:5080/scalar`) or curl:
 
@@ -76,8 +76,8 @@ Development it has no default, so the API will not start until you set it (see A
 ## Tests and checks
 
 ```bash
-dotnet test --solution JobTrail.slnx            # unit, architecture and integration tests (needs Docker)
-dotnet format JobTrail.slnx --verify-no-changes
+dotnet test --solution Heardback.slnx            # unit, architecture and integration tests (needs Docker)
+dotnet format Heardback.slnx --verify-no-changes
 
 cd web
 npm test -- --watch=false
@@ -97,22 +97,22 @@ test fails if a module's model has changes that no migration captures yet.
 
 ## Architecture
 
-JobTrail is a **modular monolith**: one deployable API, split into modules with hard boundaries
+Heardback is a **modular monolith**: one deployable API, split into modules with hard boundaries
 ([ADR-0001](docs/adr/0001-modular-monolith.md)).
 
 ```
 src/
-  JobTrail.Api/                  host: DI, middleware, maps module endpoints
-  JobTrail.Modules.Identity/     users, invite codes, sessions
-  JobTrail.Modules.Applications/ applications, status history, notes, reminders
-  JobTrail.Modules.Postings/     shared job postings, dedup
-  JobTrail.Modules.Matching/     CV text, skills, match results
-  JobTrail.Modules.Insights/     personal stats, community aggregates
-  JobTrail.Infrastructure.Llm/   LLM client abstraction and providers
-  JobTrail.Shared/               Result type, current user, paging, module DbContext base, validation
+  Heardback.Api/                  host: DI, middleware, maps module endpoints
+  Heardback.Modules.Identity/     users, invite codes, sessions
+  Heardback.Modules.Applications/ applications, status history, notes, reminders
+  Heardback.Modules.Postings/     shared job postings, dedup
+  Heardback.Modules.Matching/     CV text, skills, match results
+  Heardback.Modules.Insights/     personal stats, community aggregates
+  Heardback.Infrastructure.Llm/   LLM client abstraction and providers
+  Heardback.Shared/               Result type, current user, paging, module DbContext base, validation
 tests/
-  JobTrail.UnitTests/            unit and architecture tests
-  JobTrail.IntegrationTests/     API and database tests (Testcontainers)
+  Heardback.UnitTests/            unit and architecture tests
+  Heardback.IntegrationTests/     API and database tests (Testcontainers)
 web/                             Angular app
 docs/adr/                        architecture decision records
 ```
@@ -132,5 +132,5 @@ docs/adr/                        architecture decision records
 
 ## How this was built
 
-JobTrail is developed with AI assistance (Claude Code). The architecture and technical decisions are
+Heardback is developed with AI assistance (Claude Code). The architecture and technical decisions are
 the author's, and every change is reviewed by the author before it is merged.

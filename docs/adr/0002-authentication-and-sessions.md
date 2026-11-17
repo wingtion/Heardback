@@ -6,7 +6,7 @@
 
 ## Context
 
-JobTrail is a small invite-only community that stores personal job-search data. Each user's data has to
+Heardback is a small invite-only community that stores personal job-search data. Each user's data has to
 stay separate, sign-in has to survive page reloads, and a stolen browser token should do as little
 damage as possible. One person builds and runs it, so the design has to stay simple to operate.
 

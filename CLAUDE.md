@@ -1,4 +1,4 @@
-# CLAUDE.md — Engineering rules for JobTrail
+# CLAUDE.md — Engineering rules for Heardback
 
 These rules apply to every change in this repo. Project direction and phases live in `PLAN.md`; this file is about **how** code is written.
 If a rule here blocks a clearly better solution, say so and propose the change instead of silently breaking it.
