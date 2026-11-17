@@ -52,8 +52,11 @@ internal sealed class InviteCode
     public static string Format(string normalizedCode) =>
         string.Join(GroupSeparator, normalizedCode.Chunk(GroupLength).Select(group => new string(group)));
 
-    public InviteCodeStatus GetStatus(DateTimeOffset now) =>
-        UsedByUserId is not null ? InviteCodeStatus.Used
-        : now >= ExpiresAt ? InviteCodeStatus.Expired
+    public InviteCodeStatus GetStatus(DateTimeOffset now) => StatusAt(UsedByUserId, ExpiresAt, now);
+
+    /// <summary>Status from raw fields, for read queries that project instead of loading the entity.</summary>
+    public static InviteCodeStatus StatusAt(Guid? usedByUserId, DateTimeOffset expiresAt, DateTimeOffset now) =>
+        usedByUserId is not null ? InviteCodeStatus.Used
+        : now >= expiresAt ? InviteCodeStatus.Expired
         : InviteCodeStatus.Active;
 }

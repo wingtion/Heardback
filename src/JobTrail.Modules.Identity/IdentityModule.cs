@@ -2,6 +2,7 @@ using JobTrail.Modules.Identity.Authentication;
 using JobTrail.Modules.Identity.CurrentUser;
 using JobTrail.Modules.Identity.Domain;
 using JobTrail.Modules.Identity.Endpoints;
+using JobTrail.Modules.Identity.Invites;
 using JobTrail.Modules.Identity.Login;
 using JobTrail.Modules.Identity.Persistence;
 using JobTrail.Modules.Identity.Registration;
@@ -45,11 +46,15 @@ public static class IdentityModule
         services.AddScoped<RegisterUserHandler>();
         services.AddScoped<LoginHandler>();
         services.AddScoped<GetCurrentUserHandler>();
+        services.AddScoped<CreateInviteCodeHandler>();
+        services.AddScoped<ListInviteCodesHandler>();
 
         return services;
     }
 
-    /// <summary>Maps the Identity module's HTTP endpoints (<c>/api/auth/*</c>, <c>/api/me</c>).</summary>
+    /// <summary>
+    /// Maps the Identity module's HTTP endpoints (<c>/api/auth/*</c>, <c>/api/me</c>, <c>/api/admin/invite-codes</c>).
+    /// </summary>
     /// <param name="routes">The application's endpoint route builder.</param>
     /// <returns>The same route builder, for chaining.</returns>
     public static IEndpointRouteBuilder MapIdentityEndpoints(this IEndpointRouteBuilder routes)
@@ -58,6 +63,7 @@ public static class IdentityModule
 
         routes.MapAuthEndpoints();
         routes.MapCurrentUserEndpoints();
+        routes.MapInviteCodeEndpoints();
 
         return routes;
     }

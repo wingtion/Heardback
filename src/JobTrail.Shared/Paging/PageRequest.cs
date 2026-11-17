@@ -2,17 +2,16 @@ using System.ComponentModel.DataAnnotations;
 
 namespace JobTrail.Shared.Paging;
 
-/// <summary>Page selection for list endpoints, bound from the query string (<c>?page=2&amp;pageSize=50</c>).</summary>
-public sealed record PageRequest
+/// <summary>
+/// Page selection for list endpoints, bound with <c>[AsParameters]</c> from the query string
+/// (<c>?page=2&amp;pageSize=50</c>). Constructor defaults make both parameters optional.
+/// </summary>
+public sealed record PageRequest(
+    [property: Range(1, int.MaxValue)] int Page = 1,
+    [property: Range(1, PageRequest.MaxPageSize)] int PageSize = PageRequest.DefaultPageSize)
 {
     public const int DefaultPageSize = 20;
     public const int MaxPageSize = 100;
-
-    [Range(1, int.MaxValue)]
-    public int Page { get; init; } = 1;
-
-    [Range(1, MaxPageSize)]
-    public int PageSize { get; init; } = DefaultPageSize;
 
     public int Skip => (Page - 1) * PageSize;
 }
