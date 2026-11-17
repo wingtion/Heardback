@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Time.Testing;
 
 namespace JobTrail.IntegrationTests.Api;
 
@@ -12,14 +13,33 @@ namespace JobTrail.IntegrationTests.Api;
 public sealed class ApiFactory : WebApplicationFactory<Program>
 {
     public const string TestingEnvironment = "Testing";
+    public const string BootstrapAdminCode = "TEST-BOOT-STRP-ADMN";
+
+    /// <summary>32 bytes of test-only key material, base64. Never used outside tests.</summary>
+    public const string SigningKey = "dGVzdC1vbmx5LXNpZ25pbmcta2V5LTMyLWJ5dGVzISE=";
 
     // Satisfies startup validation for tests that never touch the database; never opened.
     private const string UnusedConnectionString = "Host=localhost;Database=jobtrail_unused";
+
+    public ApiFactory()
+    {
+        // The refresh cookie is Secure; the test client only sends it over https.
+        ClientOptions.BaseAddress = new Uri("https://localhost");
+    }
 
     public string Environment { get; init; } = TestingEnvironment;
 
     /// <summary>A real database to run against; migrations are applied on startup when set.</summary>
     public string? ConnectionString { get; init; }
+
+    /// <summary>Replaces the system clock, so tests can move time forward.</summary>
+    public FakeTimeProvider? Clock { get; init; }
+
+    public IDictionary<string, string?> Settings { get; } = new Dictionary<string, string?>
+    {
+        ["Identity:Tokens:SigningKey"] = SigningKey,
+        ["Identity:Invites:BootstrapAdminCode"] = BootstrapAdminCode,
+    };
 
     public Action<IServiceCollection>? TestServices { get; init; }
 
@@ -28,10 +48,19 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
         builder.UseEnvironment(Environment);
         builder.UseSetting("Database:ConnectionString", ConnectionString ?? UnusedConnectionString);
         builder.UseSetting("Database:ApplyMigrationsOnStartup", (ConnectionString is not null).ToString());
-
-        if (TestServices is not null)
+        foreach (var (key, value) in Settings)
         {
-            builder.ConfigureTestServices(TestServices);
+            builder.UseSetting(key, value);
         }
+
+        builder.ConfigureTestServices(services =>
+        {
+            if (Clock is not null)
+            {
+                services.AddSingleton<TimeProvider>(Clock);
+            }
+
+            TestServices?.Invoke(services);
+        });
     }
 }
