@@ -66,6 +66,10 @@ curl -i http://localhost:5080/api/auth/register -H "Content-Type: application/js
 | `GET /api/admin/invite-codes` | admin | List invite codes (paginated) |
 | `GET /health` | anonymous | Liveness |
 
+Login and register share a per-IP budget of 10 requests per minute and refresh allows 30 (429 with
+`Retry-After` beyond that). A session lasts 14 days from the last refresh, and never more than 60 days
+from sign-in.
+
 ## Tests and checks
 
 ```bash
@@ -118,7 +122,8 @@ docs/adr/                        architecture decision records
   refuse writes to other users' rows. Architecture tests catch entities that skip this.
 - **Auth** ([ADR-0002](docs/adr/0002-authentication-and-sessions.md)): invite-only registration,
   15-minute JWT access tokens kept in memory, and rotating refresh tokens in an httpOnly cookie.
-  Every endpoint requires sign-in unless marked anonymous.
+  Sessions have an absolute 60-day limit, reusing a rotated token signs the user out everywhere, and
+  the auth endpoints are rate limited per IP. Every endpoint requires sign-in unless marked anonymous.
 - **Errors and validation** ([ADR-0003](docs/adr/0003-request-validation.md)): RFC 9457 ProblemDetails
   everywhere, 400 with field-level errors for invalid requests, and configuration validated at startup.
 
