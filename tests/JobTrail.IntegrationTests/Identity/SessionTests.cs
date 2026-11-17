@@ -232,6 +232,30 @@ public sealed class SessionTests(PostgresFixture postgres) : IdentityTestBase(po
     }
 
     [Fact]
+    public async Task Login_AfterOldSessionsEnded_PrunesTheirTokensButKeepsLiveOnes()
+    {
+        await Client.RegisterAdminAsync("admin@example.com");
+        using (var rotation = await Client.RefreshAsync())
+        {
+            Assert.Equal(HttpStatusCode.OK, rotation.StatusCode);
+        }
+
+        Clock.Advance(TimeSpan.FromDays(61));
+        await CreateClient().SignInAsync("admin@example.com");
+        await CreateClient().SignInAsync("admin@example.com");
+
+        Assert.Equal("2", await CountTokensAsync());
+    }
+
+    private async Task<string> CountTokensAsync()
+    {
+        await using var connection = new Npgsql.NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync(CancellationToken);
+        await using var command = new Npgsql.NpgsqlCommand("SELECT count(*)::text FROM identity.refresh_tokens", connection);
+        return (string)(await command.ExecuteScalarAsync(CancellationToken))!;
+    }
+
+    [Fact]
     public async Task Logout_ThenRefresh_ReturnsUnauthorizedAndCookieIsCleared()
     {
         using var registered = await Client.RegisterAsync("admin@example.com", ApiFactory.BootstrapAdminCode);
