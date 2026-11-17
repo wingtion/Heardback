@@ -33,4 +33,23 @@ public sealed class PostgresFixture : IAsyncLifetime
         return new NpgsqlConnectionStringBuilder(Container.GetConnectionString()) { Database = databaseName }
             .ConnectionString;
     }
+
+    /// <summary>
+    /// Closes the pooled connections to a database from <see cref="CreateDatabaseAsync"/> and drops it.
+    /// Idle pooled connections otherwise stay open for minutes, and across a full run they approach the
+    /// container's connection limit, which fails random tests.
+    /// </summary>
+    public async Task DropDatabaseAsync(string connectionString, CancellationToken cancellationToken)
+    {
+        await using (var pooled = new NpgsqlConnection(connectionString))
+        {
+            NpgsqlConnection.ClearPool(pooled);
+        }
+
+        var databaseName = new NpgsqlConnectionStringBuilder(connectionString).Database;
+        await using var connection = new NpgsqlConnection(Container.GetConnectionString());
+        await connection.OpenAsync(cancellationToken);
+        await using var command = new NpgsqlCommand($"DROP DATABASE \"{databaseName}\" WITH (FORCE)", connection);
+        await command.ExecuteNonQueryAsync(cancellationToken);
+    }
 }

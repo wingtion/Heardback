@@ -20,7 +20,7 @@ public sealed class UserOwnershipTests(PostgresFixture postgres) : IAsyncLifetim
         await context.Database.EnsureCreatedAsync(CancellationToken);
     }
 
-    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    public async ValueTask DisposeAsync() => await postgres.DropDatabaseAsync(_connectionString, CancellationToken);
 
     [Fact]
     public async Task Query_TwoUsersWithData_ReturnsOnlyCurrentUsersRows()
