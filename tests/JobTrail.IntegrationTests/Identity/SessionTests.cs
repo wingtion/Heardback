@@ -24,6 +24,27 @@ public sealed class SessionTests(PostgresFixture postgres) : IdentityTestBase(po
     }
 
     [Fact]
+    public async Task EveryCookieResponse_LoginRefreshLogout_IsHttpOnlySecureStrictAndScoped()
+    {
+        await Client.RegisterAdminAsync("admin@example.com");
+        using var browser = CreateClient();
+
+        using var login = await browser.LoginAsync("admin@example.com");
+        using var refresh = await browser.RefreshAsync();
+        using var logout = await browser.LogoutAsync();
+
+        foreach (var response in new[] { login, refresh, logout })
+        {
+            var cookie = response.FindRefreshCookieHeader()?.ToLowerInvariant();
+            Assert.NotNull(cookie);
+            Assert.Contains("httponly", cookie, StringComparison.Ordinal);
+            Assert.Contains("secure", cookie, StringComparison.Ordinal);
+            Assert.Contains("samesite=strict", cookie, StringComparison.Ordinal);
+            Assert.Contains("path=/api/auth", cookie, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
     public async Task Refresh_WithoutCookie_ReturnsUnauthorized()
     {
         using var response = await Client.RefreshAsync();
