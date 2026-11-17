@@ -7,15 +7,48 @@ public sealed class RefreshTokenTests
 {
     private static readonly DateTimeOffset Now = new(2026, 11, 17, 12, 0, 0, TimeSpan.Zero);
     private static readonly TimeSpan Lifetime = TimeSpan.FromDays(14);
+    private static readonly TimeSpan Absolute = TimeSpan.FromDays(60);
     private static readonly TimeSpan Grace = TimeSpan.FromSeconds(30);
 
     [Fact]
     public void Issue_NewToken_StoresHashNotPlainValue()
     {
-        var issued = RefreshToken.Issue(Guid.CreateVersion7(), Guid.CreateVersion7(), Now, Lifetime);
+        var issued = RefreshToken.StartSession(Guid.CreateVersion7(), Now, Lifetime, Absolute);
 
         Assert.NotEqual(issued.PlainToken, issued.Token.TokenHash);
         Assert.Equal(RefreshToken.Hash(issued.PlainToken), issued.Token.TokenHash);
+    }
+
+    [Fact]
+    public void StartSession_NewSession_ExpiresAfterSlidingLifetimeWithAbsoluteLimitFixed()
+    {
+        var token = Issue();
+
+        Assert.Equal(Now + Lifetime, token.ExpiresAt);
+        Assert.Equal(Now + Absolute, token.SessionExpiresAt);
+    }
+
+    [Fact]
+    public void Rotate_WellWithinSession_SlidesExpiryAndKeepsFamilyAndSessionEnd()
+    {
+        var token = Issue();
+        var later = Now + TimeSpan.FromDays(10);
+
+        var next = token.Rotate(later, Lifetime).Token;
+
+        Assert.Equal(later + Lifetime, next.ExpiresAt);
+        Assert.Equal(token.FamilyId, next.FamilyId);
+        Assert.Equal(token.SessionExpiresAt, next.SessionExpiresAt);
+    }
+
+    [Fact]
+    public void Rotate_CloseToAbsoluteLimit_CapsExpiryAtSessionEnd()
+    {
+        var token = Issue();
+
+        var next = token.Rotate(Now + TimeSpan.FromDays(55), Lifetime).Token;
+
+        Assert.Equal(Now + Absolute, next.ExpiresAt);
     }
 
     [Fact]
@@ -60,7 +93,7 @@ public sealed class RefreshTokenTests
     }
 
     private static RefreshToken Issue() =>
-        RefreshToken.Issue(Guid.CreateVersion7(), Guid.CreateVersion7(), Now, Lifetime).Token;
+        RefreshToken.StartSession(Guid.CreateVersion7(), Now, Lifetime, Absolute).Token;
 
     private static RefreshToken Rotated()
     {

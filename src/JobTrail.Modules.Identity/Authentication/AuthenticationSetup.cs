@@ -16,6 +16,9 @@ internal static class AuthenticationSetup
             .Validate(
                 settings => settings.HasValidSigningKey(),
                 $"{TokenSettings.SectionName}:SigningKey must be base64 of at least {TokenSettings.MinimumSigningKeyBytes} bytes.")
+            .Validate(
+                settings => settings.AbsoluteSessionLifetime >= settings.RefreshTokenLifetime,
+                $"{TokenSettings.SectionName}:AbsoluteSessionLifetime must not be shorter than RefreshTokenLifetime.")
             .ValidateOnStart();
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();

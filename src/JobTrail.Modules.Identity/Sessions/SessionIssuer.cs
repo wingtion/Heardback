@@ -5,7 +5,10 @@ using Microsoft.Extensions.Options;
 
 namespace JobTrail.Modules.Identity.Sessions;
 
-/// <summary>Starts a signed-in session: a new refresh-token family plus a fresh access token.</summary>
+/// <summary>
+/// Starts a signed-in session: a new refresh-token family (with its absolute expiry fixed now) plus a fresh
+/// access token.
+/// </summary>
 internal sealed class SessionIssuer(
     IdentityDbContext dbContext,
     AccessTokenIssuer accessTokens,
@@ -15,7 +18,12 @@ internal sealed class SessionIssuer(
     public async Task<IssuedSession> StartAsync(User user, CancellationToken cancellationToken)
     {
         var now = timeProvider.GetUtcNow();
-        var refreshToken = RefreshToken.Issue(user.Id, familyId: Guid.CreateVersion7(now), now, settings.Value.RefreshTokenLifetime);
+        var tokenSettings = settings.Value;
+        var refreshToken = RefreshToken.StartSession(
+            user.Id,
+            now,
+            tokenSettings.RefreshTokenLifetime,
+            tokenSettings.AbsoluteSessionLifetime);
 
         dbContext.RefreshTokens.Add(refreshToken.Token);
         await dbContext.SaveChangesAsync(cancellationToken);

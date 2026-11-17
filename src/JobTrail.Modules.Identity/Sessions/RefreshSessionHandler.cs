@@ -70,7 +70,7 @@ internal sealed partial class RefreshSessionHandler(
         DateTimeOffset now,
         CancellationToken cancellationToken)
     {
-        var next = RefreshToken.Issue(current.UserId, current.FamilyId, now, settings.Value.RefreshTokenLifetime);
+        var next = current.Rotate(now, settings.Value.RefreshTokenLifetime);
 
         await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
         dbContext.RefreshTokens.Add(next.Token);

@@ -150,6 +150,53 @@ public sealed class SessionTests(PostgresFixture postgres) : IdentityTestBase(po
     }
 
     [Fact]
+    public async Task Refresh_AfterAbsoluteSessionLifetime_RequiresSigningInAgainEvenWhenActive()
+    {
+        using var registered = await Client.RegisterAsync("admin@example.com", ApiFactory.BootstrapAdminCode);
+        using var client = CreateCookielessClient();
+        var token = registered.ReadRefreshToken()!;
+
+        // Refresh every 10 days, well inside the 14-day sliding window, until the 60-day limit.
+        for (var day = 10; day < 60; day += 10)
+        {
+            Clock.Advance(TimeSpan.FromDays(10));
+            using var refresh = await client.RefreshWithTokenAsync(token);
+            Assert.Equal(HttpStatusCode.OK, refresh.StatusCode);
+            token = refresh.ReadRefreshToken()!;
+        }
+
+        Clock.Advance(TimeSpan.FromDays(10));
+        using var afterLimit = await client.RefreshWithTokenAsync(token);
+        using var signInAgain = await CreateClient().LoginAsync("admin@example.com");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, afterLimit.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, signInAgain.StatusCode);
+    }
+
+    [Fact]
+    public async Task Refresh_NearAbsoluteLimit_CookieExpiresAtSessionEnd()
+    {
+        using var registered = await Client.RegisterAsync("admin@example.com", ApiFactory.BootstrapAdminCode);
+        var sessionEnd = Clock.GetUtcNow() + TimeSpan.FromDays(60);
+
+        Clock.Advance(TimeSpan.FromDays(13));
+        using var first = await CreateCookielessClient().RefreshWithTokenAsync(registered.ReadRefreshToken()!);
+        Clock.Advance(TimeSpan.FromDays(13));
+        using var second = await CreateCookielessClient().RefreshWithTokenAsync(first.ReadRefreshToken()!);
+        Clock.Advance(TimeSpan.FromDays(13));
+        using var third = await CreateCookielessClient().RefreshWithTokenAsync(second.ReadRefreshToken()!);
+        Clock.Advance(TimeSpan.FromDays(13));
+        using var fourth = await CreateCookielessClient().RefreshWithTokenAsync(third.ReadRefreshToken()!);
+
+        var expires = fourth.FindRefreshCookieHeader()!.Split(';')
+            .Select(part => part.Trim())
+            .Single(part => part.StartsWith("expires=", StringComparison.OrdinalIgnoreCase))["expires=".Length..];
+        Assert.Equal(
+            sessionEnd.ToUnixTimeSeconds(),
+            DateTimeOffset.Parse(expires, System.Globalization.CultureInfo.InvariantCulture).ToUnixTimeSeconds());
+    }
+
+    [Fact]
     public async Task Logout_ThenRefresh_ReturnsUnauthorizedAndCookieIsCleared()
     {
         using var registered = await Client.RegisterAsync("admin@example.com", ApiFactory.BootstrapAdminCode);

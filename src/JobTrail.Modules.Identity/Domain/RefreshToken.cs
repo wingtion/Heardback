@@ -30,7 +30,11 @@ internal sealed class RefreshToken
 
     public DateTimeOffset CreatedAt { get; private set; }
 
+    /// <summary>Sliding expiry of this token, never later than <see cref="SessionExpiresAt"/>.</summary>
     public DateTimeOffset ExpiresAt { get; private set; }
+
+    /// <summary>Absolute end of the session, fixed at login and carried through every rotation.</summary>
+    public DateTimeOffset SessionExpiresAt { get; private set; }
 
     public DateTimeOffset? RevokedAt { get; private set; }
 
@@ -52,9 +56,30 @@ internal sealed class RefreshToken
         return now - revokedAt <= reuseGracePeriod ? RefreshTokenState.RecentlyRotated : RefreshTokenState.Reused;
     }
 
-    public static IssuedRefreshToken Issue(Guid userId, Guid familyId, DateTimeOffset now, TimeSpan lifetime)
+    /// <summary>The first token of a new session (a login or registration).</summary>
+    public static IssuedRefreshToken StartSession(
+        Guid userId,
+        DateTimeOffset now,
+        TimeSpan slidingLifetime,
+        TimeSpan absoluteLifetime) =>
+        Issue(userId, familyId: Guid.CreateVersion7(now), now, slidingLifetime, sessionExpiresAt: now + absoluteLifetime);
+
+    /// <summary>The successor of this token in the same session.</summary>
+    public IssuedRefreshToken Rotate(DateTimeOffset now, TimeSpan slidingLifetime) =>
+        Issue(UserId, FamilyId, now, slidingLifetime, SessionExpiresAt);
+
+    public static string Hash(string plainToken) =>
+        Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(plainToken)));
+
+    private static IssuedRefreshToken Issue(
+        Guid userId,
+        Guid familyId,
+        DateTimeOffset now,
+        TimeSpan slidingLifetime,
+        DateTimeOffset sessionExpiresAt)
     {
         var plainToken = Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(TokenBytes));
+        var slidingExpiry = now + slidingLifetime;
         var token = new RefreshToken
         {
             Id = Guid.CreateVersion7(now),
@@ -62,14 +87,12 @@ internal sealed class RefreshToken
             FamilyId = familyId,
             TokenHash = Hash(plainToken),
             CreatedAt = now,
-            ExpiresAt = now + lifetime,
+            ExpiresAt = slidingExpiry < sessionExpiresAt ? slidingExpiry : sessionExpiresAt,
+            SessionExpiresAt = sessionExpiresAt,
         };
 
         return new IssuedRefreshToken(token, plainToken);
     }
-
-    public static string Hash(string plainToken) =>
-        Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(plainToken)));
 }
 
 /// <summary>A newly issued token: the entity to store and the plain value to hand to the client once.</summary>

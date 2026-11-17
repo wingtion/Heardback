@@ -20,8 +20,13 @@ internal sealed class TokenSettings
     [Range(typeof(TimeSpan), "00:01:00", "01:00:00")]
     public TimeSpan AccessTokenLifetime { get; set; } = TimeSpan.FromMinutes(15);
 
+    /// <summary>Sliding: each refresh issues a token valid this long, capped by <see cref="AbsoluteSessionLifetime"/>.</summary>
     [Range(typeof(TimeSpan), "01:00:00", "90.00:00:00")]
     public TimeSpan RefreshTokenLifetime { get; set; } = TimeSpan.FromDays(14);
+
+    /// <summary>Hard limit from sign-in: after this the user must sign in again, however active they are.</summary>
+    [Range(typeof(TimeSpan), "01:00:00", "365.00:00:00")]
+    public TimeSpan AbsoluteSessionLifetime { get; set; } = TimeSpan.FromDays(60);
 
     /// <summary>
     /// How long a just-rotated refresh token may be presented again without being treated as theft,
