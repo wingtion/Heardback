@@ -34,6 +34,7 @@ internal static class AuthEndpoints
             .WithSummary("Exchange the refresh cookie for a new access token; rotates the cookie.")
             .RequireRateLimiting(AuthRateLimiting.RefreshPolicy)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
         auth.MapPost("/logout", LogoutAsync)
@@ -48,7 +49,10 @@ internal static class AuthEndpoints
         CancellationToken cancellationToken)
     {
         var result = await handler.HandleAsync(RefreshTokenCookie.Read(request), cancellationToken);
-        if (!result.IsSuccess)
+
+        // A superseded refresh lost to a concurrent one; the browser's cookie already holds the winner's
+        // token, so clearing it here would sign the user out. Every other failure clears the dead cookie.
+        if (!result.IsSuccess && result.Error.Code != IdentityErrors.RefreshSuperseded.Code)
         {
             RefreshTokenCookie.Delete(response);
         }

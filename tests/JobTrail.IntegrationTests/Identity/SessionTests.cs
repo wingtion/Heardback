@@ -115,32 +115,46 @@ public sealed class SessionTests(PostgresFixture postgres) : IdentityTestBase(po
     }
 
     [Fact]
-    public async Task Refresh_RotatedTokenReplayedWithinGracePeriod_IsRejectedButSessionSurvives()
+    public async Task Refresh_RotatedTokenReplayedWithinGracePeriod_IsSupersededAndKeepsTheBrowserCookie()
     {
         using var registered = await Client.RegisterAsync("admin@example.com", ApiFactory.BootstrapAdminCode);
         var previousToken = registered.ReadRefreshToken()!;
         using var firstTab = await Client.RefreshAsync();
 
+        // The second tab sent the old cookie; its response must not delete the browser's (already rotated) cookie.
         using var secondTab = await CreateCookielessClient().RefreshWithTokenAsync(previousToken);
         using var firstTabAgain = await Client.RefreshAsync();
 
-        Assert.Equal(HttpStatusCode.Unauthorized, secondTab.StatusCode);
+        await AssertSupersededAsync(secondTab);
         Assert.Equal(HttpStatusCode.OK, firstTabAgain.StatusCode);
     }
 
     [Fact]
-    public async Task Refresh_SameTokenConcurrently_OnlyOneRotationWins()
+    public async Task Refresh_SameTokenConcurrently_OnlyOneRotationWinsAndLosersKeepTheCookie()
     {
         using var registered = await Client.RegisterAsync("admin@example.com", ApiFactory.BootstrapAdminCode);
         var token = registered.ReadRefreshToken()!;
 
-        var statuses = await Task.WhenAll(Enumerable.Range(0, 5).Select(async _ =>
-        {
-            using var response = await CreateCookielessClient().RefreshWithTokenAsync(token);
-            return response.StatusCode;
-        }));
+        var responses = await Task.WhenAll(Enumerable.Range(0, 5).Select(async _ =>
+            await CreateCookielessClient().RefreshWithTokenAsync(token)));
 
-        Assert.Single(statuses, status => status == HttpStatusCode.OK);
+        Assert.Single(responses, response => response.StatusCode == HttpStatusCode.OK);
+        foreach (var loser in responses.Where(response => response.StatusCode != HttpStatusCode.OK))
+        {
+            await AssertSupersededAsync(loser);
+        }
+
+        foreach (var response in responses)
+        {
+            response.Dispose();
+        }
+    }
+
+    private static async Task AssertSupersededAsync(HttpResponseMessage response)
+    {
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Contains("auth.refresh_superseded", await response.Content.ReadAsStringAsync(CancellationToken), StringComparison.Ordinal);
+        Assert.Null(response.FindRefreshCookieHeader());
     }
 
     [Fact]

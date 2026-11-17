@@ -46,6 +46,11 @@ internal sealed partial class RefreshSessionHandler(
             return IdentityErrors.InvalidRefreshToken;
         }
 
+        if (state == RefreshTokenState.RecentlyRotated)
+        {
+            return IdentityErrors.RefreshSuperseded;
+        }
+
         if (state != RefreshTokenState.Active)
         {
             return IdentityErrors.InvalidRefreshToken;
@@ -57,9 +62,10 @@ internal sealed partial class RefreshSessionHandler(
             return IdentityErrors.InvalidRefreshToken;
         }
 
+        // A null result means a concurrent refresh of the same token won the race.
         var next = await TryRotateAsync(current, now, cancellationToken);
         return next is null
-            ? IdentityErrors.InvalidRefreshToken
+            ? IdentityErrors.RefreshSuperseded
             : new IssuedSession(user, accessTokens.Issue(user), next);
     }
 

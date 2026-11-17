@@ -17,6 +17,11 @@ internal static class IdentityErrors
     public static readonly Error InvalidRefreshToken =
         Error.Unauthorized("auth.invalid_refresh_token", "Your session has expired. Please sign in again.");
 
+    // Another request (e.g. a second tab) refreshed this session a moment ago. The browser's cookie already
+    // holds the newer token, so the client should simply retry; the cookie must not be cleared.
+    public static readonly Error RefreshSuperseded =
+        Error.Conflict("auth.refresh_superseded", "This session was just refreshed by another request. Retry the refresh.");
+
     public static readonly Error UserNotFound =
         Error.Unauthorized("auth.user_not_found", "Your account no longer exists. Please sign in again.");
 }
