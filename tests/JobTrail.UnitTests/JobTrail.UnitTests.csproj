@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <!-- Every module is referenced so the architecture tests can inspect all module assemblies. -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\JobTrail.Modules.Identity\JobTrail.Modules.Identity.csproj" />
+    <ProjectReference Include="..\..\src\JobTrail.Modules.Applications\JobTrail.Modules.Applications.csproj" />
+    <ProjectReference Include="..\..\src\JobTrail.Modules.Postings\JobTrail.Modules.Postings.csproj" />
+    <ProjectReference Include="..\..\src\JobTrail.Modules.Matching\JobTrail.Modules.Matching.csproj" />
+    <ProjectReference Include="..\..\src\JobTrail.Modules.Insights\JobTrail.Modules.Insights.csproj" />
+  </ItemGroup>
+
+</Project>

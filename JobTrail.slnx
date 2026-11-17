@@ -9,4 +9,8 @@
     <Project Path="src/JobTrail.Modules.Postings/JobTrail.Modules.Postings.csproj" />
     <Project Path="src/JobTrail.Shared/JobTrail.Shared.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/JobTrail.IntegrationTests/JobTrail.IntegrationTests.csproj" />
+    <Project Path="tests/JobTrail.UnitTests/JobTrail.UnitTests.csproj" />
+  </Folder>
 </Solution>
