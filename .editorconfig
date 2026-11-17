@@ -124,6 +124,8 @@ dotnet_naming_rule.locals_and_parameters_are_camel_case.severity = error
 #### Analyzer tuning ####
 # ASP.NET Core has no SynchronizationContext; ConfigureAwait(false) is noise here.
 dotnet_diagnostic.CA2007.severity = none
+# Guards against names that are keywords in other .NET languages (VB: Shared, Error). C#-only codebase.
+dotnet_diagnostic.CA1716.severity = none
 
 [tests/**.cs]
 # Test names follow Method_Scenario_ExpectedResult.
