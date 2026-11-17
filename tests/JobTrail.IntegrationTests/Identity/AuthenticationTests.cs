@@ -2,7 +2,9 @@ using System.Net;
 using System.Net.Http.Json;
 using JobTrail.IntegrationTests.Api;
 using JobTrail.IntegrationTests.Postgres;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
@@ -208,6 +210,99 @@ public sealed class AuthenticationTests(PostgresFixture postgres) : IdentityTest
         using var response = await Client.GetMeAsync(forged);
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    public static TheoryData<string, string> RejectedTokenVariants => new()
+    {
+        { "wrong issuer", "issuer" },
+        { "wrong audience", "audience" },
+        { "unsigned (alg none)", "unsigned" },
+        { "no expiry", "no-exp" },
+    };
+
+    [Theory]
+    [MemberData(nameof(RejectedTokenVariants))]
+    public async Task GetMe_TokenWithInvalidClaimsOrSignature_ReturnsUnauthorized(string description, string variant)
+    {
+        var admin = await Client.RegisterAdminAsync();
+        var signingKey = new SymmetricSecurityKey(Convert.FromBase64String(ApiFactory.SigningKey));
+        var descriptor = new SecurityTokenDescriptor
+        {
+            Issuer = variant == "issuer" ? "someone-else" : "jobtrail-api",
+            Audience = variant == "audience" ? "someone-else" : "jobtrail-web",
+            Claims = new Dictionary<string, object> { ["sub"] = admin.User.Id.ToString(), ["role"] = "admin" },
+            Expires = variant == "no-exp" ? null : Clock.GetUtcNow().UtcDateTime.AddMinutes(5),
+            SigningCredentials = variant == "unsigned"
+                ? null
+                : new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256),
+        };
+        var handler = new JsonWebTokenHandler { SetDefaultTimesOnTokenCreation = false };
+
+        using var response = await Client.GetMeAsync(handler.CreateToken(descriptor));
+
+        Assert.True(response.StatusCode == HttpStatusCode.Unauthorized, $"A token with {description} was accepted.");
+    }
+
+    [Fact]
+    public async Task GetMe_ValidlyForgedWithTheRealKey_IsAccepted()
+    {
+        // Control for the theory above: the same construction with nothing wrong must work.
+        var admin = await Client.RegisterAdminAsync();
+        var token = new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
+        {
+            Issuer = "jobtrail-api",
+            Audience = "jobtrail-web",
+            Claims = new Dictionary<string, object> { ["sub"] = admin.User.Id.ToString() },
+            Expires = Clock.GetUtcNow().UtcDateTime.AddMinutes(5),
+            SigningCredentials = new SigningCredentials(
+                new SymmetricSecurityKey(Convert.FromBase64String(ApiFactory.SigningKey)),
+                SecurityAlgorithms.HmacSha256),
+        });
+
+        using var response = await Client.GetMeAsync(token);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Register_SameEmailConcurrently_CreatesOneAccountAndLeavesOtherInvitesUnused()
+    {
+        var admin = await Client.RegisterAdminAsync();
+        var codes = new List<string>();
+        for (var i = 0; i < 5; i++)
+        {
+            codes.Add(await Client.CreateInviteCodeAsync(admin.AccessToken));
+        }
+
+        var statuses = await Task.WhenAll(codes.Select(async code =>
+        {
+            using var response = await CreateClient().RegisterAsync("twin@example.com", code);
+            return response.StatusCode;
+        }));
+
+        Assert.Single(statuses, status => status == HttpStatusCode.Created);
+        Assert.All(statuses.Where(status => status != HttpStatusCode.Created), status => Assert.Equal(HttpStatusCode.Conflict, status));
+        Assert.Equal("1", await QuerySingleAsync("SELECT count(*)::text FROM identity.invite_codes WHERE used_at IS NOT NULL"));
+    }
+
+    [Fact]
+    public async Task Login_PasswordHashInOlderFormat_SucceedsAndUpgradesTheHash()
+    {
+        await Client.RegisterAdminAsync("admin@example.com");
+        var legacyHasher = new PasswordHasher<object>(Options.Create(new PasswordHasherOptions
+        {
+            CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV2,
+        }));
+        var legacyHash = legacyHasher.HashPassword(new object(), IdentityApi.DefaultPassword);
+        await ExecuteSqlAsync($"UPDATE identity.users SET password_hash = '{legacyHash}'");
+
+        using var login = await CreateClient().LoginAsync("admin@example.com");
+        var storedHash = await QuerySingleAsync("SELECT password_hash FROM identity.users");
+        using var loginAgain = await CreateClient().LoginAsync("admin@example.com");
+
+        Assert.Equal(HttpStatusCode.OK, login.StatusCode);
+        Assert.NotEqual(legacyHash, storedHash);
+        Assert.Equal(HttpStatusCode.OK, loginAgain.StatusCode);
     }
 
     [Fact]

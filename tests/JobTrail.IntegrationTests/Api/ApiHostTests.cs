@@ -108,6 +108,21 @@ public sealed class ApiHostTests
         Assert.Contains("TrustedProxies", exception.Message, StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData("Identity:Tokens:SigningKey", "c2hvcnQta2V5", "SigningKey")]
+    [InlineData("Identity:Tokens:SigningKey", "this is not base64!", "SigningKey")]
+    [InlineData("Identity:Invites:BootstrapAdminCode", "SHORT", "BootstrapAdminCode")]
+    [InlineData("Identity:Tokens:AbsoluteSessionLifetime", "7.00:00:00", "AbsoluteSessionLifetime")]
+    public async Task Startup_WeakOrInconsistentAuthSettings_FailsFast(string key, string value, string expectedInMessage)
+    {
+        await using var factory = new ApiFactory();
+        factory.Settings[key] = value;
+
+        var exception = Assert.Throws<OptionsValidationException>(() => factory.CreateClient());
+
+        Assert.Contains(expectedInMessage, exception.Message, StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task Startup_MissingSigningKey_FailsFastWithValidationError()
     {

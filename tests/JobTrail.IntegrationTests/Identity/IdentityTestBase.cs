@@ -1,6 +1,7 @@
 using JobTrail.IntegrationTests.Api;
 using JobTrail.IntegrationTests.Postgres;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
 using Npgsql;
 
@@ -26,13 +27,18 @@ public abstract class IdentityTestBase(PostgresFixture postgres) : IAsyncLifetim
     public async ValueTask InitializeAsync()
     {
         ConnectionString = await postgres.CreateDatabaseAsync(CancellationToken);
-        Factory = new ApiFactory { ConnectionString = ConnectionString, Clock = Clock };
+        Factory = new ApiFactory { ConnectionString = ConnectionString, Clock = Clock, TestServices = ConfigureServices };
         ConfigureSettings(Factory.Settings);
         Client = Factory.CreateClient();
     }
 
     /// <summary>Override to change configuration (e.g. lower limits) before the API starts.</summary>
     protected virtual void ConfigureSettings(IDictionary<string, string?> settings)
+    {
+    }
+
+    /// <summary>Override to add test-only services before the API starts.</summary>
+    protected virtual void ConfigureServices(IServiceCollection services)
     {
     }
 
