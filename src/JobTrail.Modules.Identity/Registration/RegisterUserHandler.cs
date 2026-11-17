@@ -20,14 +20,21 @@ internal sealed partial class RegisterUserHandler(
     TimeProvider timeProvider,
     ILogger<RegisterUserHandler> logger)
 {
+    // Arbitrary application-wide key for pg_advisory_xact_lock; only bootstrap registration uses it.
+    private const long BootstrapAdminLockKey = 0x4A6F_6254_7261_696C;
+
     public async Task<Result<IssuedSession>> HandleAsync(RegisterRequest request, CancellationToken cancellationToken)
     {
         var now = timeProvider.GetUtcNow();
         var code = InviteCode.Normalize(request.InviteCode);
 
         // Check the invite before the email, so the endpoint cannot be used to probe for accounts without one.
-        var registersAdmin = await IsUnusedBootstrapCodeAsync(code, cancellationToken);
-        if (!registersAdmin && !await IsActiveInviteAsync(code, now, cancellationToken))
+        // These checks are a fast path only; the authoritative ones run inside the transaction below.
+        var registersAdmin = IsBootstrapCode(code);
+        var inviteLooksUsable = registersAdmin
+            ? !await AdminExistsAsync(cancellationToken)
+            : await IsActiveInviteAsync(code, now, cancellationToken);
+        if (!inviteLooksUsable)
         {
             return IdentityErrors.InvalidInviteCode;
         }
@@ -42,6 +49,12 @@ internal sealed partial class RegisterUserHandler(
         user.SetPasswordHash(passwordHasher.HashPassword(user, request.Password));
 
         await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        if (registersAdmin && !await TryReserveBootstrapAdminAsync(cancellationToken))
+        {
+            // Another registration claimed the bootstrap code a moment ago.
+            return IdentityErrors.InvalidInviteCode;
+        }
+
         if (!await TryAddUserAsync(user, cancellationToken))
         {
             return IdentityErrors.EmailTaken;
@@ -60,16 +73,24 @@ internal sealed partial class RegisterUserHandler(
         return session;
     }
 
-    private async Task<bool> IsUnusedBootstrapCodeAsync(string code, CancellationToken cancellationToken)
+    private bool IsBootstrapCode(string code)
     {
         var bootstrapCode = inviteSettings.Value.NormalizedBootstrapAdminCode;
-        if (bootstrapCode is null
-            || !CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(code), Encoding.UTF8.GetBytes(bootstrapCode)))
-        {
-            return false;
-        }
+        return bootstrapCode is not null
+            && CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(code), Encoding.UTF8.GetBytes(bootstrapCode));
+    }
 
-        return !await dbContext.Users.AnyAsync(user => user.IsAdmin, cancellationToken);
+    private Task<bool> AdminExistsAsync(CancellationToken cancellationToken) =>
+        dbContext.Users.AnyAsync(user => user.IsAdmin, cancellationToken);
+
+    // The advisory lock is held until the transaction ends, so concurrent bootstrap registrations queue up
+    // here and each one re-checks for an admin only after the previous one has committed.
+    private async Task<bool> TryReserveBootstrapAdminAsync(CancellationToken cancellationToken)
+    {
+        await dbContext.Database.ExecuteSqlAsync(
+            $"SELECT pg_advisory_xact_lock({BootstrapAdminLockKey})",
+            cancellationToken);
+        return !await AdminExistsAsync(cancellationToken);
     }
 
     private Task<bool> IsActiveInviteAsync(string code, DateTimeOffset now, CancellationToken cancellationToken) =>

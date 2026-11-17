@@ -50,6 +50,19 @@ public sealed class AuthenticationTests(PostgresFixture postgres) : IdentityTest
     }
 
     [Fact]
+    public async Task Register_BootstrapCodeConcurrently_CreatesExactlyOneAdmin()
+    {
+        var statuses = await Task.WhenAll(Enumerable.Range(0, 5).Select(async i =>
+        {
+            using var response = await CreateClient().RegisterAsync($"racer{i}@example.com", ApiFactory.BootstrapAdminCode);
+            return response.StatusCode;
+        }));
+
+        Assert.Single(statuses, status => status == HttpStatusCode.Created);
+        Assert.Equal("1", await QuerySingleAsync("SELECT count(*)::text FROM identity.users WHERE is_admin"));
+    }
+
+    [Fact]
     public async Task Register_UnknownInviteCode_ReturnsInvalidInviteCode()
     {
         using var response = await Client.RegisterAsync("someone@example.com", "ZZZZ-ZZZZ-ZZZZ");
