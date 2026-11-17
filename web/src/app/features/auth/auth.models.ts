@@ -1,4 +1,4 @@
-/** Wire types for the Identity API (see src/JobTrail.Modules.Identity/Endpoints). */
+/** Wire types for the Identity API (see src/Heardback.Modules.Identity/Endpoints). */
 
 export interface CurrentUser {
   readonly id: string;

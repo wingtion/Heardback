@@ -1,6 +1,6 @@
-# JobTrail web
+# Heardback web
 
-Angular frontend for JobTrail. See the [root README](../README.md) for the full picture.
+Angular frontend for Heardback. See the [root README](../README.md) for the full picture.
 
 ```bash
 npm ci

@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Heardback.Api/Heardback.Api.csproj" />
+    <Project Path="src/Heardback.Infrastructure.Llm/Heardback.Infrastructure.Llm.csproj" />
+    <Project Path="src/Heardback.Modules.Applications/Heardback.Modules.Applications.csproj" />
+    <Project Path="src/Heardback.Modules.Identity/Heardback.Modules.Identity.csproj" />
+    <Project Path="src/Heardback.Modules.Insights/Heardback.Modules.Insights.csproj" />
+    <Project Path="src/Heardback.Modules.Matching/Heardback.Modules.Matching.csproj" />
+    <Project Path="src/Heardback.Modules.Postings/Heardback.Modules.Postings.csproj" />
+    <Project Path="src/Heardback.Shared/Heardback.Shared.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Heardback.IntegrationTests/Heardback.IntegrationTests.csproj" />
+    <Project Path="tests/Heardback.UnitTests/Heardback.UnitTests.csproj" />
+  </Folder>
+</Solution>

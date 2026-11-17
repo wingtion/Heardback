@@ -14,13 +14,13 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
-$project = Join-Path $root "src/JobTrail.Modules.$Module"
+$project = Join-Path $root "src/Heardback.Modules.$Module"
 $migrations = Join-Path $project 'Persistence/Migrations'
 
 dotnet tool restore | Out-Null
 dotnet ef migrations add $Name `
     --project $project `
-    --startup-project (Join-Path $root 'src/JobTrail.Api') `
+    --startup-project (Join-Path $root 'src/Heardback.Api') `
     --context "${Module}DbContext" `
     --output-dir Persistence/Migrations
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

@@ -14,7 +14,7 @@
     XML docs are mandatory only for module projects, whose public surface is limited to
     contracts and the module registration entry point. Everything else opts out of CS1591.
   -->
-  <PropertyGroup Condition="!$(MSBuildProjectName.StartsWith('JobTrail.Modules.'))">
+  <PropertyGroup Condition="!$(MSBuildProjectName.StartsWith('Heardback.Modules.'))">
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 </Project>

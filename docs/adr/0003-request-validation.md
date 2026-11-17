@@ -14,7 +14,7 @@ remember to call `AddValidation()` itself.
 
 ## Decision
 
-Use a small endpoint filter, `RequestValidation.WithRequestValidation()` in `JobTrail.Shared.Http`:
+Use a small endpoint filter, `RequestValidation.WithRequestValidation()` in `Heardback.Shared.Http`:
 
 - The host maps every module's endpoints under one root route group that has the filter, so no module
   has to opt in.

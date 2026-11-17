@@ -1,13 +1,13 @@
 # Local development dependencies. Start with: docker compose up -d
 # The Postgres image below is also used by the integration-test Testcontainers fixture.
-name: jobtrail
+name: heardback
 
 services:
   postgres:
     image: postgres:18.7-alpine
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-jobtrail}
-      POSTGRES_USER: ${POSTGRES_USER:-jobtrail}
+      POSTGRES_DB: ${POSTGRES_DB:-heardback}
+      POSTGRES_USER: ${POSTGRES_USER:-heardback}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env (see .env.example)}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"

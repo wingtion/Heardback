@@ -1,7 +1,7 @@
 import { InjectionToken } from '@angular/core';
 import { environment } from '../../environments/environment';
 
-/** Base URL of the JobTrail API (empty = same origin). Injected so tests can override it. */
+/** Base URL of the Heardback API (empty = same origin). Injected so tests can override it. */
 export const API_BASE_URL = new InjectionToken<string>('API_BASE_URL', {
   providedIn: 'root',
   factory: () => environment.apiBaseUrl,

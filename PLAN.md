@@ -1,6 +1,7 @@
-# JobTrail — Project Plan
+# Heardback — Project Plan
 
-> Working name. Rename freely.
+> Named after the question every job seeker asks: "Did I hear back?" (Renamed from the working name
+> JobTrail, which an existing job tracker at jobtrail.dev already uses.)
 > This file is the source of truth for the project's direction. Claude Code should read it before starting any phase.
 
 ## 1. What we're building
@@ -34,17 +35,17 @@ A web app where job seekers track their applications in one place and get **insi
 
 ```
 src/
-  JobTrail.Api/                 # host: DI, endpoints, auth, middleware
-  JobTrail.Modules.Identity/    # users, invite codes, JWT + refresh tokens
-  JobTrail.Modules.Applications/# applications, status history, notes, reminders
-  JobTrail.Modules.Postings/    # shared job postings, dedup, structured fields
-  JobTrail.Modules.Matching/    # CV text, skills dictionary, match results
-  JobTrail.Modules.Insights/    # personal stats, community aggregates, ghost signals
-  JobTrail.Infrastructure.Llm/  # ILlmClient, Groq/Gemini clients, quota, cache
-  JobTrail.Shared/              # common abstractions (clock, current user, results)
+  Heardback.Api/                 # host: DI, endpoints, auth, middleware
+  Heardback.Modules.Identity/    # users, invite codes, JWT + refresh tokens
+  Heardback.Modules.Applications/# applications, status history, notes, reminders
+  Heardback.Modules.Postings/    # shared job postings, dedup, structured fields
+  Heardback.Modules.Matching/    # CV text, skills dictionary, match results
+  Heardback.Modules.Insights/    # personal stats, community aggregates, ghost signals
+  Heardback.Infrastructure.Llm/  # ILlmClient, Groq/Gemini clients, quota, cache
+  Heardback.Shared/              # common abstractions (clock, current user, results)
 tests/
-  JobTrail.UnitTests/
-  JobTrail.IntegrationTests/    # xUnit + Testcontainers (real Postgres)
+  Heardback.UnitTests/
+  Heardback.IntegrationTests/    # xUnit + Testcontainers (real Postgres)
 web/                            # Angular app
 ```
 
@@ -216,4 +217,3 @@ The list is not final. Screens added later go through the same flow: design firs
 
 - Managed Postgres provider (Fly Postgres vs. Neon vs. Supabase).
 - Whether a browser extension for one-click adding is worth a later phase.
-- Final project name.
