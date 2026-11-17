@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/JobTrail.Api/JobTrail.Api.csproj" />
+    <Project Path="src/JobTrail.Infrastructure.Llm/JobTrail.Infrastructure.Llm.csproj" />
+    <Project Path="src/JobTrail.Modules.Applications/JobTrail.Modules.Applications.csproj" />
+    <Project Path="src/JobTrail.Modules.Identity/JobTrail.Modules.Identity.csproj" />
+    <Project Path="src/JobTrail.Modules.Insights/JobTrail.Modules.Insights.csproj" />
+    <Project Path="src/JobTrail.Modules.Matching/JobTrail.Modules.Matching.csproj" />
+    <Project Path="src/JobTrail.Modules.Postings/JobTrail.Modules.Postings.csproj" />
+    <Project Path="src/JobTrail.Shared/JobTrail.Shared.csproj" />
+  </Folder>
+</Solution>
