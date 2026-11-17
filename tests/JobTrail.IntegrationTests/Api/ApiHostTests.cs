@@ -82,6 +82,33 @@ public sealed class ApiHostTests
     }
 
     [Fact]
+    public async Task Startup_ClientIpSourceNotConfigured_FailsFast()
+    {
+        await using var factory = new ApiFactory();
+        factory.Settings["ClientIp:Source"] = null;
+
+        var exception = Assert.Throws<OptionsValidationException>(() => factory.CreateClient());
+
+        Assert.Contains("ClientIp:Source", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(null, null)]
+    [InlineData("not-an-ip", null)]
+    [InlineData(null, "10.0.0.0/99")]
+    public async Task Startup_ForwardedHeadersWithoutValidTrustedProxy_FailsFast(string? proxy, string? network)
+    {
+        await using var factory = new ApiFactory();
+        factory.Settings["ClientIp:Source"] = "ForwardedHeaders";
+        factory.Settings["ClientIp:TrustedProxies:0"] = proxy;
+        factory.Settings["ClientIp:TrustedNetworks:0"] = network;
+
+        var exception = Assert.Throws<OptionsValidationException>(() => factory.CreateClient());
+
+        Assert.Contains("TrustedProxies", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Startup_MissingSigningKey_FailsFastWithValidationError()
     {
         await using var factory = new ApiFactory();

@@ -39,6 +39,7 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
     {
         ["Identity:Tokens:SigningKey"] = SigningKey,
         ["Identity:Invites:BootstrapAdminCode"] = BootstrapAdminCode,
+        ["ClientIp:Source"] = "Direct",
     };
 
     public Action<IServiceCollection>? TestServices { get; init; }
