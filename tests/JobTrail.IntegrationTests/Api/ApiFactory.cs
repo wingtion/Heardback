@@ -55,6 +55,7 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
 
         builder.ConfigureTestServices(services =>
         {
+            services.AddSingleton<IStartupFilter, TestClientIpStartupFilter>();
             if (Clock is not null)
             {
                 services.AddSingleton<TimeProvider>(Clock);

@@ -1,3 +1,4 @@
+using JobTrail.Modules.Identity.Authentication;
 using JobTrail.Modules.Identity.Login;
 using JobTrail.Modules.Identity.Registration;
 using JobTrail.Modules.Identity.Sessions;
@@ -17,17 +18,23 @@ internal static class AuthEndpoints
 
         auth.MapPost("/register", RegisterAsync)
             .WithSummary("Create an account with an invite code and sign in.")
+            .RequireRateLimiting(AuthRateLimiting.CredentialsPolicy)
             .ProducesValidationProblem()
-            .ProducesProblem(StatusCodes.Status409Conflict);
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
         auth.MapPost("/login", LoginAsync)
             .WithSummary("Sign in with email and password.")
+            .RequireRateLimiting(AuthRateLimiting.CredentialsPolicy)
             .ProducesValidationProblem()
-            .ProducesProblem(StatusCodes.Status401Unauthorized);
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
         auth.MapPost("/refresh", RefreshAsync)
             .WithSummary("Exchange the refresh cookie for a new access token; rotates the cookie.")
-            .ProducesProblem(StatusCodes.Status401Unauthorized);
+            .RequireRateLimiting(AuthRateLimiting.RefreshPolicy)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
         auth.MapPost("/logout", LogoutAsync)
             .WithSummary("End this session and clear the refresh cookie.")

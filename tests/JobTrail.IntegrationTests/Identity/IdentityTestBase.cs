@@ -26,7 +26,13 @@ public abstract class IdentityTestBase(PostgresFixture postgres) : IAsyncLifetim
     {
         ConnectionString = await postgres.CreateDatabaseAsync(CancellationToken);
         Factory = new ApiFactory { ConnectionString = ConnectionString, Clock = Clock };
+        ConfigureSettings(Factory.Settings);
         Client = Factory.CreateClient();
+    }
+
+    /// <summary>Override to change configuration (e.g. lower limits) before the API starts.</summary>
+    protected virtual void ConfigureSettings(IDictionary<string, string?> settings)
+    {
     }
 
     public async ValueTask DisposeAsync()

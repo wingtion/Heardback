@@ -40,6 +40,7 @@ public static class IdentityModule
         services.AddScoped<ICurrentUser, ClaimsCurrentUser>();
         services.AddModuleDbContext<IdentityDbContext>(IdentityDbContext.Schema);
         services.AddJwtAuthentication();
+        services.AddAuthRateLimiting();
 
         services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
         services.AddScoped<SessionIssuer>();
