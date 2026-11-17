@@ -84,6 +84,11 @@ If a rule here blocks a clearly better solution, say so and propose the change i
 - If a screen needs something the design doesn't cover, stop and ask rather than improvising a new style. Reusable patterns become shared components in `shared/ui`.
 - Avoid generic AI-generated aesthetics: no decorative gradients, glassmorphism, emoji as icons, or oversized hero sections.
 
+## Security and correctness
+
+- Security and correctness protections (rate limiting, authorization checks, isolation, input validation, race-condition guards, session limits, ...) are built **in the same phase as the feature they protect**, never deferred to a later phase.
+- Any trade-off that leaves a known gap needs the author's **explicit approval before** it is accepted. Present the gap, the risk and the alternatives, and wait for a decision. Approved trade-offs are recorded in the relevant ADR.
+
 ## Testing
 
 - Test names: `Method_Scenario_ExpectedResult`. Arrange / Act / Assert structure.
@@ -113,3 +118,13 @@ If a rule here blocks a clearly better solution, say so and propose the change i
 2. Tests added/updated and passing; lint and format checks pass.
 3. No secrets, no PII in logs, user isolation preserved.
 4. README / ADR updated if behaviour or architecture changed.
+
+## Definition of done for a phase
+
+1. Every change in the phase meets the definition of done above, and no known gap remains without the author's explicit approval.
+2. **Independent review:** run a review with a fresh subagent that has not seen the work (no shared context; give it only the repo, the phase scope from PLAN.md and the checklist below). Checklist:
+   - **Security:** authentication, authorization (fallback policy, admin-only endpoints, user id only from the token), input validation, secrets handling, PII (logs, responses, storage).
+   - **Correctness:** edge cases, concurrency/race conditions, time handling, error paths, data isolation between users.
+   - **Test coverage:** every behaviour and protection above has a test; regression tests exist for fixed bugs.
+3. Report the findings to the author, fix them in the same phase (regression test first for real bugs), and re-run the checks.
+4. Only then ask the author to open the PR.
