@@ -8,4 +8,8 @@
     <ProjectReference Include="..\JobTrail.Shared\JobTrail.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="JobTrail.UnitTests" />
+  </ItemGroup>
+
 </Project>

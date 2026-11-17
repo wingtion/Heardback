@@ -1,3 +1,7 @@
+using JobTrail.Modules.Identity.Authentication;
+using JobTrail.Modules.Identity.Persistence;
+using JobTrail.Shared.Persistence;
+using JobTrail.Shared.Users;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace JobTrail.Modules.Identity;
@@ -14,6 +18,11 @@ public static class IdentityModule
     public static IServiceCollection AddIdentityModule(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
+
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUser, ClaimsCurrentUser>();
+        services.AddModuleDbContext<IdentityDbContext>(IdentityDbContext.Schema);
+
         return services;
     }
 }

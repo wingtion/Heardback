@@ -1,0 +1,59 @@
+using System.Security.Cryptography;
+
+namespace JobTrail.Modules.Identity.Domain;
+
+/// <summary>A single-use code that lets one person register.</summary>
+internal sealed class InviteCode
+{
+    public const int CodeLength = 12;
+    private const int GroupLength = 4;
+    private const char GroupSeparator = '-';
+
+    // Crockford base32: no I, L, O or U, so codes survive being read aloud or retyped.
+    private const string Alphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+
+    private InviteCode()
+    {
+    }
+
+    public Guid Id { get; private set; }
+
+    /// <summary>Normalized form: upper case, no separators.</summary>
+    public string Code { get; private set; } = string.Empty;
+
+    public Guid CreatedByUserId { get; private set; }
+
+    public DateTimeOffset CreatedAt { get; private set; }
+
+    public DateTimeOffset ExpiresAt { get; private set; }
+
+    public Guid? UsedByUserId { get; private set; }
+
+    public DateTimeOffset? UsedAt { get; private set; }
+
+    /// <summary>The code as shown to people, e.g. <c>K7QX-M2PA-9TDF</c>.</summary>
+    public string DisplayCode => Format(Code);
+
+    public static InviteCode Generate(Guid createdByUserId, DateTimeOffset now, TimeSpan lifetime) =>
+        new()
+        {
+            Id = Guid.CreateVersion7(now),
+            Code = RandomNumberGenerator.GetString(Alphabet, CodeLength),
+            CreatedByUserId = createdByUserId,
+            CreatedAt = now,
+            ExpiresAt = now + lifetime,
+        };
+
+    /// <summary>Accepts any casing, separators and surrounding whitespace.</summary>
+    public static string Normalize(string input) =>
+        string.Concat(input.Where(character => character != GroupSeparator && !char.IsWhiteSpace(character)))
+            .ToUpperInvariant();
+
+    public static string Format(string normalizedCode) =>
+        string.Join(GroupSeparator, normalizedCode.Chunk(GroupLength).Select(group => new string(group)));
+
+    public InviteCodeStatus GetStatus(DateTimeOffset now) =>
+        UsedByUserId is not null ? InviteCodeStatus.Used
+        : now >= ExpiresAt ? InviteCodeStatus.Expired
+        : InviteCodeStatus.Active;
+}
