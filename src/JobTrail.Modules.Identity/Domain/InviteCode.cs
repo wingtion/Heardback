@@ -52,11 +52,15 @@ internal sealed class InviteCode
     public static string Format(string normalizedCode) =>
         string.Join(GroupSeparator, normalizedCode.Chunk(GroupLength).Select(group => new string(group)));
 
-    public InviteCodeStatus GetStatus(DateTimeOffset now) => StatusAt(UsedByUserId, ExpiresAt, now);
+    public InviteCodeStatus GetStatus(DateTimeOffset now) => StatusAt(UsedAt, ExpiresAt, now);
 
-    /// <summary>Status from raw fields, for read queries that project instead of loading the entity.</summary>
-    public static InviteCodeStatus StatusAt(Guid? usedByUserId, DateTimeOffset expiresAt, DateTimeOffset now) =>
-        usedByUserId is not null ? InviteCodeStatus.Used
+    /// <summary>
+    /// Status from raw fields, for read queries that project instead of loading the entity. "Used" is decided
+    /// by <see cref="UsedAt"/>, which is never cleared; <see cref="UsedByUserId"/> becomes null if that account
+    /// is deleted, and must not bring the code back to life.
+    /// </summary>
+    public static InviteCodeStatus StatusAt(DateTimeOffset? usedAt, DateTimeOffset expiresAt, DateTimeOffset now) =>
+        usedAt is not null ? InviteCodeStatus.Used
         : now >= expiresAt ? InviteCodeStatus.Expired
         : InviteCodeStatus.Active;
 }

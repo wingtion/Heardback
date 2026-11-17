@@ -2,6 +2,7 @@ using JobTrail.IntegrationTests.Api;
 using JobTrail.IntegrationTests.Postgres;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Time.Testing;
+using Npgsql;
 
 namespace JobTrail.IntegrationTests.Identity;
 
@@ -40,6 +41,15 @@ public abstract class IdentityTestBase(PostgresFixture postgres) : IAsyncLifetim
         Client.Dispose();
         await Factory.DisposeAsync();
         GC.SuppressFinalize(this);
+    }
+
+    /// <summary>Runs SQL directly against this test's database, for states the API cannot produce yet.</summary>
+    protected async Task ExecuteSqlAsync(string sql)
+    {
+        await using var connection = new NpgsqlConnection(ConnectionString);
+        await connection.OpenAsync(CancellationToken);
+        await using var command = new NpgsqlCommand(sql, connection);
+        await command.ExecuteNonQueryAsync(CancellationToken);
     }
 
     /// <summary>A second browser: same API and database, separate cookie jar.</summary>

@@ -95,7 +95,7 @@ internal sealed partial class RegisterUserHandler(
 
     private Task<bool> IsActiveInviteAsync(string code, DateTimeOffset now, CancellationToken cancellationToken) =>
         dbContext.InviteCodes.AnyAsync(
-            invite => invite.Code == code && invite.UsedByUserId == null && invite.ExpiresAt > now,
+            invite => invite.Code == code && invite.UsedAt == null && invite.ExpiresAt > now,
             cancellationToken);
 
     private async Task<bool> TryAddUserAsync(User user, CancellationToken cancellationToken)
@@ -121,7 +121,7 @@ internal sealed partial class RegisterUserHandler(
         CancellationToken cancellationToken)
     {
         var claimed = await dbContext.InviteCodes
-            .Where(invite => invite.Code == code && invite.UsedByUserId == null && invite.ExpiresAt > now)
+            .Where(invite => invite.Code == code && invite.UsedAt == null && invite.ExpiresAt > now)
             .ExecuteUpdateAsync(
                 setters => setters
                     .SetProperty(invite => invite.UsedByUserId, userId)

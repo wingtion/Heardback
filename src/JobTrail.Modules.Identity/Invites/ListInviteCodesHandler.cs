@@ -19,7 +19,6 @@ internal sealed class ListInviteCodesHandler(IdentityDbContext dbContext, TimePr
                 invite.Code,
                 invite.CreatedAt,
                 invite.ExpiresAt,
-                invite.UsedByUserId,
                 invite.UsedAt))
             .ToPagedResponseAsync(page, cancellationToken);
 
@@ -31,7 +30,7 @@ internal sealed class ListInviteCodesHandler(IdentityDbContext dbContext, TimePr
                 InviteCode.Format(row.Code),
                 row.CreatedAt,
                 row.ExpiresAt,
-                InviteCode.StatusAt(row.UsedByUserId, row.ExpiresAt, now),
+                InviteCode.StatusAt(row.UsedAt, row.ExpiresAt, now),
                 row.UsedAt))
             .ToList();
 
@@ -43,6 +42,5 @@ internal sealed class ListInviteCodesHandler(IdentityDbContext dbContext, TimePr
         string Code,
         DateTimeOffset CreatedAt,
         DateTimeOffset ExpiresAt,
-        Guid? UsedByUserId,
         DateTimeOffset? UsedAt);
 }

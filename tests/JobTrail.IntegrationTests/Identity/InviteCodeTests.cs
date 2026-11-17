@@ -142,6 +142,23 @@ public sealed class InviteCodeTests(PostgresFixture postgres) : IdentityTestBase
     }
 
     [Fact]
+    public async Task Register_InviteWhoseUserWasDeleted_StaysUsed()
+    {
+        var admin = await Client.RegisterAdminAsync();
+        var code = await Client.CreateInviteCodeAsync(admin.AccessToken);
+        using var first = await CreateClient().RegisterAsync("leaver@example.com", code);
+
+        // Account deletion arrives in Phase 7; the FK sets used_by_user_id to NULL when it happens.
+        await ExecuteSqlAsync("DELETE FROM identity.users WHERE normalized_email = 'LEAVER@EXAMPLE.COM'");
+        using var reuse = await CreateClient().RegisterAsync("someone-else@example.com", code);
+        using var list = await Client.ListInvitesAsync(admin.AccessToken);
+        var page = await list.Content.ReadFromJsonAsync<PagedDto<InviteCodeDto>>(CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, reuse.StatusCode);
+        Assert.Equal("Used", Assert.Single(page!.Items).Status);
+    }
+
+    [Fact]
     public async Task Register_InviteExpired_ReturnsInvalidInviteCode()
     {
         var admin = await Client.RegisterAdminAsync();
