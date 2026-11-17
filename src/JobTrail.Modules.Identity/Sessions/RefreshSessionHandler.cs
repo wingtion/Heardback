@@ -10,7 +10,8 @@ namespace JobTrail.Modules.Identity.Sessions;
 
 /// <summary>
 /// Exchanges a refresh token for a new access token and a new refresh token (rotation). Presenting a token
-/// that was already rotated, outside the short grace period, revokes every token from that login.
+/// that was already rotated, outside the short grace period, means it was probably copied, so every session
+/// the user has is revoked: we cannot tell which device is the attacker's.
 /// </summary>
 internal sealed partial class RefreshSessionHandler(
     IdentityDbContext dbContext,
@@ -40,8 +41,8 @@ internal sealed partial class RefreshSessionHandler(
         var state = current.GetState(now, settings.Value.RefreshReuseGracePeriod);
         if (state == RefreshTokenState.Reused)
         {
-            await revoker.RevokeFamilyAsync(current.FamilyId, now, cancellationToken);
-            LogReuseDetected(current.UserId, current.FamilyId);
+            var revoked = await revoker.RevokeAllForUserAsync(current.UserId, now, cancellationToken);
+            LogReuseDetected(current.UserId, revoked);
             return IdentityErrors.InvalidRefreshToken;
         }
 
@@ -93,6 +94,6 @@ internal sealed partial class RefreshSessionHandler(
 
     [LoggerMessage(
         Level = LogLevel.Warning,
-        Message = "Refresh token reuse detected for user {UserId}; revoked token family {FamilyId}")]
-    private partial void LogReuseDetected(Guid userId, Guid familyId);
+        Message = "Refresh token reuse detected for user {UserId}; revoked all sessions ({RevokedTokenCount} active tokens)")]
+    private partial void LogReuseDetected(Guid userId, int revokedTokenCount);
 }

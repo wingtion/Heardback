@@ -58,6 +58,42 @@ public sealed class SessionTests(PostgresFixture postgres) : IdentityTestBase(po
     }
 
     [Fact]
+    public async Task Refresh_RotatedTokenReplayed_RevokesEveryOneOfTheUsersSessions()
+    {
+        using var registered = await Client.RegisterAsync("admin@example.com", ApiFactory.BootstrapAdminCode);
+        var stolenToken = registered.ReadRefreshToken()!;
+        using var otherDevice = CreateClient();
+        await otherDevice.SignInAsync("admin@example.com");
+        using var legitimateRefresh = await Client.RefreshAsync();
+
+        Clock.Advance(GracePeriod + TimeSpan.FromSeconds(1));
+        using var replay = await CreateCookielessClient().RefreshWithTokenAsync(stolenToken);
+        using var otherDeviceRefresh = await otherDevice.RefreshAsync();
+
+        Assert.Equal(HttpStatusCode.Unauthorized, replay.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, otherDeviceRefresh.StatusCode);
+    }
+
+    [Fact]
+    public async Task Refresh_RotatedTokenReplayed_LeavesOtherUsersSignedIn()
+    {
+        var admin = await Client.RegisterAdminAsync("admin@example.com");
+        using var registered = await CreateClient().RegisterAsync(
+            "alice@example.com",
+            await Client.CreateInviteCodeAsync(admin.AccessToken));
+        var aliceToken = registered.ReadRefreshToken()!;
+        using var cookieless = CreateCookielessClient();
+        using var aliceRefresh = await cookieless.RefreshWithTokenAsync(aliceToken);
+
+        Clock.Advance(GracePeriod + TimeSpan.FromSeconds(1));
+        using var replay = await cookieless.RefreshWithTokenAsync(aliceToken);
+        using var adminRefresh = await Client.RefreshAsync();
+
+        Assert.Equal(HttpStatusCode.Unauthorized, replay.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, adminRefresh.StatusCode);
+    }
+
+    [Fact]
     public async Task Refresh_RotatedTokenReplayedWithinGracePeriod_IsRejectedButSessionSurvives()
     {
         using var registered = await Client.RegisterAsync("admin@example.com", ApiFactory.BootstrapAdminCode);
