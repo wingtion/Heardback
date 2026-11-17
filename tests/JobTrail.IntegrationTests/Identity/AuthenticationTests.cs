@@ -248,12 +248,17 @@ public sealed class AuthenticationTests(PostgresFixture postgres) : IdentityTest
     {
         // Control for the theory above: the same construction with nothing wrong must work.
         var admin = await Client.RegisterAdminAsync();
+        var now = Clock.GetUtcNow().UtcDateTime;
         var token = new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
         {
             Issuer = "jobtrail-api",
             Audience = "jobtrail-web",
             Claims = new Dictionary<string, object> { ["sub"] = admin.User.Id.ToString() },
-            Expires = Clock.GetUtcNow().UtcDateTime.AddMinutes(5),
+            // Without these the handler stamps nbf/iat from the real clock, which can be a second ahead of
+            // the test clock the API validates against.
+            IssuedAt = now,
+            NotBefore = now,
+            Expires = now.AddMinutes(5),
             SigningCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(Convert.FromBase64String(ApiFactory.SigningKey)),
                 SecurityAlgorithms.HmacSha256),
@@ -326,13 +331,16 @@ public sealed class AuthenticationTests(PostgresFixture postgres) : IdentityTest
         Assert.Contains(field, problem.Errors.Keys);
     }
 
-    private static string ForgeToken(Guid userId, byte[] key) =>
+    // Only the key is wrong; the times follow the test clock so the rejection cannot come from nbf or exp.
+    private string ForgeToken(Guid userId, byte[] key) =>
         new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
         {
             Issuer = "jobtrail-api",
             Audience = "jobtrail-web",
             Claims = new Dictionary<string, object> { ["sub"] = userId.ToString(), ["role"] = "admin" },
-            Expires = DateTime.UtcNow.AddMinutes(5),
+            IssuedAt = Clock.GetUtcNow().UtcDateTime,
+            NotBefore = Clock.GetUtcNow().UtcDateTime,
+            Expires = Clock.GetUtcNow().UtcDateTime.AddMinutes(5),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256),
         });
 

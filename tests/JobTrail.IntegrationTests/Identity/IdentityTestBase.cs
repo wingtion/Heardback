@@ -46,6 +46,7 @@ public abstract class IdentityTestBase(PostgresFixture postgres) : IAsyncLifetim
     {
         Client.Dispose();
         await Factory.DisposeAsync();
+        await postgres.DropDatabaseAsync(ConnectionString, CancellationToken);
         GC.SuppressFinalize(this);
     }
 

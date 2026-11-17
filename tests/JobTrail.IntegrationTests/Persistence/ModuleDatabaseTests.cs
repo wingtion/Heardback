@@ -29,10 +29,14 @@ public sealed class ModuleDatabaseTests(PostgresFixture postgres)
     public async Task Startup_WithMigrationsEnabled_CreatesIdentityTables()
     {
         var connectionString = await postgres.CreateDatabaseAsync(CancellationToken);
-        await using var factory = new ApiFactory { ConnectionString = connectionString };
-        _ = factory.Services;
+        List<string> tables;
+        await using (var factory = new ApiFactory { ConnectionString = connectionString })
+        {
+            _ = factory.Services;
+            tables = await ListTablesAsync(connectionString, schema: "identity");
+        }
 
-        var tables = await ListTablesAsync(connectionString, schema: "identity");
+        await postgres.DropDatabaseAsync(connectionString, CancellationToken);
 
         Assert.Equal(["__ef_migrations_history", "invite_codes", "refresh_tokens", "users"], tables);
     }
