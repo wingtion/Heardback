@@ -34,6 +34,24 @@ internal sealed class RefreshToken
 
     public DateTimeOffset? RevokedAt { get; private set; }
 
+    /// <summary>Set when this token was rotated; distinguishes rotation from logout.</summary>
+    public Guid? ReplacedByTokenId { get; private set; }
+
+    public RefreshTokenState GetState(DateTimeOffset now, TimeSpan reuseGracePeriod)
+    {
+        if (RevokedAt is not { } revokedAt)
+        {
+            return now < ExpiresAt ? RefreshTokenState.Active : RefreshTokenState.Expired;
+        }
+
+        if (ReplacedByTokenId is null)
+        {
+            return RefreshTokenState.Revoked;
+        }
+
+        return now - revokedAt <= reuseGracePeriod ? RefreshTokenState.RecentlyRotated : RefreshTokenState.Reused;
+    }
+
     public static IssuedRefreshToken Issue(Guid userId, Guid familyId, DateTimeOffset now, TimeSpan lifetime)
     {
         var plainToken = Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(TokenBytes));

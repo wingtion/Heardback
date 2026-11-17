@@ -43,6 +43,9 @@ public static class IdentityModule
 
         services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
         services.AddScoped<SessionIssuer>();
+        services.AddScoped<RefreshTokenRevoker>();
+        services.AddScoped<RefreshSessionHandler>();
+        services.AddScoped<LogoutHandler>();
         services.AddScoped<RegisterUserHandler>();
         services.AddScoped<LoginHandler>();
         services.AddScoped<GetCurrentUserHandler>();

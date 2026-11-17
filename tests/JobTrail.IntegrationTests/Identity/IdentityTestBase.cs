@@ -1,5 +1,6 @@
 using JobTrail.IntegrationTests.Api;
 using JobTrail.IntegrationTests.Postgres;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Time.Testing;
 
 namespace JobTrail.IntegrationTests.Identity;
@@ -37,4 +38,12 @@ public abstract class IdentityTestBase(PostgresFixture postgres) : IAsyncLifetim
 
     /// <summary>A second browser: same API and database, separate cookie jar.</summary>
     protected HttpClient CreateClient() => Factory.CreateClient();
+
+    /// <summary>A client that never stores cookies, for sending hand-picked refresh tokens.</summary>
+    protected HttpClient CreateCookielessClient() =>
+        Factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            HandleCookies = false,
+            BaseAddress = Factory.ClientOptions.BaseAddress,
+        });
 }

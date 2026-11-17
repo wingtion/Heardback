@@ -109,6 +109,21 @@ internal static class IdentityApi
         await response.Content.ReadFromJsonAsync<AuthResponseDto>(CancellationToken)
         ?? throw new InvalidOperationException("Empty auth response.");
 
+    /// <summary>Sends a refresh with an explicit cookie value, e.g. to replay an old token from a cookieless client.</summary>
+    public static async Task<HttpResponseMessage> RefreshWithTokenAsync(this HttpClient client, string refreshToken)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, RefreshUri);
+        request.Headers.Add("Cookie", $"{RefreshCookieName}={refreshToken}");
+        return await client.SendAsync(request, CancellationToken);
+    }
+
+    /// <summary>The refresh token value from a Set-Cookie header, or null when the cookie was not set.</summary>
+    public static string? ReadRefreshToken(this HttpResponseMessage response)
+    {
+        var value = response.FindRefreshCookieHeader()?.Split(';')[0].Split('=', 2)[1];
+        return string.IsNullOrEmpty(value) ? null : value;
+    }
+
     public static string? FindRefreshCookieHeader(this HttpResponseMessage response) =>
         response.Headers.TryGetValues("Set-Cookie", out var cookies)
             ? cookies.FirstOrDefault(cookie => cookie.StartsWith($"{RefreshCookieName}=", StringComparison.Ordinal))

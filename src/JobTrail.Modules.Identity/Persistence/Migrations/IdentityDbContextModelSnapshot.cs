@@ -93,6 +93,10 @@ namespace JobTrail.Modules.Identity.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("family_id");
 
+                    b.Property<Guid?>("ReplacedByTokenId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("replaced_by_token_id");
+
                     b.Property<DateTimeOffset?>("RevokedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("revoked_at");
