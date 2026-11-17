@@ -87,6 +87,25 @@ describe('authInterceptor', () => {
     await Promise.all([first, second]);
   });
 
+  it('a 401 arriving after the session was already refreshed retries without refreshing again', async () => {
+    const first = firstValueFrom(client.get(`${applicationsUrl}/1`));
+    const late = firstValueFrom(client.get(`${applicationsUrl}/2`));
+    const lateRequest = http.expectOne(`${applicationsUrl}/2`);
+
+    http.expectOne(`${applicationsUrl}/1`).flush(null, unauthorized);
+    http.expectOne(AUTH_API.refresh).flush(authResponse({ token: 'new-token' }));
+    http.expectOne(`${applicationsUrl}/1`).flush({});
+    await first;
+
+    lateRequest.flush(null, unauthorized);
+    http.expectNone(AUTH_API.refresh);
+    const retry = http.expectOne(`${applicationsUrl}/2`);
+    expect(retry.request.headers.get('Authorization')).toBe('Bearer new-token');
+    retry.flush({});
+
+    await late;
+  });
+
   it('when the refresh fails, passes on the original 401 and signs out', async () => {
     const result = firstValueFrom(client.get(applicationsUrl));
 

@@ -11,6 +11,7 @@ import {
   throwError,
 } from 'rxjs';
 import { AuthApi } from './auth-api';
+import { isRefreshSuperseded, isUnauthorized } from './auth-errors';
 import { AuthResponse, CurrentUser, LoginRequest, RegisterRequest } from './auth.models';
 
 /**
@@ -39,14 +40,21 @@ export class AuthService {
 
   /**
    * Gets a new access token using the refresh cookie. Concurrent callers share one request, because
-   * the server rotates the cookie and a second parallel refresh would be rejected.
+   * the server rotates the cookie and a second parallel refresh would be rejected. If another tab
+   * refreshed first, the cookie already holds its newer token, so the refresh is retried once.
+   * Only a 401 ends the session; rate limits, server errors and network failures leave it intact.
    */
   refresh(): Observable<void> {
     this.refreshInFlight ??= this.api.refresh().pipe(
+      catchError((error: unknown) =>
+        isRefreshSuperseded(error) ? this.api.refresh() : throwError(() => error),
+      ),
       tap((response) => this.session.set(response)),
       map(() => undefined),
       catchError((error: unknown) => {
-        this.session.set(null);
+        if (isUnauthorized(error)) {
+          this.session.set(null);
+        }
         return throwError(() => error);
       }),
       finalize(() => (this.refreshInFlight = null)),
