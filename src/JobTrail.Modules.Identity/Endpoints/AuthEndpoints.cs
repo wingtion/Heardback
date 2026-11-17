@@ -37,9 +37,12 @@ internal static class AuthEndpoints
             .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
+        // Anonymous and hits the database, so it shares the refresh budget.
         auth.MapPost("/logout", LogoutAsync)
             .WithSummary("End this session and clear the refresh cookie.")
-            .Produces(StatusCodes.Status204NoContent);
+            .RequireRateLimiting(AuthRateLimiting.RefreshPolicy)
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests);
     }
 
     private static async Task<IResult> RefreshAsync(

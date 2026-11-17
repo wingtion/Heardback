@@ -90,6 +90,55 @@ public sealed class AuthenticationTests(PostgresFixture postgres) : IdentityTest
     }
 
     [Fact]
+    public async Task Register_InviteCodeLongerThanLimit_ReturnsFieldError()
+    {
+        using var response = await Client.RegisterAsync("someone@example.com", new string('A', 65));
+
+        await AssertValidationProblemAsync(response, "inviteCode");
+    }
+
+    [Fact]
+    public async Task Register_DisplayNameTooLongOrBlank_ReturnsFieldError()
+    {
+        using var tooLong = await Client.RegisterAsync(
+            "admin@example.com",
+            ApiFactory.BootstrapAdminCode,
+            displayName: new string('x', 101));
+        using var blank = await Client.RegisterAsync(
+            "admin@example.com",
+            ApiFactory.BootstrapAdminCode,
+            displayName: "   ");
+
+        await AssertValidationProblemAsync(tooLong, "displayName");
+        await AssertValidationProblemAsync(blank, "displayName");
+    }
+
+    [Fact]
+    public async Task Login_MissingFields_ReturnsFieldErrorsForBoth()
+    {
+        using var response = await Client.PostAsJsonAsync(
+            new Uri("/api/auth/login", UriKind.Relative),
+            new { },
+            CancellationToken);
+        var problem = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>(CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Contains("email", problem!.Errors.Keys);
+        Assert.Contains("password", problem.Errors.Keys);
+    }
+
+    [Fact]
+    public async Task Login_MalformedJson_ReturnsBadRequestProblem()
+    {
+        using var content = new StringContent("{ not json", System.Text.Encoding.UTF8, "application/json");
+
+        using var response = await Client.PostAsync(new Uri("/api/auth/login", UriKind.Relative), content, CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(ProblemJson, response.Content.Headers.ContentType?.MediaType);
+    }
+
+    [Fact]
     public async Task Login_CorrectCredentialsAnyEmailCasing_ReturnsTokenAndRefreshCookie()
     {
         await Client.RegisterAdminAsync("admin@example.com");

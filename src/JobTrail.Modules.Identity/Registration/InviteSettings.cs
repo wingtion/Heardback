@@ -19,6 +19,9 @@ internal sealed class InviteSettings
     public string? NormalizedBootstrapAdminCode =>
         string.IsNullOrWhiteSpace(BootstrapAdminCode) ? null : InviteCode.Normalize(BootstrapAdminCode);
 
-    public bool HasStrongBootstrapCode() =>
-        NormalizedBootstrapAdminCode is null || NormalizedBootstrapAdminCode.Length >= InviteCode.CodeLength;
+    /// <summary>Long enough to resist guessing, and short enough to pass request validation.</summary>
+    public bool HasValidBootstrapCode() =>
+        BootstrapAdminCode is null
+        || (NormalizedBootstrapAdminCode?.Length >= InviteCode.CodeLength
+            && BootstrapAdminCode.Length <= InviteCode.MaxInputLength);
 }

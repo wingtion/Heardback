@@ -6,6 +6,9 @@ namespace JobTrail.Modules.Identity.Domain;
 internal sealed class InviteCode
 {
     public const int CodeLength = 12;
+
+    /// <summary>Longest accepted input: room for separators and spacing, and for a longer bootstrap code.</summary>
+    public const int MaxInputLength = 64;
     private const int GroupLength = 4;
     private const char GroupSeparator = '-';
 

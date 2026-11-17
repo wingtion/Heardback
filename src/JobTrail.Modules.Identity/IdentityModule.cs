@@ -32,8 +32,9 @@ public static class IdentityModule
             .BindConfiguration(InviteSettings.SectionName)
             .ValidateDataAnnotations()
             .Validate(
-                settings => settings.HasStrongBootstrapCode(),
-                $"{InviteSettings.SectionName}:BootstrapAdminCode must have at least {InviteCode.CodeLength} characters.")
+                settings => settings.HasValidBootstrapCode(),
+                $"{InviteSettings.SectionName}:BootstrapAdminCode must have {InviteCode.CodeLength} to "
+                + $"{InviteCode.MaxInputLength} characters.")
             .ValidateOnStart();
 
         services.AddHttpContextAccessor();

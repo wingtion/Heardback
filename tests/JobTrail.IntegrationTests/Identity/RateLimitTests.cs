@@ -81,6 +81,21 @@ public sealed class RateLimitTests(PostgresFixture postgres) : IdentityTestBase(
     }
 
     [Fact]
+    public async Task Logout_MoreThanRefreshLimitFromOneIp_ReturnsTooManyRequests()
+    {
+        using var client = ClientFrom(AttackerIp);
+        for (var attempt = 0; attempt < RefreshLimit; attempt++)
+        {
+            using var allowed = await client.LogoutAsync();
+            Assert.Equal(HttpStatusCode.NoContent, allowed.StatusCode);
+        }
+
+        using var blocked = await client.LogoutAsync();
+
+        Assert.Equal(HttpStatusCode.TooManyRequests, blocked.StatusCode);
+    }
+
+    [Fact]
     public async Task Me_ManyRequests_IsNotRateLimited()
     {
         var admin = await ClientFrom(OtherIp).RegisterAdminAsync();

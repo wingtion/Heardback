@@ -8,4 +8,4 @@ internal sealed record RegisterRequest(
     [property: Required, StringLength(PasswordPolicy.MaxLength, MinimumLength = PasswordPolicy.MinLength)]
     string Password,
     [property: Required, MaxLength(User.DisplayNameMaxLength)] string DisplayName,
-    [property: Required] string InviteCode);
+    [property: Required, MaxLength(Domain.InviteCode.MaxInputLength)] string InviteCode);
