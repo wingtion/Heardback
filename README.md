@@ -4,8 +4,8 @@ A web app for job seekers to track every application in one place and get insigh
 which channels actually get responses, how long companies take to reply, how well a CV matches a
 posting, and community signals such as postings where nobody ever hears back.
 
-> **Status:** Phase 0 (skeleton). See [PLAN.md](PLAN.md) for the roadmap and [CLAUDE.md](CLAUDE.md)
-> for the engineering rules.
+> **Status:** Phase 1 (identity and invites) done; next is the design checkpoint. See [PLAN.md](PLAN.md)
+> for the roadmap and [CLAUDE.md](CLAUDE.md) for the engineering rules.
 
 ## Tech stack
 
@@ -18,19 +18,60 @@ posting, and community signals such as postings where nobody ever hears back.
 
 Prerequisites: .NET 10 SDK, Node 22 (see `.nvmrc`), Docker.
 
+### One-time setup
+
 ```bash
-# 1. Database
+# Database credentials for docker compose
 cp .env.example .env              # then set POSTGRES_PASSWORD
-docker compose up -d
 
-# 2. API on http://localhost:5080 (API reference at /scalar, health at /health)
-dotnet run --project src/JobTrail.Api
-
-# 3. Frontend on http://localhost:4200
-cd web
-npm ci
-npm start
+# API secrets (stored outside the repo with dotnet user-secrets)
+cd src/JobTrail.Api
+dotnet user-secrets set "Database:ConnectionString" \
+  "Host=localhost;Port=5432;Database=jobtrail;Username=jobtrail;Password=<POSTGRES_PASSWORD>"
+dotnet user-secrets set "Identity:Tokens:SigningKey" "$(openssl rand -base64 48)"
+dotnet user-secrets set "Identity:Invites:BootstrapAdminCode" "$(openssl rand -hex 8)"
+cd ../..
 ```
+
+### Run
+
+```bash
+docker compose up -d                       # Postgres 18
+dotnet run --project src/JobTrail.Api      # API on http://localhost:5080 (Scalar at /scalar); migrates on start
+cd web && npm ci && npm start              # app on http://localhost:4200, proxies /api to the API
+```
+
+### First admin
+
+Registration needs an invite code. The very first account uses the bootstrap code from user-secrets
+(`dotnet user-secrets list --project src/JobTrail.Api`) and becomes the admin. After that the bootstrap
+code stops working. The admin then creates invite codes with `POST /api/admin/invite-codes`. Until the
+UI exists, use Scalar (`http://localhost:5080/scalar`) or curl:
+
+```bash
+curl -i http://localhost:5080/api/auth/register -H "Content-Type: application/json" \
+  -d '{"email":"you@example.com","password":"a long passphrase","displayName":"You","inviteCode":"<bootstrap code>"}'
+```
+
+## API overview
+
+| Endpoint | Access | Purpose |
+|---|---|---|
+| `POST /api/auth/register` | anonymous | Create an account with an invite code; signs in |
+| `POST /api/auth/login` | anonymous | Sign in; returns an access token, sets the refresh cookie |
+| `POST /api/auth/refresh` | refresh cookie | New access token; rotates the refresh cookie |
+| `POST /api/auth/logout` | refresh cookie | End this session |
+| `GET /api/me` | signed in | Current user's profile |
+| `POST /api/admin/invite-codes` | admin | Create a single-use invite code |
+| `GET /api/admin/invite-codes` | admin | List invite codes (paginated) |
+| `GET /health` | anonymous | Liveness |
+
+Login and register share a per-IP budget of 10 requests per minute; refresh and logout allow 30 (429 with
+`Retry-After` beyond that). A session lasts 14 days from the last refresh, and never more than 60 days
+from sign-in.
+
+`ClientIp:Source` tells the API where the real client IP comes from. Development uses `Direct`. Outside
+Development it has no default, so the API will not start until you set it (see ADR-0002).
 
 ## Tests and checks
 
@@ -44,6 +85,16 @@ npm run lint
 npm run format:check
 ```
 
+### Adding a database migration
+
+```powershell
+./scripts/Add-Migration.ps1 -Module Identity -Name DescriptiveName
+```
+
+The script runs `dotnet ef` and makes the generated classes `internal`, so modules keep exposing only
+their contracts. Review the migration before committing, and never edit one that has been applied. A
+test fails if a module's model has changes that no migration captures yet.
+
 ## Architecture
 
 JobTrail is a **modular monolith**: one deployable API, split into modules with hard boundaries
@@ -51,24 +102,33 @@ JobTrail is a **modular monolith**: one deployable API, split into modules with 
 
 ```
 src/
-  JobTrail.Api/                  host: DI, endpoints, middleware
-  JobTrail.Modules.Identity/     users, invite codes, tokens
+  JobTrail.Api/                  host: DI, middleware, maps module endpoints
+  JobTrail.Modules.Identity/     users, invite codes, sessions
   JobTrail.Modules.Applications/ applications, status history, notes, reminders
   JobTrail.Modules.Postings/     shared job postings, dedup
   JobTrail.Modules.Matching/     CV text, skills, match results
   JobTrail.Modules.Insights/     personal stats, community aggregates
   JobTrail.Infrastructure.Llm/   LLM client abstraction and providers
-  JobTrail.Shared/               common abstractions
+  JobTrail.Shared/               Result type, current user, paging, module DbContext base, validation
 tests/
   JobTrail.UnitTests/            unit and architecture tests
   JobTrail.IntegrationTests/     API and database tests (Testcontainers)
 web/                             Angular app
+docs/adr/                        architecture decision records
 ```
 
-- Each module exposes only its `Contracts` namespace and one registration class; everything else is
-  `internal`. Architecture tests fail the build if a module uses another module's non-contract types.
-- Each module will own its own Postgres schema; modules never read each other's tables.
-- Errors are returned as RFC 9457 ProblemDetails; configuration is validated at startup.
+- **Module boundaries:** each module exposes only its `Contracts` namespace and one registration class;
+  everything else is `internal`. Architecture tests fail the build if a module uses another module's
+  non-contract types.
+- **Data:** each module owns its own Postgres schema (snake_case) and never reads another module's tables.
+- **Per-user isolation:** module DbContexts filter every user-owned entity to the current user and
+  refuse writes to other users' rows. Architecture tests catch entities that skip this.
+- **Auth** ([ADR-0002](docs/adr/0002-authentication-and-sessions.md)): invite-only registration,
+  15-minute JWT access tokens kept in memory, and rotating refresh tokens in an httpOnly cookie.
+  Sessions have an absolute 60-day limit, reusing a rotated token signs the user out everywhere, and
+  the auth endpoints are rate limited per IP. Every endpoint requires sign-in unless marked anonymous.
+- **Errors and validation** ([ADR-0003](docs/adr/0003-request-validation.md)): RFC 9457 ProblemDetails
+  everywhere, 400 with field-level errors for invalid requests, and configuration validated at startup.
 
 ## How this was built
 

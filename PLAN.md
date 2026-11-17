@@ -108,6 +108,7 @@ Each phase ends in a working, tested, committed state. Work is split into small 
 - Current-user abstraction; every query in other modules filtered by user.
 - Angular plumbing only: auth service, auth guard, HTTP interceptor (token attach + refresh). **Login/register pages wait for the design checkpoint.**
 - Admin (the author) can generate invite codes.
+- Auth hardening: rate limiting on login, register and refresh (per client IP); absolute session lifetime on top of the sliding refresh; refresh-token reuse revokes all of the user's sessions.
 
 **Done when:** integration tests prove a user cannot read another user's data.
 
@@ -160,10 +161,11 @@ Nothing visual is built until this is done (see section 8a). Backend work in lat
 
 ### Phase 7 — Privacy & hardening
 - Account deletion, data export, privacy page.
-- Rate limiting on auth and LLM endpoints, global error handling, structured logs.
+- Rate limiting on LLM endpoints, global error handling, structured logs. (Auth endpoint rate limiting was built in Phase 1.)
 
 ### Phase 8 — Deploy & showcase
 - API on Fly.io, frontend on Netlify, managed Postgres, environment config.
+- Client IP for rate limiting: set `ClientIp` for the real topology, verifying requests came through the proxy (e.g. Netlify signed proxy rewrites) before trusting its forwarded IP. The API refuses to start until this is configured (ADR-0002).
 - Demo account with seeded sample data.
 - README: what it is, architecture diagram, screenshots, how to run, design decisions.
 
@@ -207,6 +209,8 @@ The list is not final. Screens added later go through the same flow: design firs
 - If something in this plan turns out to be wrong or a better option appears, **say so and propose the fix in the current step** rather than leaving it for later.
 - Ask before adding a new dependency, changing the architecture, or deviating from the decisions in section 2.
 - Never commit secrets.
+- **Protections ship with the feature.** Security and correctness protections are built in the same phase as the feature they protect, never deferred to a later phase. Any trade-off that leaves a known gap needs the author's explicit approval first (see CLAUDE.md).
+- **Independent review before a phase is done.** Before declaring a phase done, run an independent review with a fresh subagent that has not seen the work, fix its findings in the same phase, and only then ask the author to open the PR (see CLAUDE.md).
 
 ## 11. Open questions (decide when we get there)
 
