@@ -4,7 +4,8 @@
 
 .DESCRIPTION
   Generated migration classes are public by default, but modules may only expose their Contracts
-  (ADR-0001), so this script makes them internal after generating. Review the migration before committing.
+  (ADR-0001), so this script makes the new migration and the model snapshot internal after generating.
+  Existing migrations are never touched. Review the migration before committing.
 #>
 param(
     [Parameter(Mandatory)] [string] $Module,
@@ -24,11 +25,16 @@ dotnet ef migrations add $Name `
     --output-dir Persistence/Migrations
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
-Get-ChildItem $migrations -Filter *.cs | ForEach-Object {
-    $content = [IO.File]::ReadAllText($_.FullName)
-    $content = $content.Replace('public partial class', 'internal partial class').Replace("`r`n", "`n")
-    [IO.File]::WriteAllText($_.FullName, $content, $utf8NoBom)
+# Only the files dotnet ef just wrote: the new migration, its designer file and the regenerated snapshot.
+$generated = Get-ChildItem $migrations -Filter *.cs | Where-Object {
+    $_.Name -like "*_$Name.cs" -or $_.Name -like "*_$Name.Designer.cs" -or $_.Name -like '*ModelSnapshot.cs'
 }
 
-Write-Host "Migration '$Name' added to $Module. Review it before committing."
+$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+foreach ($file in $generated) {
+    $content = [IO.File]::ReadAllText($file.FullName)
+    $content = $content.Replace('public partial class', 'internal partial class').Replace("`r`n", "`n")
+    [IO.File]::WriteAllText($file.FullName, $content, $utf8NoBom)
+}
+
+Write-Host "Migration '$Name' added to $Module ($($generated.Count) files made internal). Review it before committing."
