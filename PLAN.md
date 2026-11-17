@@ -165,6 +165,7 @@ Nothing visual is built until this is done (see section 8a). Backend work in lat
 
 ### Phase 8 — Deploy & showcase
 - API on Fly.io, frontend on Netlify, managed Postgres, environment config.
+- Client IP for rate limiting: set `ClientIp` for the real topology, verifying requests came through the proxy (e.g. Netlify signed proxy rewrites) before trusting its forwarded IP. The API refuses to start until this is configured (ADR-0002).
 - Demo account with seeded sample data.
 - README: what it is, architecture diagram, screenshots, how to run, design decisions.
 

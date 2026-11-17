@@ -66,9 +66,12 @@ curl -i http://localhost:5080/api/auth/register -H "Content-Type: application/js
 | `GET /api/admin/invite-codes` | admin | List invite codes (paginated) |
 | `GET /health` | anonymous | Liveness |
 
-Login and register share a per-IP budget of 10 requests per minute and refresh allows 30 (429 with
+Login and register share a per-IP budget of 10 requests per minute; refresh and logout allow 30 (429 with
 `Retry-After` beyond that). A session lasts 14 days from the last refresh, and never more than 60 days
 from sign-in.
+
+`ClientIp:Source` tells the API where the real client IP comes from. Development uses `Direct`. Outside
+Development it has no default, so the API will not start until you set it (see ADR-0002).
 
 ## Tests and checks
 
