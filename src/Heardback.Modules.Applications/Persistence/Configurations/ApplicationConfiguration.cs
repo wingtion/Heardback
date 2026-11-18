@@ -23,8 +23,16 @@ internal sealed class ApplicationConfiguration : IEntityTypeConfiguration<Applic
         builder.Property(application => application.Status).HasConversion<string>().HasMaxLength(EnumMaxLength);
         builder.Property(application => application.Version).IsRowVersion();
 
-        // One application per user per posting; also stops a double submit from creating two.
+        builder.Property(application => application.NormalizedUrl).HasMaxLength(PostingLimits.UrlMaxLength);
+        builder.Property(application => application.ContentHash)
+            .HasMaxLength(PostingKeys.ContentHashLength)
+            .IsFixedLength();
+
+        // One application per user per posting, per link and per posting text; also stops a double submit from
+        // creating two. NULLs are distinct, so applications without a link or text never collide.
         builder.HasIndex(application => new { application.UserId, application.PostingId }).IsUnique();
+        builder.HasIndex(application => new { application.UserId, application.NormalizedUrl }).IsUnique();
+        builder.HasIndex(application => new { application.UserId, application.ContentHash }).IsUnique();
         builder.HasIndex(application => new { application.UserId, application.UpdatedAt });
 
         builder.HasMany(application => application.Events)

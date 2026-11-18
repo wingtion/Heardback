@@ -17,20 +17,20 @@ internal sealed partial class CreateApplicationHandler(
         CreateApplicationRequest request,
         CancellationToken cancellationToken)
     {
-        var details = request.ToDetails();
-        var posting = await postingLinks.ResolveUntrackedAsync(details, exceptApplicationId: null, cancellationToken);
-        if (!posting.IsSuccess)
-        {
-            return posting.Error;
-        }
-
-        var created = Application.Create(details, posting.Value, timeProvider.GetUtcNow());
+        // Domain checks come first, so a refused request never writes to the shared posting catalogue.
+        var created = Application.Create(request.ToDetails(), timeProvider.GetUtcNow());
         if (!created.IsSuccess)
         {
             return created.Error;
         }
 
         var application = created.Value;
+        var linked = await postingLinks.LinkAsync(application, cancellationToken);
+        if (!linked.IsSuccess)
+        {
+            return linked.Error;
+        }
+
         dbContext.Applications.Add(application);
         var saved = await dbContext.SaveApplicationAsync(cancellationToken);
         if (!saved.IsSuccess)

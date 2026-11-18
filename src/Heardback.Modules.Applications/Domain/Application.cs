@@ -1,3 +1,4 @@
+using Heardback.Modules.Postings.Contracts;
 using Heardback.Shared.Persistence;
 using Heardback.Shared.Results;
 
@@ -21,7 +22,10 @@ internal sealed class Application : IUserOwned
 
     public Guid UserId { get; private set; }
 
-    /// <summary>The shared posting in the Postings module (no foreign key across module schemas).</summary>
+    /// <summary>
+    /// The shared posting in the Postings module (no foreign key across module schemas). Set by
+    /// <see cref="LinkTo"/> before the first save.
+    /// </summary>
     public Guid PostingId { get; private set; }
 
     public string Company { get; private set; } = string.Empty;
@@ -31,6 +35,15 @@ internal sealed class Application : IUserOwned
     public string? Url { get; private set; }
 
     public string? PostingText { get; private set; }
+
+    /// <summary>
+    /// Comparison key of <see cref="Url"/> (<see cref="PostingKeys.NormalizeUrl"/>). Unique per user, so "already
+    /// tracked" never depends on what other users submitted to the shared catalogue.
+    /// </summary>
+    public string? NormalizedUrl { get; private set; }
+
+    /// <summary>Fingerprint of company, role and posting text (<see cref="PostingKeys.ContentHash"/>); unique per user.</summary>
+    public string? ContentHash { get; private set; }
 
     public ApplicationChannel Channel { get; private set; }
 
@@ -54,7 +67,7 @@ internal sealed class Application : IUserOwned
 
     public IReadOnlyList<ApplicationEvent> Events => _events;
 
-    public static Result<Application> Create(ApplicationDetails details, Guid postingId, DateTimeOffset now)
+    public static Result<Application> Create(ApplicationDetails details, DateTimeOffset now)
     {
         ArgumentNullException.ThrowIfNull(details);
 
@@ -68,7 +81,7 @@ internal sealed class Application : IUserOwned
             Id = Guid.CreateVersion7(now),
             CreatedAt = now,
         };
-        application.ApplyDetails(details, postingId, now);
+        application.ApplyDetails(details, now);
         application._events.Add(ApplicationEvent.Submission(application.Id, details.AppliedOn, now));
         application.RefreshFromTimeline();
 
@@ -76,7 +89,7 @@ internal sealed class Application : IUserOwned
     }
 
     /// <summary>Changes the details. Needs <see cref="Events"/> loaded, because the submission event moves with the applied date.</summary>
-    public Result Edit(ApplicationDetails details, string? notes, Guid postingId, DateTimeOffset now)
+    public Result Edit(ApplicationDetails details, string? notes, DateTimeOffset now)
     {
         ArgumentNullException.ThrowIfNull(details);
 
@@ -93,7 +106,7 @@ internal sealed class Application : IUserOwned
             return ApplicationsErrors.AppliedAfterFirstUpdate(firstUpdate.Value);
         }
 
-        ApplyDetails(details, postingId, now);
+        ApplyDetails(details, now);
         Notes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim();
         foreach (var timelineEvent in _events)
         {
@@ -145,13 +158,17 @@ internal sealed class Application : IUserOwned
         : ApplicationDates.IsTooEarly(appliedOn) ? ApplicationsErrors.AppliedOnTooEarly
         : null;
 
-    private void ApplyDetails(ApplicationDetails details, Guid postingId, DateTimeOffset now)
+    /// <summary>Points the application at the shared posting its details match.</summary>
+    public void LinkTo(Guid postingId) => PostingId = postingId;
+
+    private void ApplyDetails(ApplicationDetails details, DateTimeOffset now)
     {
-        PostingId = postingId;
         Company = details.Company.Trim();
         Role = details.Role.Trim();
         Url = string.IsNullOrWhiteSpace(details.Url) ? null : details.Url.Trim();
         PostingText = string.IsNullOrWhiteSpace(details.PostingText) ? null : details.PostingText.Trim();
+        NormalizedUrl = PostingKeys.NormalizeUrl(Url);
+        ContentHash = PostingKeys.ContentHash(Company, Role, PostingText);
         Channel = details.Channel;
         AppliedOn = details.AppliedOn;
         UpdatedAt = now;

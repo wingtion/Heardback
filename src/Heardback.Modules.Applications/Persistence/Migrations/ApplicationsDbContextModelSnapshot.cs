@@ -45,6 +45,12 @@ namespace Heardback.Modules.Applications.Persistence.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("company");
 
+                    b.Property<string>("ContentHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("character(64)")
+                        .HasColumnName("content_hash")
+                        .IsFixedLength();
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -52,6 +58,11 @@ namespace Heardback.Modules.Applications.Persistence.Migrations
                     b.Property<DateOnly>("LastActivityOn")
                         .HasColumnType("date")
                         .HasColumnName("last_activity_on");
+
+                    b.Property<string>("NormalizedUrl")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)")
+                        .HasColumnName("normalized_url");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(4000)
@@ -100,6 +111,14 @@ namespace Heardback.Modules.Applications.Persistence.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_applications");
+
+                    b.HasIndex("UserId", "ContentHash")
+                        .IsUnique()
+                        .HasDatabaseName("ix_applications_user_id_content_hash");
+
+                    b.HasIndex("UserId", "NormalizedUrl")
+                        .IsUnique()
+                        .HasDatabaseName("ix_applications_user_id_normalized_url");
 
                     b.HasIndex("UserId", "PostingId")
                         .IsUnique()

@@ -35,43 +35,25 @@ internal sealed class UpdateApplicationHandler(
         // this read and the save is detected too.
         dbContext.Entry(application).Property(candidate => candidate.Version).OriginalValue = request.Version!.Value;
 
-        var details = request.ToDetails();
-        var postingId = await ResolvePostingAsync(application, details, cancellationToken);
-        if (!postingId.IsSuccess)
-        {
-            return postingId.Error;
-        }
-
-        var edited = application.Edit(details, request.Notes, postingId.Value, timeProvider.GetUtcNow());
+        var previousKeys = (application.NormalizedUrl, application.ContentHash);
+        var edited = application.Edit(request.ToDetails(), request.Notes, timeProvider.GetUtcNow());
         if (!edited.IsSuccess)
         {
             return edited.Error;
         }
 
+        // The shared posting is never edited (ADR-0004). When the keys that identify the posting change, the
+        // application is linked to whichever posting matches now; otherwise it keeps its posting.
+        if (previousKeys != (application.NormalizedUrl, application.ContentHash))
+        {
+            var linked = await postingLinks.LinkAsync(application, cancellationToken);
+            if (!linked.IsSuccess)
+            {
+                return linked.Error;
+            }
+        }
+
         var saved = await dbContext.SaveApplicationAsync(cancellationToken);
         return saved.IsSuccess ? ApplicationResponse.From(application, noResponse) : saved.Error;
     }
-
-    // The shared posting is never edited (ADR-0004). When what identifies the posting changes, the application
-    // is linked to whichever posting matches now; otherwise it keeps its posting.
-    private async Task<Result<Guid>> ResolvePostingAsync(
-        Application application,
-        ApplicationDetails details,
-        CancellationToken cancellationToken)
-    {
-        var identifiesSamePosting = SameText(application.Url, details.Url)
-            && SameText(application.PostingText, details.PostingText)
-            && SameText(application.Company, details.Company)
-            && SameText(application.Role, details.Role);
-
-        return identifiesSamePosting
-            ? application.PostingId
-            : await postingLinks.ResolveUntrackedAsync(details, application.Id, cancellationToken);
-    }
-
-    private static bool SameText(string? stored, string? submitted) =>
-        string.Equals(
-            string.IsNullOrWhiteSpace(stored) ? null : stored.Trim(),
-            string.IsNullOrWhiteSpace(submitted) ? null : submitted.Trim(),
-            StringComparison.Ordinal);
 }

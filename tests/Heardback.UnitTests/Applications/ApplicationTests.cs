@@ -6,7 +6,6 @@ public sealed class ApplicationTests
 {
     private static readonly DateTimeOffset Now = new(2026, 11, 18, 9, 0, 0, TimeSpan.Zero);
     private static readonly DateOnly Today = new(2026, 11, 18);
-    private static readonly Guid PostingId = Guid.NewGuid();
 
     [Fact]
     public void Create_ValidDetails_StartsAppliedWithASubmissionEvent()
@@ -26,7 +25,7 @@ public sealed class ApplicationTests
     {
         var details = new ApplicationDetails("  Northwind  ", " Backend ", "   ", "  ", ApplicationChannel.Referral, Today);
 
-        var application = Application.Create(details, PostingId, Now).Value;
+        var application = Application.Create(details, Now).Value;
 
         Assert.Equal("Northwind", application.Company);
         Assert.Equal("Backend", application.Role);
@@ -37,7 +36,7 @@ public sealed class ApplicationTests
     [Fact]
     public void Create_TomorrowInUtc_IsAllowedForTimeZonesAheadOfUtc()
     {
-        var result = Application.Create(Details(Today.AddDays(1)), PostingId, Now);
+        var result = Application.Create(Details(Today.AddDays(1)), Now);
 
         Assert.True(result.IsSuccess);
     }
@@ -45,7 +44,7 @@ public sealed class ApplicationTests
     [Fact]
     public void Create_TwoDaysAhead_ReturnsDateInFutureError()
     {
-        var result = Application.Create(Details(Today.AddDays(2)), PostingId, Now);
+        var result = Application.Create(Details(Today.AddDays(2)), Now);
 
         Assert.False(result.IsSuccess);
         Assert.Equal("applications.date_in_future", result.Error.Code);
@@ -139,7 +138,7 @@ public sealed class ApplicationTests
     {
         var application = Create(Today.AddDays(-3));
 
-        var result = application.Edit(Details(Today.AddDays(-5)), "Ask about on-call", PostingId, Now);
+        var result = application.Edit(Details(Today.AddDays(-5)), "Ask about on-call", Now);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(Today.AddDays(-5), Assert.Single(application.Events).OccurredOn);
@@ -152,7 +151,7 @@ public sealed class ApplicationTests
     {
         var application = Create(Today.AddDays(-3));
 
-        var result = application.Edit(Details(Today.AddDays(2)) with { Company = "Changed" }, null, PostingId, Now);
+        var result = application.Edit(Details(Today.AddDays(2)) with { Company = "Changed" }, null, Now);
 
         Assert.False(result.IsSuccess);
         Assert.Equal("Northwind Logistics", application.Company);
@@ -164,7 +163,7 @@ public sealed class ApplicationTests
         var application = Create(new DateOnly(2026, 11, 8));
         application.AddEvent(ApplicationStatus.Interview, new DateOnly(2026, 11, 12), null, Now);
 
-        var result = application.Edit(Details(new DateOnly(2026, 11, 16)), null, PostingId, Now);
+        var result = application.Edit(Details(new DateOnly(2026, 11, 16)), null, Now);
 
         Assert.Equal("applications.applied_after_first_update", result.Error!.Code);
         Assert.Equal(["Pick a date on or before your first update (12 Nov 2026)"], result.Error.FieldErrors["appliedOn"]);
@@ -178,7 +177,7 @@ public sealed class ApplicationTests
         var application = Create(Today.AddDays(-10));
         application.AddEvent(null, Today.AddDays(-4), "Followed up", Now);
 
-        var result = application.Edit(Details(Today.AddDays(-4)), null, PostingId, Now);
+        var result = application.Edit(Details(Today.AddDays(-4)), null, Now);
 
         Assert.True(result.IsSuccess);
     }
@@ -198,7 +197,7 @@ public sealed class ApplicationTests
     [Fact]
     public void Create_AppliedBefore2000_ReturnsDateTooEarlyError()
     {
-        var result = Application.Create(Details(new DateOnly(1999, 12, 31)), PostingId, Now);
+        var result = Application.Create(Details(new DateOnly(1999, 12, 31)), Now);
 
         Assert.Equal("applications.date_too_early", result.Error!.Code);
         Assert.Equal(["Pick a date after 1 January 2000"], result.Error.FieldErrors["appliedOn"]);
@@ -207,7 +206,7 @@ public sealed class ApplicationTests
     [Fact]
     public void Create_AppliedOnFirstJanuary2000_IsAllowed()
     {
-        Assert.True(Application.Create(Details(new DateOnly(2000, 1, 1)), PostingId, Now).IsSuccess);
+        Assert.True(Application.Create(Details(new DateOnly(2000, 1, 1)), Now).IsSuccess);
     }
 
     [Theory]
@@ -244,7 +243,7 @@ public sealed class ApplicationTests
             application.Status, application.LastActivityOn, Today, thresholdDays: 14) is not null);
     }
 
-    private static Application Create(DateOnly appliedOn) => Application.Create(Details(appliedOn), PostingId, Now).Value;
+    private static Application Create(DateOnly appliedOn) => Application.Create(Details(appliedOn), Now).Value;
 
     private static ApplicationDetails Details(DateOnly appliedOn) =>
         new("Northwind Logistics", "Backend Engineer (.NET)", null, null, ApplicationChannel.LinkedInEasyApply, appliedOn);

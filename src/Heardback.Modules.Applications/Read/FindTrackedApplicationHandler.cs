@@ -11,17 +11,20 @@ internal sealed class FindTrackedApplicationHandler(
     IJobPostings postings,
     NoResponseClock noResponse)
 {
-    /// <summary>The current user's application for the posting behind this link, or null.</summary>
+    /// <summary>
+    /// The current user's application for this link: one with the same link key, or one linked to the posting
+    /// that has this link (the same check adding the link would make). Both queries always run, so the response
+    /// time does not tell whether some other user has submitted the link.
+    /// </summary>
     public async Task<TrackedApplicationResponse?> HandleAsync(string url, CancellationToken cancellationToken)
     {
-        if (await postings.FindIdByUrlAsync(url, cancellationToken) is not { } postingId)
-        {
-            return null;
-        }
+        var normalizedUrl = PostingKeys.NormalizeUrl(url);
+        var postingId = await postings.FindIdByUrlAsync(url, cancellationToken);
 
         return await dbContext.Applications
             .AsNoTracking()
-            .Where(application => application.PostingId == postingId)
+            .Where(application => application.NormalizedUrl == normalizedUrl
+                || (postingId != null && application.PostingId == postingId))
             .Select(application => new TrackedApplicationResponse(
                 application.Id,
                 application.Company,

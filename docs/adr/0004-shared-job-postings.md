@@ -1,7 +1,8 @@
 # ADR-0004: Shared job postings with per-application copies
 
 - **Status:** Accepted
-- **Date:** 2026-11-18
+- **Date:** 2026-11-18 (revised the same day after the independent Phase 2 review: per-user duplicate keys,
+  checks before catalogue writes, cleaned stored links)
 
 ## Context
 
@@ -43,6 +44,15 @@ community data. When a user edits the link or text, the application is linked ag
 now matches (a new one if none does). If that posting is one the user already tracks in another
 application, the edit is refused ("Already tracked").
 
+**"Already tracked" is decided per user** (revised after the independent review). Each application also
+stores its own link key and content hash, computed with the same rules (`PostingKeys` in the Postings
+contracts), with unique indexes on (user, link key), (user, content hash) and (user, posting). Before the
+shared catalogue is touched, a submission is checked against the user's own keys. The posting id is checked
+after resolving as well, because a submission can match a posting through another user's link or text.
+This way the result never depends on what other users happened to submit first: a posting matched by text
+does not record the second link, so a catalogue-only check missed it. The domain checks (dates, version)
+also run before the catalogue is touched, so a refused request leaves no shared posting behind.
+
 **No fetching.** The server never downloads posting pages (PLAN.md: no scraping). This also rules out
 server-side request forgery through user-supplied links.
 
@@ -57,4 +67,7 @@ server-side request forgery through user-supplied links.
   posting may take the text of a later submission.
 - Matching only by link misses the same job posted on two sites without text. The content hash covers the
   case where the text is pasted.
-- `times_added` counts submissions, including re-links after an edit, so it slightly overcounts.
+- `times_added` counts submissions, including re-links after an edit, so it slightly overcounts. A
+  submission refused only by the posting-id check (it matched the user's own posting through someone else's
+  link or text), or one that loses a race on the unique indexes, is counted too.
+- The shared posting stores the first link without credentials, tracking parameters or fragment.

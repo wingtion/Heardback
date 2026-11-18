@@ -6,7 +6,13 @@ namespace Heardback.Modules.Applications.Persistence;
 
 internal static class ApplicationSave
 {
-    private const string UserPostingIndex = "ix_applications_user_id_posting_id";
+    private static readonly HashSet<string> OneApplicationPerPostingIndexes =
+    [
+        "ix_applications_user_id_posting_id",
+        "ix_applications_user_id_normalized_url",
+        "ix_applications_user_id_content_hash",
+    ];
+
     private const string EventApplicationForeignKey = "fk_application_events_applications_application_id";
 
     /// <summary>
@@ -37,8 +43,8 @@ internal static class ApplicationSave
     private static Error? ToExpectedError(DbUpdateException exception) =>
         exception.InnerException switch
         {
-            PostgresException { SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: UserPostingIndex } =>
-                ApplicationsErrors.AlreadyTracked,
+            PostgresException { SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: { } index }
+                when OneApplicationPerPostingIndexes.Contains(index) => ApplicationsErrors.AlreadyTracked,
             PostgresException
             {
                 SqlState: PostgresErrorCodes.ForeignKeyViolation,
