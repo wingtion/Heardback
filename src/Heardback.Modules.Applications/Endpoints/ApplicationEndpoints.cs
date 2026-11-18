@@ -2,6 +2,7 @@ using Heardback.Modules.Applications.Create;
 using Heardback.Modules.Applications.Delete;
 using Heardback.Modules.Applications.Read;
 using Heardback.Modules.Applications.Responses;
+using Heardback.Modules.Applications.Update;
 using Heardback.Shared.Http;
 using Heardback.Shared.Paging;
 using Microsoft.AspNetCore.Builder;
@@ -48,6 +49,13 @@ internal static class ApplicationEndpoints
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status409Conflict);
 
+        applications.MapPut("/{id:guid}", UpdateAsync)
+            .WithSummary("Edit an application. Send the version it was read with; 409 when it changed since.")
+            .Produces<ApplicationResponse>()
+            .ProducesValidationProblem()
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict);
+
         applications.MapDelete("/{id:guid}", DeleteAsync)
             .WithSummary("Delete an application and its timeline.")
             .Produces(StatusCodes.Status204NoContent)
@@ -92,6 +100,16 @@ internal static class ApplicationEndpoints
         return result.IsSuccess
             ? TypedResults.Created($"{BasePath}/{result.Value.Id}", result.Value)
             : result.Error.ToProblem();
+    }
+
+    private static async Task<IResult> UpdateAsync(
+        Guid id,
+        [FromBody] UpdateApplicationRequest request,
+        UpdateApplicationHandler handler,
+        CancellationToken cancellationToken)
+    {
+        var result = await handler.HandleAsync(id, request, cancellationToken);
+        return result.IsSuccess ? TypedResults.Ok(result.Value) : result.Error.ToProblem();
     }
 
     private static async Task<IResult> DeleteAsync(

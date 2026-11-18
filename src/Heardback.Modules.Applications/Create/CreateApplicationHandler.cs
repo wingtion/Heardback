@@ -32,9 +32,10 @@ internal sealed partial class CreateApplicationHandler(
 
         var application = created.Value;
         dbContext.Applications.Add(application);
-        if (!await dbContext.TrySaveWithoutDuplicatePostingAsync(cancellationToken))
+        var saved = await dbContext.SaveApplicationAsync(cancellationToken);
+        if (!saved.IsSuccess)
         {
-            return ApplicationsErrors.AlreadyTracked;
+            return saved.Error;
         }
 
         LogCreated(application.Id, application.PostingId);

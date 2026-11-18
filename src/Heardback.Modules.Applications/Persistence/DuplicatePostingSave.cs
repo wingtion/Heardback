@@ -1,3 +1,4 @@
+using Heardback.Shared.Results;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
@@ -8,17 +9,22 @@ internal static class DuplicatePostingSave
     private const string UserPostingIndex = "ix_applications_user_id_posting_id";
 
     /// <summary>
-    /// Saves, or returns false when the user already tracks the posting: two submits racing past the
-    /// "already tracked" check are stopped by the unique index.
+    /// Saves, turning the two expected write conflicts into errors: the user already tracks the posting (two
+    /// submits racing past the "already tracked" check hit the unique index), or the application's row version
+    /// changed since it was read (an edit elsewhere).
     /// </summary>
-    public static async Task<bool> TrySaveWithoutDuplicatePostingAsync(
+    public static async Task<Result> SaveApplicationAsync(
         this ApplicationsDbContext dbContext,
         CancellationToken cancellationToken)
     {
         try
         {
             await dbContext.SaveChangesAsync(cancellationToken);
-            return true;
+            return Result.Success();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return ApplicationsErrors.ChangedElsewhere;
         }
         catch (DbUpdateException exception) when (exception.InnerException is PostgresException
         {
@@ -26,7 +32,7 @@ internal static class DuplicatePostingSave
             ConstraintName: UserPostingIndex,
         })
         {
-            return false;
+            return ApplicationsErrors.AlreadyTracked;
         }
     }
 }
