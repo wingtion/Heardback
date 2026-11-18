@@ -45,6 +45,50 @@ public sealed class SessionTests(PostgresFixture postgres) : IdentityTestBase(po
     }
 
     [Fact]
+    public async Task Login_BrowserStillHoldsAnOlderSession_EndsTheOlderSession()
+    {
+        using var registered = await Client.RegisterAsync("admin@example.com", ApiFactory.BootstrapAdminCode);
+        var olderToken = registered.ReadRefreshToken()!;
+
+        // Signing in again from the same browser replaces its cookie; the older session must not live on.
+        using var login = await Client.LoginAsync("admin@example.com");
+        using var olderReplay = await CreateCookielessClient().RefreshWithTokenAsync(olderToken);
+        using var current = await Client.RefreshAsync();
+
+        Assert.Equal(HttpStatusCode.OK, login.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, olderReplay.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, current.StatusCode);
+    }
+
+    [Fact]
+    public async Task Register_BrowserStillHoldsAnotherUsersSession_EndsThatSession()
+    {
+        var admin = await Client.RegisterAdminAsync("admin@example.com");
+        var code = await Client.CreateInviteCodeAsync(admin.AccessToken);
+        using var browser = CreateClient();
+        using var adminLogin = await browser.LoginAsync("admin@example.com");
+        var adminToken = adminLogin.ReadRefreshToken()!;
+
+        using var registered = await browser.RegisterAsync("member@example.com", code);
+        using var adminReplay = await CreateCookielessClient().RefreshWithTokenAsync(adminToken);
+
+        Assert.Equal(HttpStatusCode.Created, registered.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, adminReplay.StatusCode);
+    }
+
+    [Fact]
+    public async Task Login_WrongPassword_KeepsTheBrowsersCurrentSession()
+    {
+        using var registered = await Client.RegisterAsync("admin@example.com", ApiFactory.BootstrapAdminCode);
+
+        using var failed = await Client.LoginAsync("admin@example.com", "not the right password");
+        using var current = await Client.RefreshAsync();
+
+        Assert.Equal(HttpStatusCode.Unauthorized, failed.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, current.StatusCode);
+    }
+
+    [Fact]
     public async Task Refresh_WithoutCookie_ReturnsUnauthorized()
     {
         using var response = await Client.RefreshAsync();

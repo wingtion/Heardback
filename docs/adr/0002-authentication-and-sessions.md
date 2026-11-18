@@ -2,7 +2,8 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-17 (revised the same day: absolute session lifetime, revoke-all on token reuse,
-  serialized bootstrap claim, rate limiting; then fixes from the independent Phase 1 review)
+  serialized bootstrap claim, rate limiting; then fixes from the independent Phase 1 review;
+  2026-11-18: sign-in ends the browser's previous session)
 
 ## Context
 
@@ -53,6 +54,10 @@ The signing key comes from user-secrets or an environment variable and must be a
 - The client signs the user out only on a 401 from refresh. A 429, a server error or a network failure
   leaves the session in place.
 - Logout revokes only that session's family; other devices stay signed in.
+- A successful sign-in or registration also revokes the session of the refresh cookie the browser still
+  sent, whoever it belonged to. The new cookie replaces it, so that session could never be used by this
+  browser again and would otherwise stay alive (and stealable) until it expired. A failed sign-in
+  changes nothing.
 - On sign-in, the user's tokens from sessions past their absolute end are deleted. They can never be used
   again, and replaying them is just "expired".
 

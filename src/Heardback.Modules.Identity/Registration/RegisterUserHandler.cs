@@ -23,7 +23,10 @@ internal sealed partial class RegisterUserHandler(
     // Arbitrary application-wide key for pg_advisory_xact_lock; only bootstrap registration uses it.
     private const long BootstrapAdminLockKey = 0x4A6F_6254_7261_696C;
 
-    public async Task<Result<IssuedSession>> HandleAsync(RegisterRequest request, CancellationToken cancellationToken)
+    public async Task<Result<IssuedSession>> HandleAsync(
+        RegisterRequest request,
+        string? previousRefreshToken,
+        CancellationToken cancellationToken)
     {
         var now = timeProvider.GetUtcNow();
         var code = InviteCode.Normalize(request.InviteCode);
@@ -66,7 +69,7 @@ internal sealed partial class RegisterUserHandler(
             return IdentityErrors.InvalidInviteCode;
         }
 
-        var session = await sessions.StartAsync(user, cancellationToken);
+        var session = await sessions.StartAsync(user, previousRefreshToken, cancellationToken);
         await transaction.CommitAsync(cancellationToken);
 
         LogRegistered(user.Id, registersAdmin);
