@@ -3,6 +3,8 @@ import { Dialog, DialogRef } from '@angular/cdk/dialog';
 import { GlobalPositionStrategy, createGlobalPositionStrategy } from '@angular/cdk/overlay';
 import { ComponentType } from '@angular/cdk/portal';
 import { Injectable, Injector, inject } from '@angular/core';
+import { NavigationStart, Router } from '@angular/router';
+import { filter } from 'rxjs';
 import { DESKTOP_MEDIA_QUERY } from '../../../core/breakpoints';
 
 const FULL_WIDTH = '100%';
@@ -21,6 +23,7 @@ export class DialogLauncher {
   private readonly dialog = inject(Dialog);
   private readonly breakpoints = inject(BreakpointObserver);
   private readonly injector = inject(Injector);
+  private readonly router = inject(Router);
 
   open<C>(component: ComponentType<C>): DialogRef<unknown, C> {
     const desktop = this.breakpoints.isMatched(DESKTOP_MEDIA_QUERY);
@@ -35,7 +38,15 @@ export class DialogLauncher {
       ref.overlayRef.updatePositionStrategy(this.position(matches));
       ref.updateSize(matches ? SIZE_FROM_CONTENT : FULL_WIDTH);
     });
-    ref.closed.subscribe(() => layout.unsubscribe());
+    // CDK closes dialogs only on browser back/forward. Dialogs belong to the page they were opened
+    // on, so any in-app navigation (session expired, sign out, no access) closes them too.
+    const navigation = this.router.events
+      .pipe(filter((event) => event instanceof NavigationStart))
+      .subscribe(() => ref.close());
+    ref.closed.subscribe(() => {
+      layout.unsubscribe();
+      navigation.unsubscribe();
+    });
 
     return ref;
   }
