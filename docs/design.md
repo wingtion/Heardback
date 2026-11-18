@@ -447,6 +447,7 @@ Decisions the author made where the handoff was silent or showed only a sample.
 These go back to Claude Design with a brief written from the API that exists at that point. Nothing here is improvised.
 
 - **Phase 2:** nothing left. The board, Edit application, Add update and Add application on mobile came in the "B refined · Board and forms" handoff (§14).
+- **Phase 3 (brief given 2026-11-18, waiting for the handoff):** the **CV page** (upload, replace, delete, the stored text with its personal-detail markers, the skills found, every upload error) and the **match panel** on the application detail (score, matched and missing skills, no CV / no posting text / no skills states).
 
 ---
 
