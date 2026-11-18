@@ -4,7 +4,8 @@ A web app for job seekers to track every application in one place and get insigh
 which channels actually get responses, how long companies take to reply, how well a CV matches a
 posting, and community signals such as postings where nobody ever hears back.
 
-> **Status:** Phase 1 (identity and invites) done; next is the design checkpoint. See [PLAN.md](PLAN.md)
+> **Status:** Phase 1 (identity and invites) done; design checkpoint in progress (design system in
+> [docs/design.md](docs/design.md)). See [PLAN.md](PLAN.md)
 > for the roadmap and [CLAUDE.md](CLAUDE.md) for the engineering rules.
 
 ## Tech stack
@@ -115,6 +116,7 @@ tests/
   Heardback.IntegrationTests/     API and database tests (Testcontainers)
 web/                             Angular app
 docs/adr/                        architecture decision records
+docs/design.md                   design system: tokens, type, components, screen states
 ```
 
 - **Module boundaries:** each module exposes only its `Contracts` namespace and one registration class;
