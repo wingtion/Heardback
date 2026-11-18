@@ -150,4 +150,10 @@ internal sealed record InviteCodeDto(
     string Status,
     DateTimeOffset? UsedAt);
 
-internal sealed record PagedDto<T>(List<T> Items, int Page, int PageSize, int TotalCount, int TotalPages);
+internal sealed record InviteCodePageDto(
+    List<InviteCodeDto> Items,
+    int Page,
+    int PageSize,
+    int TotalCount,
+    int TotalPages,
+    int ActiveCount);

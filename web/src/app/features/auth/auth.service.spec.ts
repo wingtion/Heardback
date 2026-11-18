@@ -20,12 +20,12 @@ describe('AuthService', () => {
 
   afterEach(() => http.verify());
 
-  it('starts signed out', () => {
+  it('initialState_NoSession_IsSignedOut', () => {
     expect(auth.isAuthenticated()).toBe(false);
     expect(auth.accessToken()).toBeNull();
   });
 
-  it('login stores the user and access token in memory', async () => {
+  it('login_ValidResponse_StoresUserAndTokenInMemory', async () => {
     const login = firstValueFrom(auth.login({ email: 'ada@example.com', password: 'pw' }));
     http.expectOne(AUTH_API.login).flush(authResponse({ token: 'fresh', isAdmin: true }));
 
@@ -36,7 +36,7 @@ describe('AuthService', () => {
     expect(auth.isAdmin()).toBe(true);
   });
 
-  it('shares one refresh request between concurrent callers', async () => {
+  it('refresh_ConcurrentCallers_ShareOneRequest', async () => {
     const first = firstValueFrom(auth.refresh());
     const second = firstValueFrom(auth.refresh());
 
@@ -46,7 +46,7 @@ describe('AuthService', () => {
     expect(auth.accessToken()).toBe('rotated');
   });
 
-  it('a failed refresh signs the user out', async () => {
+  it('refresh_Unauthorized_SignsTheUserOut', async () => {
     await signIn();
 
     const refresh = firstValueFrom(auth.refresh());
@@ -56,7 +56,7 @@ describe('AuthService', () => {
     expect(auth.isAuthenticated()).toBe(false);
   });
 
-  it('retries once when another tab refreshed first (superseded)', async () => {
+  it('refresh_SupersededByAnotherTab_RetriesOnce', async () => {
     const refresh = firstValueFrom(auth.refresh());
 
     http
@@ -68,7 +68,7 @@ describe('AuthService', () => {
     expect(auth.accessToken()).toBe('from-other-tab');
   });
 
-  it('keeps the session when the refresh fails for a reason other than 401', async () => {
+  it('refresh_FailsWithoutUnauthorized_KeepsTheSession', async () => {
     await signIn();
 
     for (const status of [429, 500, 0]) {
@@ -80,7 +80,7 @@ describe('AuthService', () => {
     expect(auth.isAuthenticated()).toBe(true);
   });
 
-  it('restoreSession resolves signed out when there is no valid cookie', async () => {
+  it('restoreSession_NoValidCookie_ResolvesSignedOut', async () => {
     const restore = auth.restoreSession();
     http.expectOne(AUTH_API.refresh).flush(null, { status: 401, statusText: 'Unauthorized' });
 
@@ -88,7 +88,79 @@ describe('AuthService', () => {
     expect(auth.isAuthenticated()).toBe(false);
   });
 
-  it('restoreSession signs the user back in from the cookie', async () => {
+  describe('restoreSession on temporary failures', () => {
+    beforeEach(() => vi.useFakeTimers());
+    afterEach(() => vi.useRealTimers());
+
+    const unavailable = { status: 503, statusText: 'Service Unavailable' };
+
+    it('restoreSession_ServerBrieflyUnavailable_RetriesAndKeepsTheSession', async () => {
+      const restore = auth.restoreSession();
+      http.expectOne(AUTH_API.refresh).flush(null, unavailable);
+
+      await vi.advanceTimersByTimeAsync(1000);
+      http.expectOne(AUTH_API.refresh).flush(authResponse());
+      await restore;
+
+      expect(auth.isAuthenticated()).toBe(true);
+      expect(auth.restoreFailed()).toBe(false);
+    });
+
+    it('restoreSession_RateLimited_WaitsForRetryAfterBeforeRetrying', async () => {
+      const restore = auth.restoreSession();
+      http.expectOne(AUTH_API.refresh).flush(null, {
+        status: 429,
+        statusText: 'Too Many Requests',
+        headers: { 'Retry-After': '3' },
+      });
+
+      await vi.advanceTimersByTimeAsync(2999);
+      http.expectNone(AUTH_API.refresh);
+      await vi.advanceTimersByTimeAsync(1);
+      http.expectOne(AUTH_API.refresh).flush(authResponse());
+      await restore;
+
+      expect(auth.isAuthenticated()).toBe(true);
+    });
+
+    it('restoreSession_StillUnavailableAfterRetries_StartsSignedOutAndReportsIt', async () => {
+      const restore = auth.restoreSession();
+      for (const wait of [1000, 2000, 4000]) {
+        http.expectOne(AUTH_API.refresh).flush(null, unavailable);
+        await vi.advanceTimersByTimeAsync(wait);
+      }
+      http.expectOne(AUTH_API.refresh).flush(null, unavailable);
+      await restore;
+
+      expect(auth.isAuthenticated()).toBe(false);
+      expect(auth.restoreFailed()).toBe(true);
+      expect(auth.restoring()).toBe(false);
+    });
+
+    it('restoreSession_RetryAfterTooLong_GivesUpWithoutWaiting', async () => {
+      const restore = auth.restoreSession();
+      http.expectOne(AUTH_API.refresh).flush(null, {
+        status: 429,
+        statusText: 'Too Many Requests',
+        headers: { 'Retry-After': '120' },
+      });
+      await restore;
+
+      expect(auth.restoreFailed()).toBe(true);
+    });
+
+    it('restoreSession_NoValidCookie_DoesNotRetry', async () => {
+      const restore = auth.restoreSession();
+      http.expectOne(AUTH_API.refresh).flush(null, { status: 401, statusText: 'Unauthorized' });
+      await restore;
+      await vi.advanceTimersByTimeAsync(10_000);
+
+      http.expectNone(AUTH_API.refresh);
+      expect(auth.restoreFailed()).toBe(false);
+    });
+  });
+
+  it('restoreSession_ValidCookie_SignsTheUserBackIn', async () => {
     const restore = auth.restoreSession();
     http.expectOne(AUTH_API.refresh).flush(authResponse());
 
@@ -97,7 +169,7 @@ describe('AuthService', () => {
     expect(auth.user()?.displayName).toBe('Ada');
   });
 
-  it('logout clears the session even when the server call fails', async () => {
+  it('logout_ServerCallFails_StillClearsTheSession', async () => {
     await signIn();
 
     const logout = firstValueFrom(auth.logout(), { defaultValue: undefined });
@@ -105,6 +177,44 @@ describe('AuthService', () => {
     await logout;
 
     expect(auth.isAuthenticated()).toBe(false);
+  });
+
+  it('restoreSession_InFlight_ReportsRestoring', async () => {
+    const restore = auth.restoreSession();
+    expect(auth.restoring()).toBe(true);
+
+    http.expectOne(AUTH_API.refresh).flush(null, { status: 401, statusText: 'Unauthorized' });
+    await restore;
+
+    expect(auth.restoring()).toBe(false);
+  });
+
+  it('restoreSession_NoCookie_IsNotReportedAsExpired', async () => {
+    const restore = auth.restoreSession();
+    http.expectOne(AUTH_API.refresh).flush(null, { status: 401, statusText: 'Unauthorized' });
+    await restore;
+
+    expect(auth.expired()).toBeNull();
+  });
+
+  it('refresh_SignedInSessionRejected_IsReportedAsExpiredWithEmail', async () => {
+    await signIn();
+
+    const refresh = firstValueFrom(auth.refresh());
+    http.expectOne(AUTH_API.refresh).flush(null, { status: 401, statusText: 'Unauthorized' });
+    await expect(refresh).rejects.toBeTruthy();
+
+    expect(auth.expired()).toEqual({ email: 'ada@example.com' });
+  });
+
+  it('logout_SignedIn_IsNotReportedAsExpired', async () => {
+    await signIn();
+
+    const logout = firstValueFrom(auth.logout(), { defaultValue: undefined });
+    http.expectOne(AUTH_API.logout).flush(null);
+    await logout;
+
+    expect(auth.expired()).toBeNull();
   });
 
   async function signIn(): Promise<void> {

@@ -8,8 +8,12 @@ namespace Heardback.Modules.Identity.Invites;
 
 internal sealed class ListInviteCodesHandler(IdentityDbContext dbContext, TimeProvider timeProvider)
 {
-    public async Task<PagedResponse<InviteCodeResponse>> HandleAsync(PageRequest page, CancellationToken cancellationToken)
+    public async Task<InviteCodeListResponse> HandleAsync(PageRequest page, CancellationToken cancellationToken)
     {
+        // Status depends on "now", so it is derived rather than stored. One instant is used for the
+        // statuses and the active count, so the two always agree.
+        var now = timeProvider.GetUtcNow();
+
         var rows = await dbContext.InviteCodes
             .AsNoTracking()
             .OrderByDescending(invite => invite.CreatedAt)
@@ -22,8 +26,10 @@ internal sealed class ListInviteCodesHandler(IdentityDbContext dbContext, TimePr
                 invite.UsedAt))
             .ToPagedResponseAsync(page, cancellationToken);
 
-        // Status depends on "now", so it is derived after loading rather than stored.
-        var now = timeProvider.GetUtcNow();
+        var activeCount = await dbContext.InviteCodes
+            .AsNoTracking()
+            .CountAsync(InviteCode.IsActiveAt(now), cancellationToken);
+
         var items = rows.Items
             .Select(row => new InviteCodeResponse(
                 row.Id,
@@ -34,7 +40,13 @@ internal sealed class ListInviteCodesHandler(IdentityDbContext dbContext, TimePr
                 row.UsedAt))
             .ToList();
 
-        return new PagedResponse<InviteCodeResponse>(items, rows.Page, rows.PageSize, rows.TotalCount);
+        return new InviteCodeListResponse(
+            items,
+            rows.Page,
+            rows.PageSize,
+            rows.TotalCount,
+            rows.TotalPages,
+            activeCount);
     }
 
     private sealed record InviteCodeRow(

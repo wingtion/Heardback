@@ -1,0 +1,173 @@
+/*
+ * Design tokens from docs/design.md. This is the only place colours, type, radii and shadows are defined.
+ *
+ * Each colour is written once as light-dark(light, dark). The theme follows the OS through
+ * color-scheme; data-theme="light" | "dark" on <html> overrides it (the Settings switch).
+ * Tailwind's default palette, type scale, radii and shadows are removed so only these exist.
+ */
+
+:root {
+  color-scheme: light dark;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+@theme {
+  --color-*: initial;
+  --font-*: initial;
+  --text-*: initial;
+  --tracking-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+  --blur-*: initial;
+
+  /* Fonts (self-hosted, see styles.css) */
+  --font-serif: 'Newsreader Variable', Georgia, serif;
+  --font-sans: 'Public Sans Variable', system-ui, sans-serif;
+  --font-mono: 'DM Mono', ui-monospace, monospace;
+  --default-font-family: var(--font-sans);
+  --default-mono-font-family: var(--font-mono);
+
+  /* Type scale */
+  --text-page-title: 1.75rem;
+  --text-page-title--line-height: 2.125rem;
+  --text-page-title--letter-spacing: -0.01em;
+  --text-page-title-sm: 1.5rem;
+  --text-page-title-sm--line-height: 1.875rem;
+  --text-page-title-sm--letter-spacing: -0.01em;
+  --text-panel-title: 1.4375rem;
+  --text-panel-title--line-height: 1.75rem;
+  --text-panel-title--letter-spacing: -0.01em;
+  --text-dialog-title: 1.25rem;
+  --text-dialog-title--line-height: 1.625rem;
+  --text-empty-title: 1.125rem;
+  --text-empty-title--line-height: 1.5rem;
+  --text-wordmark: 1.375rem;
+  --text-wordmark--line-height: 1.75rem;
+  --text-wordmark--letter-spacing: -0.01em;
+  --text-display: 1.875rem;
+  --text-display--line-height: 2.25rem;
+  --text-display-sm: 1.625rem;
+  --text-display-sm--line-height: 2rem;
+  --text-ui-xl: 1rem;
+  --text-ui-xl--line-height: 1.5rem;
+  --text-ui-lg: 0.9375rem;
+  --text-ui-lg--line-height: 1.375rem;
+  --text-ui-md: 0.90625rem;
+  --text-ui-md--line-height: 1.25rem;
+  --text-body: 0.875rem;
+  --text-body--line-height: 1.25rem;
+  --text-cell: 0.84375rem;
+  --text-cell--line-height: 1.25rem;
+  --text-small: 0.8125rem;
+  --text-small--line-height: 1.125rem;
+  --text-label: 0.78125rem;
+  --text-label--line-height: 1.125rem;
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1rem;
+  /* Decorative stamp month only; always aria-hidden with the date repeated in text. */
+  --text-stamp: 0.5rem;
+  --text-stamp--line-height: 0.5rem;
+  --text-stamp-sm: 0.46875rem;
+  --text-stamp-sm--line-height: 0.46875rem;
+
+  --tracking-title: -0.01em;
+  --tracking-code: 0.04em;
+  --tracking-code-lg: 0.06em;
+  --tracking-code-input: 0.08em;
+  --tracking-stamp: 0.1em;
+
+  /* Radii */
+  --radius-xs: 2px;
+  --radius-sm: 3px;
+  --radius-md: 4px;
+  --radius-lg: 5px;
+  --radius-xl: 6px;
+  --radius-sheet: 14px;
+
+  /* 3 px accent bar on the left of the active nav item and the selected row. */
+  --inset-shadow-selection: inset 3px 0 0 var(--color-accent);
+
+  --shadow-dialog: 0 12px 32px light-dark(rgb(45 35 20 / 0.18), rgb(0 0 0 / 0.55));
+}
+
+/* static: always emit the colour variables, so hand-written CSS (base layer, SVG components) can use them. */
+@theme static {
+  /* Surfaces */
+  --color-page: light-dark(#e8e4dc, #0f0e0c);
+  --color-base: light-dark(#fcfbf8, #1a1815);
+  --color-surface: light-dark(#f5f1e8, #201e1a);
+  --color-envelope: light-dark(#f3ede0, #26231e);
+  --color-field: light-dark(#ffffff, #1d1b18);
+  --color-row-hover: light-dark(#f2ede3, #24211c);
+  --color-row-selected: light-dark(#f7ece6, #2c2420);
+  --color-nav-active: light-dark(#eae3d5, #2d2a24);
+  --color-secondary-hover: light-dark(#efe9dd, #2c2924);
+  --color-skeleton: light-dark(#eae3d5, #2f2c26);
+  --color-skeleton-line: light-dark(#cfc6b5, #4e4a41);
+  /* 80 % opacity so the page behind a dialog stays faintly visible. */
+  --color-scrim: light-dark(rgb(205 198 184 / 0.8), rgb(7 6 5 / 0.8));
+
+  /* Text and lines */
+  --color-ink: light-dark(#1e1b16, #eee9df);
+  --color-ink-2: light-dark(#4f493f, #c4bdb0);
+  --color-ink-muted: light-dark(#5e5749, #aba494);
+  --color-placeholder: light-dark(#6a6356, #a39c8d);
+  --color-disabled: light-dark(#8c8374, #7a7366);
+  --color-rule: light-dark(#e0d9cb, #34312b);
+  --color-rule-strong: light-dark(#bdb3a1, #4e4a41);
+  --color-field-border: light-dark(#8c8374, #7a7366);
+  --color-focus: light-dark(#1e1b16, #eee9df);
+  --color-postmark: light-dark(#3b372f, #c9c2b4);
+
+  /* Accent, link, danger, warning */
+  --color-accent: light-dark(#b23a26, #ee8a6e);
+  --color-accent-hover: light-dark(#952e1d, #f4a28b);
+  --color-on-accent: light-dark(#ffffff, #260b04);
+  --color-link: light-dark(#a2321f, #f2a089);
+  --color-danger: light-dark(#8c1c3f, #f08ba9);
+  --color-danger-tint: light-dark(#f8e8ee, #33171f);
+  --color-on-danger: light-dark(#ffffff, #2a0612);
+  --color-warn-tint: light-dark(#fbf1e2, #2e2414);
+
+  /* Status */
+  --color-status-applied: light-dark(#4f493f, #c4bdb0);
+  --color-status-no-response: light-dark(#844f00, #e8ae62);
+  --color-status-interview: light-dark(#24527a, #92bce3);
+  --color-status-offer: light-dark(#2d6236, #8cc79a);
+}
+
+/* Invalid input border: 1.5 px in danger (docs/design.md §5). */
+@utility border-invalid {
+  border-width: 1.5px;
+  border-color: var(--color-danger);
+}
+
+@layer base {
+  html {
+    background-color: var(--color-base);
+    color: var(--color-ink);
+    font-size: 100%;
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::placeholder {
+    color: var(--color-placeholder);
+    opacity: 1;
+  }
+}

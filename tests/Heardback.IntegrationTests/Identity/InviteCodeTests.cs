@@ -67,13 +67,35 @@ public sealed class InviteCodeTests(PostgresFixture postgres) : IdentityTestBase
         var activeCode = await Client.CreateInviteCodeAsync(adminToken);
 
         using var response = await Client.ListInvitesAsync(adminToken);
-        var page = await response.Content.ReadFromJsonAsync<PagedDto<InviteCodeDto>>(CancellationToken);
+        var page = await response.Content.ReadFromJsonAsync<InviteCodePageDto>(CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(page);
         Assert.Equal(3, page.TotalCount);
         Assert.Equal([activeCode, usedCode], page.Items.Take(2).Select(invite => invite.Code));
         Assert.Equal(["Active", "Used", "Expired"], page.Items.Select(invite => invite.Status));
+        Assert.Equal(1, page.ActiveCount);
+    }
+
+    [Fact]
+    public async Task ListInvites_ActiveCodesBeyondThePage_CountsAllActiveCodes()
+    {
+        var admin = await Client.RegisterAdminAsync();
+        for (var i = 0; i < 3; i++)
+        {
+            await Client.CreateInviteCodeAsync(admin.AccessToken);
+        }
+
+        var usedCode = await Client.CreateInviteCodeAsync(admin.AccessToken);
+        using var registered = await CreateClient().RegisterAsync("user@example.com", usedCode);
+
+        using var response = await Client.ListInvitesAsync(admin.AccessToken, "?pageSize=1");
+        var page = await response.Content.ReadFromJsonAsync<InviteCodePageDto>(CancellationToken);
+
+        Assert.NotNull(page);
+        Assert.Single(page.Items);
+        Assert.Equal(4, page.TotalCount);
+        Assert.Equal(3, page.ActiveCount);
     }
 
     [Fact]
@@ -98,7 +120,7 @@ public sealed class InviteCodeTests(PostgresFixture postgres) : IdentityTestBase
         }
 
         using var response = await Client.ListInvitesAsync(admin.AccessToken, "?page=2&pageSize=2");
-        var page = await response.Content.ReadFromJsonAsync<PagedDto<InviteCodeDto>>(CancellationToken);
+        var page = await response.Content.ReadFromJsonAsync<InviteCodePageDto>(CancellationToken);
 
         Assert.NotNull(page);
         Assert.Single(page.Items);
@@ -152,7 +174,7 @@ public sealed class InviteCodeTests(PostgresFixture postgres) : IdentityTestBase
         await ExecuteSqlAsync("DELETE FROM identity.users WHERE normalized_email = 'LEAVER@EXAMPLE.COM'");
         using var reuse = await CreateClient().RegisterAsync("someone-else@example.com", code);
         using var list = await Client.ListInvitesAsync(admin.AccessToken);
-        var page = await list.Content.ReadFromJsonAsync<PagedDto<InviteCodeDto>>(CancellationToken);
+        var page = await list.Content.ReadFromJsonAsync<InviteCodePageDto>(CancellationToken);
 
         Assert.Equal(HttpStatusCode.BadRequest, reuse.StatusCode);
         Assert.Equal("Used", Assert.Single(page!.Items).Status);

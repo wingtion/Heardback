@@ -1,5 +1,4 @@
-<!-- Placeholder shell. Real UI waits for the design checkpoint (PLAN.md section 8a). -->
-<main>
-  <h1>Heardback</h1>
-  <router-outlet />
-</main>
+@if (auth.restoring()) {
+  <app-session-loading />
+}
+<router-outlet />

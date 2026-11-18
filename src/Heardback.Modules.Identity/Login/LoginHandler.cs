@@ -14,7 +14,10 @@ internal sealed partial class LoginHandler(
     SessionIssuer sessions,
     ILogger<LoginHandler> logger)
 {
-    public async Task<Result<IssuedSession>> HandleAsync(LoginRequest request, CancellationToken cancellationToken)
+    public async Task<Result<IssuedSession>> HandleAsync(
+        LoginRequest request,
+        string? previousRefreshToken,
+        CancellationToken cancellationToken)
     {
         var normalizedEmail = User.NormalizeEmail(request.Email);
         var user = await dbContext.Users.SingleOrDefaultAsync(
@@ -43,7 +46,7 @@ internal sealed partial class LoginHandler(
         }
 
         LogSucceeded(user.Id);
-        return await sessions.StartAsync(user, cancellationToken);
+        return await sessions.StartAsync(user, previousRefreshToken, cancellationToken);
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "User {UserId} signed in")]

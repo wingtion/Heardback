@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using System.Security.Cryptography;
 
 namespace Heardback.Modules.Identity.Domain;
@@ -52,6 +53,10 @@ internal sealed class InviteCode
         string.Concat(input.Where(character => character != GroupSeparator && !char.IsWhiteSpace(character)))
             .ToUpperInvariant();
 
+    /// <summary>True when a normalized code has the shape of a generated one: 12 characters from the alphabet.</summary>
+    public static bool IsWellFormed(string normalizedCode) =>
+        normalizedCode.Length == CodeLength && normalizedCode.All(character => Alphabet.Contains(character, StringComparison.Ordinal));
+
     public static string Format(string normalizedCode) =>
         string.Join(GroupSeparator, normalizedCode.Chunk(GroupLength).Select(group => new string(group)));
 
@@ -66,4 +71,11 @@ internal sealed class InviteCode
         usedAt is not null ? InviteCodeStatus.Used
         : now >= expiresAt ? InviteCodeStatus.Expired
         : InviteCodeStatus.Active;
+
+    /// <summary>
+    /// The <see cref="InviteCodeStatus.Active"/> rule of <see cref="StatusAt"/> as a query filter, so
+    /// counts can run in the database. The two must stay in step.
+    /// </summary>
+    public static Expression<Func<InviteCode, bool>> IsActiveAt(DateTimeOffset now) =>
+        invite => invite.UsedAt == null && invite.ExpiresAt > now;
 }

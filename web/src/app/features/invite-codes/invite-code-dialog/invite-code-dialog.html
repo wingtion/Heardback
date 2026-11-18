@@ -1,0 +1,109 @@
+@if (invite(); as invite) {
+  <app-dialog heading="Invite code created">
+    <div class="flex flex-col gap-3.5 px-4 pt-3.5 pb-5 lg:gap-3 lg:p-5">
+      <div class="border-2 border-dotted border-accent bg-envelope p-1">
+        <div
+          class="flex h-17 items-center justify-center border border-accent font-mono text-display-sm font-medium tracking-code-lg text-ink select-all lg:h-18 lg:text-display"
+        >
+          {{ invite.code }}
+        </div>
+      </div>
+      <div class="flex justify-between gap-3 text-small text-ink-2 lg:text-label">
+        <span>
+          Expires <span class="font-mono">{{ invite.expiresAt | date: dateFormat }}</span> ·
+          {{ lifetime() }}<span class="lg:hidden"> · single use</span>
+        </span>
+        <span class="max-lg:hidden">Single use</span>
+      </div>
+      <div role="status">
+        @if (copied()) {
+          <app-inline-success class="max-lg:text-cell">Copied to clipboard</app-inline-success>
+        } @else {
+          <p class="text-small text-ink-2">
+            Send it to one person. You can find it later in the table.
+          </p>
+        }
+      </div>
+    </div>
+    <app-dialog-footer>
+      <button
+        appButton
+        type="button"
+        class="max-lg:h-12 max-lg:flex-1 max-lg:text-ui-lg"
+        (click)="close()"
+      >
+        Done
+      </button>
+      <button
+        #copyButton
+        appButton="primary"
+        type="button"
+        class="max-lg:h-12 max-lg:flex-1 max-lg:text-ui-lg"
+        (click)="copy(invite.code)"
+      >
+        @if (copied()) {
+          <app-icon name="check" [size]="14" />
+          Copied
+        } @else {
+          <app-icon name="copy" [size]="14" />
+          Copy
+        }
+      </button>
+    </app-dialog-footer>
+  </app-dialog>
+} @else {
+  <app-dialog heading="Create invite code" [closeDisabled]="submitting()">
+    <form [formGroup]="form" novalidate (ngSubmit)="create()">
+      <div class="flex flex-col gap-3.5 px-4 pt-3.5 pb-5 lg:px-5 lg:pt-4.5">
+        <p class="text-cell text-ink-2">
+          Anyone with the code can create one account. Each code works once.
+        </p>
+        @if (unavailable()) {
+          <app-banner kind="error" heading="Couldn’t create the invite code">
+            The server didn’t respond. Try again.
+          </app-banner>
+        }
+        <app-field label="Expires in (days)" optional [hint]="hint" [error]="expiryError()">
+          <div class="flex items-center gap-2">
+            <input
+              appInput
+              number
+              cdkFocusInitial
+              type="text"
+              inputmode="numeric"
+              autocomplete="off"
+              formControlName="expiresInDays"
+              class="max-lg:h-11"
+            />
+            <span class="text-cell text-ink-2">days</span>
+          </div>
+        </app-field>
+      </div>
+      <app-dialog-footer>
+        <button
+          appButton
+          type="button"
+          class="max-lg:h-12 max-lg:flex-1 max-lg:text-ui-lg"
+          [disabled]="submitting()"
+          (click)="close()"
+        >
+          Cancel
+        </button>
+        <button
+          appButton="primary"
+          type="submit"
+          class="max-lg:h-12 max-lg:flex-1 max-lg:text-ui-lg"
+          [disabled]="submitting()"
+          [attr.aria-busy]="submitting() || null"
+        >
+          @if (submitting()) {
+            <app-spinner tone="current" />
+            Creating…
+          } @else {
+            Create invite code
+          }
+        </button>
+      </app-dialog-footer>
+    </form>
+  </app-dialog>
+}

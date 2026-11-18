@@ -1,6 +1,3 @@
-using Heardback.Modules.Identity.Domain;
-using Heardback.Modules.Identity.Persistence;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Heardback.Modules.Identity.Sessions;
@@ -10,7 +7,6 @@ namespace Heardback.Modules.Identity.Sessions;
 /// access token stays valid until it expires (at most the access-token lifetime).
 /// </summary>
 internal sealed partial class LogoutHandler(
-    IdentityDbContext dbContext,
     RefreshTokenRevoker revoker,
     TimeProvider timeProvider,
     ILogger<LogoutHandler> logger)
@@ -22,19 +18,11 @@ internal sealed partial class LogoutHandler(
             return;
         }
 
-        var tokenHash = RefreshToken.Hash(plainToken);
-        var token = await dbContext.RefreshTokens
-            .AsNoTracking()
-            .Where(candidate => candidate.TokenHash == tokenHash)
-            .Select(candidate => new { candidate.UserId, candidate.FamilyId })
-            .SingleOrDefaultAsync(cancellationToken);
-        if (token is null)
+        var userId = await revoker.RevokeSessionOfAsync(plainToken, timeProvider.GetUtcNow(), cancellationToken);
+        if (userId is { } signedOut)
         {
-            return;
+            LogSignedOut(signedOut);
         }
-
-        await revoker.RevokeFamilyAsync(token.FamilyId, timeProvider.GetUtcNow(), cancellationToken);
-        LogSignedOut(token.UserId);
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "User {UserId} signed out")]

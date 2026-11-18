@@ -1,0 +1,74 @@
+<app-auth-card>
+  <h1 class="font-serif text-page-title-sm font-semibold text-ink">Sign in</h1>
+
+  @switch (submission.failure()?.kind) {
+    @case ('invalid-credentials') {
+      <app-banner kind="error" heading="Email or password is incorrect" />
+    }
+    @case ('rate-limited') {
+      <app-banner kind="warning" heading="Too many attempts.">
+        Try again in
+        <span class="font-mono font-medium">{{ submission.countdown.seconds() }}</span>
+        seconds.
+      </app-banner>
+    }
+    @case ('unavailable') {
+      <app-banner kind="error" heading="Couldn’t reach Heardback">
+        Check your connection and try again. Your details are still filled in.
+      </app-banner>
+    }
+    @default {
+      @if (restoreFailed()) {
+        <!-- The reload could not reach the server, so the session may still be valid. -->
+        <app-banner kind="error" heading="Couldn’t reach Heardback">
+          Check your connection and try again.
+        </app-banner>
+      } @else if (sessionExpired) {
+        <app-banner kind="info">Your session has expired. Please sign in again.</app-banner>
+      }
+    }
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="flex flex-col gap-3.5">
+    <app-field label="Email" [error]="emailError()">
+      <input
+        appInput="lg"
+        type="email"
+        formControlName="email"
+        autocomplete="email"
+        placeholder="you@example.com"
+        [maxlength]="emailMaxLength"
+      />
+    </app-field>
+
+    <app-field label="Password" [error]="passwordError()">
+      <input
+        appInput="lg"
+        type="password"
+        formControlName="password"
+        autocomplete="current-password"
+      />
+    </app-field>
+
+    <button
+      appButton="primary"
+      size="lg"
+      type="submit"
+      class="mt-1 w-full"
+      [disabled]="submission.submitting() || submission.locked()"
+      [attr.aria-busy]="submission.submitting() || null"
+    >
+      @if (submission.submitting()) {
+        <app-spinner tone="current" />
+        Signing in…
+      } @else {
+        Sign in
+      }
+    </button>
+  </form>
+
+  <p class="border-t border-dashed border-rule-strong pt-3.5 text-cell text-ink-2">
+    Have an invite?
+    <a appLink [routerLink]="routes.register" class="font-semibold">Create account</a>
+  </p>
+</app-auth-card>

@@ -77,20 +77,22 @@ internal static class AuthEndpoints
     private static async Task<IResult> RegisterAsync(
         RegisterRequest request,
         RegisterUserHandler handler,
+        HttpRequest httpRequest,
         HttpResponse response,
         CancellationToken cancellationToken)
     {
-        var result = await handler.HandleAsync(request, cancellationToken);
+        var result = await handler.HandleAsync(request, RefreshTokenCookie.Read(httpRequest), cancellationToken);
         return ToSessionResult(result, response, session => TypedResults.Created("/api/me", AuthResponse.From(session)));
     }
 
     private static async Task<IResult> LoginAsync(
         LoginRequest request,
         LoginHandler handler,
+        HttpRequest httpRequest,
         HttpResponse response,
         CancellationToken cancellationToken)
     {
-        var result = await handler.HandleAsync(request, cancellationToken);
+        var result = await handler.HandleAsync(request, RefreshTokenCookie.Read(httpRequest), cancellationToken);
         return ToSessionResult(result, response, session => TypedResults.Ok(AuthResponse.From(session)));
     }
 

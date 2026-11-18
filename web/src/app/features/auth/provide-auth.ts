@@ -6,9 +6,14 @@ import {
 } from '@angular/core';
 import { AuthService } from './auth.service';
 
-/** Restores the session from the refresh cookie before the app renders its first route. */
+/**
+ * Starts restoring the session from the refresh cookie without blocking startup. The app shows its
+ * session loading screen meanwhile, and route guards wait for the restore to finish.
+ */
 export function provideAuth(): EnvironmentProviders {
   return makeEnvironmentProviders([
-    provideAppInitializer(() => inject(AuthService).restoreSession()),
+    provideAppInitializer(() => {
+      void inject(AuthService).restoreSession();
+    }),
   ]);
 }
