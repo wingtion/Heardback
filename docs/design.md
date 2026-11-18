@@ -428,7 +428,7 @@ Decisions the author made where the handoff was silent or showed only a sample.
 | Add: same posting text, no link | Error banner "You already track this posting" / "Another of your applications has the same posting text." (the "already tracked" panel needs a link to look the application up) |
 | Applied date field | The browser's native date field, so the picker and keyboard entry are accessible; it shows the date in the browser's own format (e.g. "18.11.2026") rather than "18 Nov 2026" |
 
-**Proposed during the board and forms build** (2026-11-18, waiting for the author's OK). Built from existing components and copy; nothing new visually:
+**Decided during the board and forms build** (approved by the author, 2026-11-18). Built from existing components and copy; nothing new visually:
 
 | Topic | Built as |
 |---|---|
