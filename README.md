@@ -97,6 +97,10 @@ docs/design.md                   design system: tokens, type, components, screen
   15-minute JWT access tokens kept in memory, and rotating refresh tokens in an httpOnly cookie.
   Sessions have an absolute 60-day limit, reusing a rotated token signs the user out everywhere, and
   the auth endpoints are rate limited per IP. Every endpoint requires sign-in unless marked anonymous.
+- **Shared postings** ([ADR-0004](docs/adr/0004-shared-job-postings.md)): the same job is recognised
+  across users by its normalized link or a hash of its content, safely under concurrent submissions.
+  Postings are never edited and hold no user id; each application keeps the user's own copy of the
+  details. The server never fetches posting pages.
 - **Errors and validation** ([ADR-0003](docs/adr/0003-request-validation.md)): RFC 9457 ProblemDetails
   everywhere, 400 with field-level errors for invalid requests, and configuration validated at startup.
 

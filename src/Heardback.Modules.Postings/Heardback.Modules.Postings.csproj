@@ -8,4 +8,8 @@
     <ProjectReference Include="..\Heardback.Shared\Heardback.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Heardback.UnitTests" />
+  </ItemGroup>
+
 </Project>
