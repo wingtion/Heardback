@@ -33,8 +33,9 @@ public static class IdentityModule
             .ValidateDataAnnotations()
             .Validate(
                 settings => settings.HasValidBootstrapCode(),
-                $"{InviteSettings.SectionName}:BootstrapAdminCode must have {InviteCode.CodeLength} to "
-                + $"{InviteCode.MaxInputLength} characters.")
+                $"{InviteSettings.SectionName}:BootstrapAdminCode must be {InviteCode.CodeLength} characters "
+                + "from 0-9 and A-Z without I, L, O or U (dashes allowed), like a generated invite code. "
+                + "Generate one with: openssl rand -hex 6")
             .ValidateOnStart();
 
         services.AddHttpContextAccessor();

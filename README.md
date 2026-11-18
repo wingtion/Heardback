@@ -30,7 +30,8 @@ cd src/Heardback.Api
 dotnet user-secrets set "Database:ConnectionString" \
   "Host=localhost;Port=5432;Database=heardback;Username=heardback;Password=<POSTGRES_PASSWORD>"
 dotnet user-secrets set "Identity:Tokens:SigningKey" "$(openssl rand -base64 48)"
-dotnet user-secrets set "Identity:Invites:BootstrapAdminCode" "$(openssl rand -hex 8)"
+# 12 characters, the same shape as an invite code (hex digits are all valid invite characters)
+dotnet user-secrets set "Identity:Invites:BootstrapAdminCode" "$(openssl rand -hex 6)"
 cd ../..
 ```
 
@@ -45,46 +46,13 @@ cd web && npm ci && npm start              # app on http://localhost:4200, proxi
 ### First admin
 
 Registration needs an invite code. The very first account uses the bootstrap code from user-secrets
-(`dotnet user-secrets list --project src/Heardback.Api`) and becomes the admin. After that the bootstrap
-code stops working. The admin then creates invite codes with `POST /api/admin/invite-codes`. Until the
-UI exists, use Scalar (`http://localhost:5080/scalar`) or curl:
+(`dotnet user-secrets list --project src/Heardback.Api | grep BootstrapAdminCode`): open
+`http://localhost:4200/register`, enter it as the invite code, and that account becomes the admin. After
+that the bootstrap code stops working; remove the setting. The admin creates invite codes for everyone
+else on the **Invite codes** page (`/admin/invite-codes`).
 
-```bash
-curl -i http://localhost:5080/api/auth/register -H "Content-Type: application/json" \
-  -d '{"email":"you@example.com","password":"a long passphrase","displayName":"You","inviteCode":"<bootstrap code>"}'
-```
-
-## API overview
-
-| Endpoint | Access | Purpose |
-|---|---|---|
-| `POST /api/auth/register` | anonymous | Create an account with an invite code; signs in |
-| `POST /api/auth/login` | anonymous | Sign in; returns an access token, sets the refresh cookie |
-| `POST /api/auth/refresh` | refresh cookie | New access token; rotates the refresh cookie |
-| `POST /api/auth/logout` | refresh cookie | End this session |
-| `GET /api/me` | signed in | Current user's profile |
-| `POST /api/admin/invite-codes` | admin | Create a single-use invite code |
-| `GET /api/admin/invite-codes` | admin | List invite codes (paginated) |
-| `GET /health` | anonymous | Liveness |
-
-Login and register share a per-IP budget of 10 requests per minute; refresh and logout allow 30 (429 with
-`Retry-After` beyond that). A session lasts 14 days from the last refresh, and never more than 60 days
-from sign-in.
-
-`ClientIp:Source` tells the API where the real client IP comes from. Development uses `Direct`. Outside
-Development it has no default, so the API will not start until you set it (see ADR-0002).
-
-## Tests and checks
-
-```bash
-dotnet test --solution Heardback.slnx            # unit, architecture and integration tests (needs Docker)
-dotnet format Heardback.slnx --verify-no-changes
-
-cd web
-npm test -- --watch=false
-npm run lint
-npm run format:check
-```
+The bootstrap code must look like an invite code: 12 characters from 0-9 and A-Z without I, L, O or U
+(dashes are fine). The API refuses to start otherwise, with a message that says how to generate one.
 
 ### Adding a database migration
 

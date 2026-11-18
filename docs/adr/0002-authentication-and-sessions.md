@@ -3,7 +3,8 @@
 - **Status:** Accepted
 - **Date:** 2026-11-17 (revised the same day: absolute session lifetime, revoke-all on token reuse,
   serialized bootstrap claim, rate limiting; then fixes from the independent Phase 1 review;
-  2026-11-18: sign-in ends the browser's previous session; reload keeps the session on brief outages)
+  2026-11-18: sign-in ends the browser's previous session; reload keeps the session on brief outages;
+  bootstrap code has the invite code shape)
 
 ## Context
 
@@ -26,6 +27,9 @@ cleared, so deleting the account that used a code does not make the code valid a
 
 **First admin.** The first admin registers with a one-time bootstrap code from configuration.
 - The code stops working once an admin exists.
+- It has the same shape as a generated invite code (12 characters, Crockford base32), so the first
+  admin registers through the normal form. Startup fails on any other shape (decided 2026-11-18, after a
+  16-character code was silently cut to 12 by the form).
 - Bootstrap registrations take a Postgres advisory transaction lock and re-check for an admin inside
   the registration transaction. Simultaneous attempts therefore run one at a time, and only the first
   succeeds. Without the lock, five simultaneous attempts created five admins.

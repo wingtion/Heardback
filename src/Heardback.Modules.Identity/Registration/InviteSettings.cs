@@ -19,9 +19,12 @@ internal sealed class InviteSettings
     public string? NormalizedBootstrapAdminCode =>
         string.IsNullOrWhiteSpace(BootstrapAdminCode) ? null : InviteCode.Normalize(BootstrapAdminCode);
 
-    /// <summary>Long enough to resist guessing, and short enough to pass request validation.</summary>
+    /// <summary>
+    /// Same shape as a generated invite code, so it can be typed into the registration form, which
+    /// accepts exactly that. Separators and lower case are fine; they are normalized away.
+    /// </summary>
     public bool HasValidBootstrapCode() =>
         BootstrapAdminCode is null
-        || (NormalizedBootstrapAdminCode?.Length >= InviteCode.CodeLength
-            && BootstrapAdminCode.Length <= InviteCode.MaxInputLength);
+        || (BootstrapAdminCode.Length <= InviteCode.MaxInputLength
+            && InviteCode.IsWellFormed(NormalizedBootstrapAdminCode ?? string.Empty));
 }

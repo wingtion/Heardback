@@ -112,6 +112,10 @@ public sealed class ApiHostTests
     [InlineData("Identity:Tokens:SigningKey", "c2hvcnQta2V5", "SigningKey")]
     [InlineData("Identity:Tokens:SigningKey", "this is not base64!", "SigningKey")]
     [InlineData("Identity:Invites:BootstrapAdminCode", "SHORT", "BootstrapAdminCode")]
+    // Longer than an invite code: the registration form only accepts 12 characters, so it could never be typed.
+    [InlineData("Identity:Invites:BootstrapAdminCode", "YKD9ZZNEJMNHDXZ3", "BootstrapAdminCode")]
+    // O is not in the invite code alphabet (Crockford base32 leaves out I, L, O and U).
+    [InlineData("Identity:Invites:BootstrapAdminCode", "K7QM-2XRD-9PLO", "BootstrapAdminCode")]
     [InlineData("Identity:Tokens:AbsoluteSessionLifetime", "7.00:00:00", "AbsoluteSessionLifetime")]
     public async Task Startup_WeakOrInconsistentAuthSettings_FailsFast(string key, string value, string expectedInMessage)
     {

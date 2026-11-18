@@ -13,7 +13,7 @@ namespace Heardback.IntegrationTests.Api;
 public sealed class ApiFactory : WebApplicationFactory<Program>
 {
     public const string TestingEnvironment = "Testing";
-    public const string BootstrapAdminCode = "TEST-BOOT-STRP-ADMN";
+    public const string BootstrapAdminCode = "TEST-BTSP-ADMN";
 
     /// <summary>32 bytes of test-only key material, base64. Never used outside tests.</summary>
     public const string SigningKey = "dGVzdC1vbmx5LXNpZ25pbmcta2V5LTMyLWJ5dGVzISE=";

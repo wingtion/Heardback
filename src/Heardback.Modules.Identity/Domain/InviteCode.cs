@@ -53,6 +53,10 @@ internal sealed class InviteCode
         string.Concat(input.Where(character => character != GroupSeparator && !char.IsWhiteSpace(character)))
             .ToUpperInvariant();
 
+    /// <summary>True when a normalized code has the shape of a generated one: 12 characters from the alphabet.</summary>
+    public static bool IsWellFormed(string normalizedCode) =>
+        normalizedCode.Length == CodeLength && normalizedCode.All(character => Alphabet.Contains(character, StringComparison.Ordinal));
+
     public static string Format(string normalizedCode) =>
         string.Join(GroupSeparator, normalizedCode.Chunk(GroupLength).Select(group => new string(group)));
 

@@ -31,6 +31,24 @@ public sealed class InviteCodeTests
         Assert.Equal("K7QXM2PA9TDF", InviteCode.Normalize(typed));
     }
 
+    [Theory]
+    [InlineData("K7QXM2PA9TDF", true)]
+    [InlineData("K7QXM2PA9TD", false)]
+    [InlineData("K7QXM2PA9TDFX", false)]
+    [InlineData("K7QXM2PA9TDO", false)]
+    public void IsWellFormed_NormalizedCode_RequiresTwelveAlphabetCharacters(string code, bool expected)
+    {
+        Assert.Equal(expected, InviteCode.IsWellFormed(code));
+    }
+
+    [Fact]
+    public void IsWellFormed_GeneratedCode_IsTrue()
+    {
+        var invite = InviteCode.Generate(Guid.CreateVersion7(), Now, Lifetime);
+
+        Assert.True(InviteCode.IsWellFormed(invite.Code));
+    }
+
     [Fact]
     public void GetStatus_BeforeExpiry_IsActive()
     {
