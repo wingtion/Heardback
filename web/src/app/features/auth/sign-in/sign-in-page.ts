@@ -1,4 +1,3 @@
-import { DOCUMENT } from '@angular/common';
 import {
   Component,
   ElementRef,
@@ -30,11 +29,6 @@ import { AuthService } from '../auth.service';
 
 const EMAIL_MAX_LENGTH = 254;
 
-/** Navigation state that can pre-fill the email, e.g. after the session expired. Never in the URL. */
-export interface SignInNavigationState {
-  readonly email?: string;
-}
-
 @Component({
   selector: 'app-sign-in-page',
   imports: [ReactiveFormsModule, RouterLink, AuthCard, Banner, Button, Field, Input, Link, Spinner],
@@ -52,7 +46,9 @@ export class SignInPage {
   protected readonly submission = createAuthSubmission();
 
   protected readonly form = inject(NonNullableFormBuilder).group({
-    email: [this.emailFromNavigation(), [Validators.required, Validators.email]],
+    // After an expired session the email is pre-filled from memory (AuthService), never from the URL
+    // or history state, so it does not outlive the tab.
+    email: [this.auth.expired()?.email ?? '', [Validators.required, Validators.email]],
     password: ['', Validators.required],
   });
 
@@ -106,12 +102,5 @@ export class SignInPage {
       () => this.host.nativeElement.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus(),
       { injector: this.injector },
     );
-  }
-
-  private emailFromNavigation(): string {
-    const state: unknown = inject(DOCUMENT).defaultView?.history.state;
-    const email =
-      typeof state === 'object' && state !== null && 'email' in state ? state.email : null;
-    return typeof email === 'string' ? email : '';
   }
 }

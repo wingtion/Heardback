@@ -18,10 +18,6 @@ import { AuthApi } from './auth-api';
 import { isRefreshSuperseded, isUnauthorized, retryAfterSeconds } from './auth-errors';
 import { AuthResponse, CurrentUser, LoginRequest, RegisterRequest } from './auth.models';
 
-/**
- * The signed-in session. The access token is kept in memory only; the refresh token is an httpOnly
- * cookie the browser manages, so a page reload restores the session through refresh().
- */
 /** What is remembered (in memory only) about a session that expired, to pre-fill sign in. */
 export interface ExpiredSession {
   readonly email: string;
@@ -48,6 +44,10 @@ function restoreRetryDelay(error: unknown, retryNumber: number): Observable<numb
     : timer(seconds * MS_PER_SECOND);
 }
 
+/**
+ * The signed-in session. The access token is kept in memory only; the refresh token is an httpOnly
+ * cookie the browser manages, so a page reload restores the session through refresh().
+ */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly api = inject(AuthApi);

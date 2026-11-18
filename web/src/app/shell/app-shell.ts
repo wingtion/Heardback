@@ -10,7 +10,6 @@ import {
   RETURN_URL_PARAM,
 } from '../features/auth/auth-paths';
 import { AuthService } from '../features/auth/auth.service';
-import { SignInNavigationState } from '../features/auth/sign-in/sign-in-page';
 import { Logo } from '../shared/ui/brand/logo';
 import { Button } from '../shared/ui/button/button';
 import { Icon } from '../shared/ui/icon/icon';
@@ -43,7 +42,7 @@ export class AppShell {
     effect(() => {
       const expired = this.auth.expired();
       if (expired) {
-        untracked(() => this.goToSignIn(expired.email));
+        untracked(() => this.goToSignIn());
       }
     });
   }
@@ -63,14 +62,12 @@ export class AppShell {
     });
   }
 
-  private goToSignIn(email: string): void {
-    const state: SignInNavigationState = { email };
+  private goToSignIn(): void {
     void this.router.navigate([AUTH_ROUTES.login], {
       queryParams: {
         [LOGIN_REASON_PARAM]: LOGIN_REASONS.sessionExpired,
         [RETURN_URL_PARAM]: this.router.url,
       },
-      state,
     });
   }
 }

@@ -100,9 +100,9 @@ describe('AppShell', () => {
     await expect(refresh).rejects.toBeTruthy();
     harness.detectChanges();
 
+    // No navigation state: browsers keep history.state across reloads, and the email must not linger.
     expect(navigate).toHaveBeenCalledWith(['/login'], {
       queryParams: { reason: 'session-expired', returnUrl: '/applications' },
-      state: { email: 'ada@example.com' },
     });
   });
 

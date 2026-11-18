@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
+import { firstValueFrom } from 'rxjs';
 import { AUTH_API } from '../auth-paths';
 import { AuthService } from '../auth.service';
 import { authResponse } from '../auth.testing';
@@ -158,6 +159,32 @@ describe('SignInPage', () => {
     expect(root().textContent).toContain('Couldn’t reach Heardback');
     expect(root().textContent).toContain('Check your connection and try again.');
     expect(root().textContent).not.toContain('Your details are still filled in');
+  });
+
+  it('open_AfterSessionExpired_PrefillsTheEmailFromMemory', async () => {
+    const auth = TestBed.inject(AuthService);
+    const login = firstValueFrom(auth.login({ email: 'ada@example.com', password: 'pw' }));
+    http.expectOne(AUTH_API.login).flush(authResponse());
+    await login;
+    const refresh = firstValueFrom(auth.refresh());
+    http.expectOne(AUTH_API.refresh).flush(null, { status: 401, statusText: 'Unauthorized' });
+    await expect(refresh).rejects.toBeTruthy();
+
+    await open('/login?reason=session-expired');
+
+    expect(root().querySelector<HTMLInputElement>('input[type=email]')?.value).toBe(
+      'ada@example.com',
+    );
+  });
+
+  it('open_EmailInNavigationState_IsIgnored', async () => {
+    await TestBed.inject(Router).navigate(['/login'], {
+      queryParams: { reason: 'session-expired' },
+      state: { email: 'someone-else@example.com' },
+    });
+    harness.detectChanges();
+
+    expect(root().querySelector<HTMLInputElement>('input[type=email]')?.value).toBe('');
   });
 
   it('open_AfterSessionExpired_ShowsTheNotice', async () => {
