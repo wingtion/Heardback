@@ -63,5 +63,6 @@ app.MapHealthChecks("/health").AllowAnonymous();
 var api = app.MapGroup(string.Empty).WithRequestValidation();
 api.MapIdentityEndpoints();
 api.MapApplicationsEndpoints();
+api.MapMatchingEndpoints();
 
 await app.RunAsync();

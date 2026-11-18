@@ -1,3 +1,9 @@
+using Heardback.Modules.Matching.Cvs;
+using Heardback.Modules.Matching.Cvs.Extraction;
+using Heardback.Modules.Matching.Endpoints;
+using Heardback.Modules.Matching.Persistence;
+using Heardback.Shared.Persistence;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Heardback.Modules.Matching;
@@ -14,6 +20,32 @@ public static class MatchingModule
     public static IServiceCollection AddMatchingModule(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
+
+        services.AddOptions<MatchingSettings>()
+            .BindConfiguration(MatchingSettings.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddModuleDbContext<MatchingDbContext>(MatchingDbContext.Schema);
+        services.AddMatchingRateLimiting();
+
+        services.AddScoped<CvTextExtractor>();
+        services.AddScoped<UploadCvHandler>();
+        services.AddScoped<GetCvHandler>();
+        services.AddScoped<DeleteCvHandler>();
+
         return services;
+    }
+
+    /// <summary>Maps the Matching module's HTTP endpoints (<c>/api/cv</c>).</summary>
+    /// <param name="routes">The application's endpoint route builder.</param>
+    /// <returns>The same route builder, for chaining.</returns>
+    public static IEndpointRouteBuilder MapMatchingEndpoints(this IEndpointRouteBuilder routes)
+    {
+        ArgumentNullException.ThrowIfNull(routes);
+
+        routes.MapCvEndpoints();
+
+        return routes;
     }
 }

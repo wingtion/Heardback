@@ -106,6 +106,10 @@ docs/design.md                   design system: tokens, type, components, screen
   fail with 409 when the application changed elsewhere. Writes are rate limited per user. The web app
   shows applications as a list or as a board; a board move is a status event dated today, made by
   dragging a card or with "Move to…" (keyboard, touch and screen reader users).
+- **CVs** ([ADR-0006](docs/adr/0006-cv-upload-and-text-extraction.md)): a user uploads one CV PDF. The
+  server reads its text in memory under strict limits (size, pages, a decompression budget, an hourly upload
+  limit), replaces emails, phone numbers, links and address lines with markers, and stores only that text;
+  the file itself is never stored.
 - **Errors and validation** ([ADR-0003](docs/adr/0003-request-validation.md)): RFC 9457 ProblemDetails
   everywhere, 400 with field-level errors for invalid requests, and configuration validated at startup.
 

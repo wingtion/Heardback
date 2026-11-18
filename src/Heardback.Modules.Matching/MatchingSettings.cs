@@ -16,7 +16,7 @@ internal sealed class MatchingSettings
     public int CvMaxPages { get; set; } = 10;
 
     /// <summary>Most characters of text kept from a CV; a longer PDF is rejected rather than cut.</summary>
-    [Range(1000, 1_000_000)]
+    [Range(1000, 80_000)]
     public int CvMaxTextLength { get; set; } = 50_000;
 
     /// <summary>
