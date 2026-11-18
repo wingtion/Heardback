@@ -22,6 +22,9 @@ public sealed class SkillFinderTests
     [InlineData("Spring Boot microservices on Kubernetes", new[] { "Spring Boot", "Kubernetes", "Microservices" })]
     [InlineData("C# ve .NET ile geliştirme, Docker ve Azure", new[] { "C#", ".NET", "Docker", "Azure" })]
     [InlineData("react  native\nand vue.js", new[] { "React Native", "Vue.js" })]
+    [InlineData(
+        "MassTransit, Moq, Testcontainers, OpenTelemetry, Swagger, PostgreSQL (pgvector), Fly.io, Netlify",
+        new[] { "MassTransit", "PostgreSQL", "pgvector", "Fly.io", "Netlify", "OpenTelemetry", "Moq", "Testcontainers", "OpenAPI" })]
     public void Find_TechnicalText_FindsEachSkillOnce(string text, string[] expected)
     {
         Assert.Equal(expected, Names(text));

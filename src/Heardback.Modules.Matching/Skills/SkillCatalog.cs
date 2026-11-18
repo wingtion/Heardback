@@ -27,6 +27,8 @@ internal static class SkillCatalog
     private const string Unity = "Unity";
     private const string MachineLearning = "Machine learning";
     private const string CiCd = "CI/CD";
+    private const string PostgreSql = "PostgreSQL";
+    private const string UnitTesting = "Unit testing";
 
     public static IReadOnlyList<Skill> All { get; } =
     [
@@ -97,16 +99,22 @@ internal static class SkillCatalog
         Define("NumPy", SkillCategory.Framework, ["NumPy"], implies: [Python]),
         Define("TensorFlow", SkillCategory.Framework, ["TensorFlow"], implies: [MachineLearning]),
         Define("PyTorch", SkillCategory.Framework, ["PyTorch"], implies: [MachineLearning]),
+        Define("MassTransit", SkillCategory.Framework, ["MassTransit"], implies: [DotNet]),
+        Define("MediatR", SkillCategory.Framework, ["MediatR"], implies: [DotNet]),
+        Define("AutoMapper", SkillCategory.Framework, ["AutoMapper"], implies: [DotNet]),
+        Define("Dapper", SkillCategory.Framework, ["Dapper"], implies: [DotNet]),
+        Define("Serilog", SkillCategory.Framework, ["Serilog"], implies: [DotNet]),
         Define("GraphQL", SkillCategory.Framework, ["GraphQL"]),
         Define("gRPC", SkillCategory.Framework, ["gRPC"]),
 
         // Databases and messaging
-        Define("PostgreSQL", SkillCategory.Database, ["PostgreSQL", "Postgres"], implies: [Sql]),
+        Define(PostgreSql, SkillCategory.Database, ["PostgreSQL", "Postgres"], implies: [Sql]),
         Define("SQL Server", SkillCategory.Database, ["SQL Server", "MS SQL", "MSSQL", "Microsoft SQL Server"],
             implies: [Sql]),
         Define("MySQL", SkillCategory.Database, ["MySQL", "MariaDB"], implies: [Sql]),
         Define("Oracle Database", SkillCategory.Database, ["Oracle Database", "Oracle DB"], implies: [Sql]),
         Define("SQLite", SkillCategory.Database, ["SQLite"], implies: [Sql]),
+        Define("pgvector", SkillCategory.Database, ["pgvector"], implies: [PostgreSql]),
         Define("MongoDB", SkillCategory.Database, ["MongoDB", "Mongo"]),
         Define("Redis", SkillCategory.Database, ["Redis"]),
         Define("Elasticsearch", SkillCategory.Database, ["Elasticsearch", "Elastic Search", "OpenSearch"]),
@@ -124,6 +132,12 @@ internal static class SkillCatalog
         Define("Terraform", SkillCategory.CloudAndDevOps, ["Terraform"]),
         Define("Linux", SkillCategory.CloudAndDevOps, ["Linux", "Ubuntu"]),
         Define("Nginx", SkillCategory.CloudAndDevOps, ["Nginx"]),
+        Define("Fly.io", SkillCategory.CloudAndDevOps, ["Fly.io"]),
+        Define("Netlify", SkillCategory.CloudAndDevOps, ["Netlify"]),
+        Define("Vercel", SkillCategory.CloudAndDevOps, ["Vercel"]),
+        Define("OpenTelemetry", SkillCategory.CloudAndDevOps, ["OpenTelemetry", "OTel"]),
+        Define("Prometheus", SkillCategory.CloudAndDevOps, ["Prometheus"]),
+        Define("Grafana", SkillCategory.CloudAndDevOps, ["Grafana"]),
         Define(CiCd, SkillCategory.CloudAndDevOps, ["CI/CD", "CICD", "Continuous integration", "Continuous delivery"]),
         Define("GitHub Actions", SkillCategory.CloudAndDevOps, ["GitHub Actions"], implies: [CiCd, Git]),
         Define("Azure DevOps", SkillCategory.CloudAndDevOps, ["Azure DevOps"], implies: [CiCd, Azure]),
@@ -133,12 +147,14 @@ internal static class SkillCatalog
         Define("GitLab", SkillCategory.CloudAndDevOps, ["GitLab"], implies: [Git]),
 
         // Testing
-        Define("Unit testing", SkillCategory.Testing, ["Unit testing", "Unit tests", "xUnit", "NUnit", "MSTest", "JUnit"]),
+        Define(UnitTesting, SkillCategory.Testing, ["Unit testing", "Unit tests", "xUnit", "NUnit", "MSTest", "JUnit"]),
         Define("TDD", SkillCategory.Testing, ["TDD", "Test-driven development", "Test driven development"]),
         Define("Jest", SkillCategory.Testing, exact: ["Jest"]),
         Define("Cypress", SkillCategory.Testing, ["Cypress"]),
         Define("Playwright", SkillCategory.Testing, ["Playwright"]),
         Define("Selenium", SkillCategory.Testing, ["Selenium"]),
+        Define("Moq", SkillCategory.Testing, ["Moq", "NSubstitute"], implies: [UnitTesting]),
+        Define("Testcontainers", SkillCategory.Testing, ["Testcontainers", "Test containers"]),
 
         // Practices and architecture
         Define("REST APIs", SkillCategory.Practice, ["RESTful", "REST API", "REST APIs", "Web API", "Web APIs"],
@@ -151,6 +167,7 @@ internal static class SkillCatalog
         Define("Agile", SkillCategory.Practice, ["Agile", "Scrum", "Kanban"]),
         Define("OAuth", SkillCategory.Practice, ["OAuth", "OAuth2", "OAuth 2.0", "OpenID Connect", "OIDC"]),
         Define("JWT", SkillCategory.Practice, ["JWT", "JSON Web Token", "JSON Web Tokens"]),
+        Define("OpenAPI", SkillCategory.Practice, ["OpenAPI", "Swagger"]),
         Define(MachineLearning, SkillCategory.Practice, ["Machine learning", "Deep learning"], exact: ["ML"]),
 
         // Tools

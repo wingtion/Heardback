@@ -110,7 +110,7 @@ docs/design.md                   design system: tokens, type, components, screen
   server reads its text in memory under strict limits (size, pages, a decompression budget, an hourly upload
   limit), replaces emails, phone numbers, links and address lines with markers, and stores only that text;
   the file itself is never stored.
-- **Matching:** a dictionary of about 110 skills (with aliases such as "dotnet" for .NET) finds the skills
+- **Matching:** a dictionary of about 125 skills (with aliases such as "dotnet" for .NET) finds the skills
   an application's role and posting text name and those the CV shows, and lists matched and missing
   skills with a score. Deterministic, no LLM, worked out on every read.
 - **Errors and validation** ([ADR-0003](docs/adr/0003-request-validation.md)): RFC 9457 ProblemDetails
