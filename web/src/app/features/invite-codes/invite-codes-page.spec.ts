@@ -13,6 +13,9 @@ import { inviteCode, invitePage } from './invite-codes.testing';
 @Component({ template: '<p>No access page</p>' })
 class StubNoAccess {}
 
+// CDK dialogs read the legacy keyCode to recognise Escape.
+const ESCAPE_KEY_CODE = 27;
+
 describe('InviteCodesPage', () => {
   let harness: RouterTestingHarness;
   let http: HttpTestingController;
@@ -73,6 +76,12 @@ describe('InviteCodesPage', () => {
     );
     if (!button) throw new Error(`No button "${text}"`);
     return button;
+  }
+
+  function pressEscape(): void {
+    document.body.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', keyCode: ESCAPE_KEY_CODE, bubbles: true }),
+    );
   }
 
   async function openCreateDialog(): Promise<void> {
@@ -263,5 +272,66 @@ describe('InviteCodesPage', () => {
 
     expect(dialog().textContent).toContain('Couldn’t create the invite code');
     expect(dialog().querySelector('input')?.disabled).toBe(false);
+  });
+
+  it('create_ServerRejectsExpiry_ShowsTheFieldError', async () => {
+    await respondToList(invitePage({ items: [] }));
+    await openCreateDialog();
+
+    await submitCreate('7');
+    http
+      .expectOne((r) => r.method === 'POST')
+      .flush(
+        { errors: { expiresInDays: ['The field ExpiresInDays must be between 1 and 90.'] } },
+        { status: 400, statusText: 'Bad Request' },
+      );
+    await render();
+
+    expect(dialog().textContent).toContain('Enter a whole number of days from 1 to 90');
+    expect(dialog().textContent).not.toContain('Couldn’t create the invite code');
+  });
+
+  it('create_Forbidden_ClosesTheDialogAndShowsNoAccess', async () => {
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+    await respondToList(invitePage({ items: [] }));
+    await openCreateDialog();
+
+    await submitCreate('7');
+    http
+      .expectOne((r) => r.method === 'POST')
+      .flush(null, { status: 403, statusText: 'Forbidden' });
+    await render();
+
+    expect(document.querySelector('app-invite-code-dialog')).toBeNull();
+    expect(navigate).toHaveBeenCalledWith('/no-access', { skipLocationChange: true });
+  });
+
+  it('create_EscapeWhileRequestRuns_KeepsTheDialogOpen', async () => {
+    await respondToList(invitePage({ items: [] }));
+    await openCreateDialog();
+    await submitCreate('7');
+
+    pressEscape();
+    await render();
+    const closeButton = dialog().querySelector<HTMLButtonElement>('button[aria-label="Close"]');
+
+    expect(document.querySelector('app-invite-code-dialog')).not.toBeNull();
+    expect(closeButton?.disabled).toBe(true);
+    http.expectOne((r) => r.method === 'POST').flush(inviteCode());
+    await respondToList(invitePage());
+  });
+
+  it('create_DismissedRightAfterCreation_StillShowsTheNewCode', async () => {
+    await respondToList(invitePage({ items: [] }));
+    await openCreateDialog();
+    await submitCreate('7');
+    http.expectOne((r) => r.method === 'POST').flush(inviteCode());
+    await render();
+
+    pressEscape();
+    await respondToList(invitePage());
+
+    expect(document.querySelector('app-invite-code-dialog')).toBeNull();
+    expect(root().querySelector('tbody')?.textContent).toContain('K7QM-2XRD-9PLA');
   });
 });
