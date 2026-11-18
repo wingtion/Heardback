@@ -1,14 +1,13 @@
-import { DatePipe } from '@angular/common';
-import { Component, booleanAttribute, input } from '@angular/core';
+import { Component } from '@angular/core';
 
 /**
- * The postmark over the envelope's stamp: three cancellation waves and a double-ring date circle in
- * `postmark` (docs/design.md §6, §8). Decorative; the date is repeated in text elsewhere.
+ * The postmark over the envelope's stamp: three cancellation waves in `postmark` (docs/design.md §6, §8).
+ * The handoff also drew a dated double-ring circle; the author removed it (2026-11-18) because its 8 px
+ * month was hard to read and the date is already in the timeline. Decorative.
  */
 @Component({
   selector: 'app-postmark',
-  imports: [DatePipe],
-  host: { class: 'flex items-center text-postmark', 'aria-hidden': 'true' },
+  host: { class: 'flex text-postmark', 'aria-hidden': 'true' },
   template: `
     <svg
       width="44"
@@ -24,22 +23,6 @@ import { Component, booleanAttribute, input } from '@angular/core';
         d="M2 5c3.5-3 7-3 10.5 0s7 3 10.5 0 7-3 10.5 0 5 2 8 0M2 11c3.5-3 7-3 10.5 0s7 3 10.5 0 7-3 10.5 0 5 2 8 0M2 17c3.5-3 7-3 10.5 0s7 3 10.5 0 7-3 10.5 0 5 2 8 0"
       />
     </svg>
-    <span
-      class="-ml-1 flex flex-col items-center justify-center rounded-full border-3 border-double border-postmark font-mono leading-none"
-      [class]="compact() ? 'size-10.5' : 'size-11.5'"
-    >
-      <span class="tracking-stamp uppercase" [class]="compact() ? 'text-stamp-sm' : 'text-stamp'">
-        {{ date() | date: 'MMM' }}
-      </span>
-      <span class="mt-0.5 font-medium" [class]="compact() ? 'text-caption' : 'text-small'">
-        {{ date() | date: 'dd' }}
-      </span>
-    </span>
   `,
 })
-export class Postmark {
-  /** Calendar date, "2026-11-21". */
-  readonly date = input.required<string>();
-  /** The smaller version in the mobile sheet. */
-  readonly compact = input(false, { transform: booleanAttribute });
-}
+export class Postmark {}

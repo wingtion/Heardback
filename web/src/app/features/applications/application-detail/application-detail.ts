@@ -27,7 +27,7 @@ import {
   DeleteApplicationData,
   DeleteApplicationDialog,
 } from '../delete-application-dialog/delete-application-dialog';
-import { lastActivityOn, timelineRows } from './application-timeline';
+import { timelineRows } from './application-timeline';
 
 /** "panel" beside the list from the xl breakpoint; "sheet" full screen below it (docs/design.md §9). */
 export type DetailLayout = 'panel' | 'sheet';
@@ -116,11 +116,6 @@ export class ApplicationDetail {
   protected readonly timeline = computed(() => {
     const application = this.application();
     return application ? timelineRows(application) : [];
-  });
-
-  protected readonly postmarkDate = computed(() => {
-    const application = this.application();
-    return application ? lastActivityOn(application) : null;
   });
 
   protected readonly updated = computed(() => {
