@@ -112,7 +112,8 @@ docs/design.md                   design system: tokens, type, components, screen
   the file itself is never stored.
 - **Matching:** a dictionary of about 125 skills (with aliases such as "dotnet" for .NET) finds the skills
   an application's role and posting text name and those the CV shows, and lists matched and missing
-  skills with a score. Deterministic, no LLM, worked out on every read.
+  skills with a score. Deterministic, no LLM, worked out on every read. A text dictionary cannot tell "I know
+  Rust" from "my project checks Rust code", so users can mark a found skill as not theirs.
 - **Errors and validation** ([ADR-0003](docs/adr/0003-request-validation.md)): RFC 9457 ProblemDetails
   everywhere, 400 with field-level errors for invalid requests, and configuration validated at startup.
 

@@ -44,7 +44,16 @@ internal static class CvEndpoints
             .ProducesProblem(StatusCodes.Status413PayloadTooLarge)
             .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
+        cv.MapPut("/excluded-skills", ExcludeSkillsAsync)
+            .RequireRateLimiting(MatchingRateLimiting.CvWritePolicy)
+            .WithSummary("Set the skills the user says are not theirs; they count in no match.")
+            .Produces<CvResponse>()
+            .ProducesValidationProblem()
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests);
+
         cv.MapDelete(string.Empty, DeleteAsync)
+            .RequireRateLimiting(MatchingRateLimiting.CvWritePolicy)
             .WithSummary("Delete the user's CV.")
             .Produces(StatusCodes.Status204NoContent);
     }
@@ -60,6 +69,15 @@ internal static class CvEndpoints
         CancellationToken cancellationToken)
     {
         var result = await handler.HandleAsync(file, cancellationToken);
+        return result.IsSuccess ? TypedResults.Ok(result.Value) : result.Error.ToProblem();
+    }
+
+    private static async Task<IResult> ExcludeSkillsAsync(
+        [FromBody] ExcludeSkillsRequest request,
+        ExcludeSkillsHandler handler,
+        CancellationToken cancellationToken)
+    {
+        var result = await handler.HandleAsync(request, cancellationToken);
         return result.IsSuccess ? TypedResults.Ok(result.Value) : result.Error.ToProblem();
     }
 

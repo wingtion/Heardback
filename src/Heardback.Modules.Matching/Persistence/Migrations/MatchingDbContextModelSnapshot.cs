@@ -29,6 +29,11 @@ namespace Heardback.Modules.Matching.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.PrimitiveCollection<string[]>("ExcludedSkills")
+                        .IsRequired()
+                        .HasColumnType("text[]")
+                        .HasColumnName("excluded_skills");
+
                     b.Property<int>("PageCount")
                         .HasColumnType("integer")
                         .HasColumnName("page_count");

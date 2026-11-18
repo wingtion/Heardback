@@ -1,4 +1,5 @@
 using Heardback.Modules.Applications.Contracts;
+using Heardback.Modules.Matching.Cvs;
 using Heardback.Modules.Matching.Persistence;
 using Heardback.Modules.Matching.Skills;
 using Heardback.Shared.Results;
@@ -13,7 +14,8 @@ internal sealed class GetMatchHandler(IApplicationPostings postings, MatchingDbC
     /// <summary>
     /// Compares one of the user's applications with their CV, worked out fresh on every read (decided
     /// 2026-11-18): always current after an edit or a new CV, and no LLM involved. The posting's skills are what
-    /// its role and text name; the CV's include what those imply ("ASP.NET Core" shows ".NET").
+    /// its role and text name; the CV's include what those imply ("ASP.NET Core" shows ".NET"), minus the skills
+    /// the user marked as not theirs.
     /// </summary>
     public async Task<Result<MatchResponse>> HandleAsync(Guid applicationId, CancellationToken cancellationToken)
     {
@@ -32,16 +34,16 @@ internal sealed class GetMatchHandler(IApplicationPostings postings, MatchingDbC
             return new MatchResponse(state, Score: null, Matched: [], Missing: []);
         }
 
-        var cvText = await dbContext.Cvs
+        var cv = await dbContext.Cvs
             .AsNoTracking()
-            .Select(cv => cv.Text)
+            .Select(cv => new { cv.Text, cv.ExcludedSkills })
             .FirstOrDefaultAsync(cancellationToken);
-        if (cvText is null)
+        if (cv is null)
         {
             return new MatchResponse(MatchState.NoCv, Score: null, Matched: [], Missing: ToResponses(required));
         }
 
-        var shown = SkillFinder.WithImplied(SkillFinder.Find(cvText)).ToHashSet();
+        var shown = CvSkills.Shown(cv.Text, cv.ExcludedSkills);
         var matched = required.Where(shown.Contains).ToList();
         var missing = required.Where(skill => !shown.Contains(skill)).ToList();
         var score = (int)Math.Round(FullScore * (double)matched.Count / required.Count, MidpointRounding.AwayFromZero);

@@ -34,6 +34,7 @@ public static class MatchingModule
         services.AddScoped<UploadCvHandler>();
         services.AddScoped<GetCvHandler>();
         services.AddScoped<DeleteCvHandler>();
+        services.AddScoped<ExcludeSkillsHandler>();
         services.AddScoped<GetMatchHandler>();
 
         return services;

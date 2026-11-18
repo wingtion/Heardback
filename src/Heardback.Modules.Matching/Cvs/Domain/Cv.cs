@@ -25,6 +25,12 @@ internal sealed class Cv : IUserOwned
 
     public DateTimeOffset UploadedAt { get; private set; }
 
+    /// <summary>
+    /// Skills the user said are not theirs ("Not my skill"), e.g. a language a project only mentions. They count in
+    /// no match and stay excluded when a new CV replaces this one. Names from the skills dictionary.
+    /// </summary>
+    public string[] ExcludedSkills { get; private set; } = [];
+
     public static Cv Create(string text, int pageCount, DateTimeOffset now)
     {
         var cv = new Cv { Id = Guid.CreateVersion7(now) };
@@ -40,6 +46,13 @@ internal sealed class Cv : IUserOwned
         Text = text;
         PageCount = pageCount;
         UploadedAt = ToStoredPrecision(now);
+    }
+
+    /// <summary>Replaces the excluded skills; the caller has checked the names against the dictionary.</summary>
+    public void ExcludeSkills(IEnumerable<string> skillNames)
+    {
+        ArgumentNullException.ThrowIfNull(skillNames);
+        ExcludedSkills = skillNames.Distinct(StringComparer.Ordinal).ToArray();
     }
 
     // Postgres keeps microseconds; rounding here makes the upload response match every later read.

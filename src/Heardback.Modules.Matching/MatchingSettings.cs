@@ -29,4 +29,8 @@ internal sealed class MatchingSettings
     /// <summary>CV uploads one user may make per hour.</summary>
     [Range(1, 1000)]
     public int CvUploadsPerHour { get; set; } = 5;
+
+    /// <summary>Other CV changes (skills marked as not yours, deletes) one user may make per minute.</summary>
+    [Range(1, 10_000)]
+    public int CvWritesPerMinute { get; set; } = 60;
 }

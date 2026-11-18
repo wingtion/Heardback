@@ -3,15 +3,19 @@ using Heardback.Shared.Results;
 
 namespace Heardback.Modules.Matching;
 
-/// <summary>Expected failures of the Matching module. Every CV problem is a field error on "file".</summary>
+/// <summary>Expected failures of the Matching module. Problems with an uploaded CV are field errors on "file".</summary>
 internal static class MatchingErrors
 {
     public const string FileField = "file";
+    public const string SkillsField = "skills";
 
     private const int BytesPerMegabyte = 1024 * 1024;
 
     public static readonly Error ApplicationNotFound =
         Error.NotFound("matching.application_not_found", "This application doesn't exist or was deleted.");
+
+    public static readonly Error CvNotFound =
+        Error.NotFound("matching.cv_not_found", "Upload a CV first.");
 
     public static readonly Error CvMissing =
         Error.Validation("matching.cv_missing", FileField, "Choose a PDF file.");
@@ -58,4 +62,10 @@ internal static class MatchingErrors
             string.Create(
                 CultureInfo.InvariantCulture,
                 $"The PDF has more text than a CV usually does (over {maxLength:N0} characters)."));
+
+    public static Error UnknownSkill(string name) =>
+        Error.Validation(
+            "matching.unknown_skill",
+            SkillsField,
+            string.Create(CultureInfo.InvariantCulture, $"“{name}” is not a skill Heardback knows."));
 }

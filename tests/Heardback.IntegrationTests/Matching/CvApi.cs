@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.Core;
 using UglyToad.PdfPig.Fonts.Standard14Fonts;
@@ -53,6 +54,9 @@ internal static class CvApi
     public static Task<HttpResponseMessage> GetCvAsync(this HttpClient client, string accessToken) =>
         client.SendAsync(HttpMethod.Get, accessToken);
 
+    public static Task<HttpResponseMessage> ExcludeSkillsAsync(this HttpClient client, string accessToken, params string[] skills) =>
+        client.SendAsync(HttpMethod.Put, accessToken, JsonContent.Create(new { skills }), "/excluded-skills");
+
     public static Task<HttpResponseMessage> DeleteCvAsync(this HttpClient client, string accessToken) =>
         client.SendAsync(HttpMethod.Delete, accessToken);
 
@@ -60,9 +64,10 @@ internal static class CvApi
         this HttpClient client,
         HttpMethod method,
         string? accessToken,
-        HttpContent? content = null)
+        HttpContent? content = null,
+        string subPath = "")
     {
-        using var request = new HttpRequestMessage(method, new Uri(BasePath, UriKind.Relative)) { Content = content };
+        using var request = new HttpRequestMessage(method, new Uri(BasePath + subPath, UriKind.Relative)) { Content = content };
         if (accessToken is not null)
         {
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
@@ -72,4 +77,4 @@ internal static class CvApi
     }
 }
 
-internal sealed record CvDto(DateTimeOffset UploadedAt, int PageCount, string Text, string[] Skills);
+internal sealed record CvDto(DateTimeOffset UploadedAt, int PageCount, string Text, string[] Skills, string[] ExcludedSkills);

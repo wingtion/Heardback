@@ -10,10 +10,11 @@ internal sealed class GetCvHandler(MatchingDbContext dbContext)
     {
         var stored = await dbContext.Cvs
             .AsNoTracking()
-            .Select(cv => new { cv.UploadedAt, cv.PageCount, cv.Text })
+            .Select(cv => new { cv.UploadedAt, cv.PageCount, cv.Text, cv.ExcludedSkills })
             .FirstOrDefaultAsync(cancellationToken);
 
-        // Skills are found on every read, so dictionary updates apply to CVs uploaded earlier too.
-        return stored is null ? null : CvResponse.From(stored.UploadedAt, stored.PageCount, stored.Text);
+        return stored is null
+            ? null
+            : CvResponse.From(stored.UploadedAt, stored.PageCount, stored.Text, stored.ExcludedSkills);
     }
 }
