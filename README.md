@@ -4,9 +4,9 @@ A web app for job seekers to track every application in one place and get insigh
 which channels actually get responses, how long companies take to reply, how well a CV matches a
 posting, and community signals such as postings where nobody ever hears back.
 
-> **Status:** Phase 1 (identity and invites) done; design checkpoint in progress (design system in
-> [docs/design.md](docs/design.md)). See [PLAN.md](PLAN.md)
-> for the roadmap and [CLAUDE.md](CLAUDE.md) for the engineering rules.
+> **Status:** Phases 0–1 and the design checkpoint are done (design system in
+> [docs/design.md](docs/design.md)); Phase 2 (application tracking) is in progress. See
+> [PLAN.md](PLAN.md) for the roadmap and [CLAUDE.md](CLAUDE.md) for the engineering rules.
 
 ## Tech stack
 
@@ -103,7 +103,9 @@ docs/design.md                   design system: tokens, type, components, screen
   details. The server never fetches posting pages.
 - **Applications:** each application has a timeline of dated events; its status is the latest status
   event, and "No response · N days" is derived from dates on every read. Edits carry the row version and
-  fail with 409 when the application changed elsewhere. Writes are rate limited per user.
+  fail with 409 when the application changed elsewhere. Writes are rate limited per user. The web app
+  shows applications as a list or as a board; a board move is a status event dated today, made by
+  dragging a card or with "Move to…" (keyboard, touch and screen reader users).
 - **Errors and validation** ([ADR-0003](docs/adr/0003-request-validation.md)): RFC 9457 ProblemDetails
   everywhere, 400 with field-level errors for invalid requests, and configuration validated at startup.
 
