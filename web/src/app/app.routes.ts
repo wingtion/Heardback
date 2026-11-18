@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard } from './features/auth/auth.guards';
+import { adminGuard, authGuard, guestGuard } from './features/auth/auth.guards';
 
 export const routes: Routes = [
   {
@@ -27,6 +27,13 @@ export const routes: Routes = [
         title: 'Applications · Heardback',
         loadComponent: () =>
           import('./features/applications/applications-page').then((page) => page.ApplicationsPage),
+      },
+      {
+        path: 'admin/invite-codes',
+        title: 'Invite codes · Heardback',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./features/invite-codes/invite-codes-page').then((page) => page.InviteCodesPage),
       },
       {
         path: 'no-access',
