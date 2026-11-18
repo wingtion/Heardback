@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { guestGuard } from './features/auth/auth.guards';
+import { authGuard, guestGuard } from './features/auth/auth.guards';
 
 export const routes: Routes = [
   {
@@ -16,4 +16,25 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/auth/register/register-page').then((page) => page.RegisterPage),
   },
+  {
+    path: '',
+    canActivate: [authGuard],
+    loadComponent: () => import('./shell/app-shell').then((shell) => shell.AppShell),
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'applications' },
+      {
+        path: 'applications',
+        title: 'Applications · Heardback',
+        loadComponent: () =>
+          import('./features/applications/applications-page').then((page) => page.ApplicationsPage),
+      },
+      {
+        path: 'no-access',
+        title: 'No access · Heardback',
+        loadComponent: () =>
+          import('./features/access/no-access-page').then((page) => page.NoAccessPage),
+      },
+    ],
+  },
+  { path: '**', redirectTo: '' },
 ];

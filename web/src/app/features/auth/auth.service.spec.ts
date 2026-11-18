@@ -107,6 +107,44 @@ describe('AuthService', () => {
     expect(auth.isAuthenticated()).toBe(false);
   });
 
+  it('restoreSession reports restoring until the refresh answers', async () => {
+    const restore = auth.restoreSession();
+    expect(auth.restoring()).toBe(true);
+
+    http.expectOne(AUTH_API.refresh).flush(null, { status: 401, statusText: 'Unauthorized' });
+    await restore;
+
+    expect(auth.restoring()).toBe(false);
+  });
+
+  it('a startup restore without a cookie is not reported as an expired session', async () => {
+    const restore = auth.restoreSession();
+    http.expectOne(AUTH_API.refresh).flush(null, { status: 401, statusText: 'Unauthorized' });
+    await restore;
+
+    expect(auth.expired()).toBeNull();
+  });
+
+  it('a signed-in session rejected by the server is reported as expired with its email', async () => {
+    await signIn();
+
+    const refresh = firstValueFrom(auth.refresh());
+    http.expectOne(AUTH_API.refresh).flush(null, { status: 401, statusText: 'Unauthorized' });
+    await expect(refresh).rejects.toBeTruthy();
+
+    expect(auth.expired()).toEqual({ email: 'ada@example.com' });
+  });
+
+  it('signing out is not reported as an expired session', async () => {
+    await signIn();
+
+    const logout = firstValueFrom(auth.logout(), { defaultValue: undefined });
+    http.expectOne(AUTH_API.logout).flush(null);
+    await logout;
+
+    expect(auth.expired()).toBeNull();
+  });
+
   async function signIn(): Promise<void> {
     const login = firstValueFrom(auth.login({ email: 'ada@example.com', password: 'pw' }));
     http.expectOne(AUTH_API.login).flush(authResponse());

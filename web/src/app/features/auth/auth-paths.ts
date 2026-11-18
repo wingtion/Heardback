@@ -14,6 +14,7 @@ export const AUTH_ROUTES = {
   login: '/login',
   register: '/register',
   home: '/',
+  noAccess: '/no-access',
 } as const;
 
 export const RETURN_URL_PARAM = 'returnUrl';

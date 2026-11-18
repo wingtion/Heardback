@@ -1,0 +1,70 @@
+<div class="flex min-h-dvh flex-col bg-base lg:h-dvh lg:flex-row">
+  <!-- Desktop sidebar -->
+  <nav
+    aria-label="Main"
+    class="w-52 shrink-0 flex-col gap-0.5 border-r border-rule bg-surface px-3 pt-5 pb-4 max-lg:hidden lg:flex"
+  >
+    <div class="mb-2.5 flex items-center gap-2.25 border-b border-rule px-2 pb-4.5">
+      <app-logo />
+      <span class="font-serif text-wordmark font-semibold text-ink">Heardback</span>
+    </div>
+    <app-nav-menu layout="sidebar" [signingOut]="signingOut()" (signOut)="signOut()" />
+  </nav>
+
+  <!-- Mobile header -->
+  <header
+    class="flex h-15 shrink-0 items-center gap-2.25 border-b border-rule bg-surface pr-2 pl-4.5 lg:hidden"
+  >
+    <app-logo [size]="24" />
+    <span class="flex-1 font-serif text-dialog-title font-semibold text-ink">Heardback</span>
+    <button
+      appButton="ghost"
+      size="lg"
+      iconOnly
+      type="button"
+      aria-label="Open menu"
+      aria-controls="mobile-menu"
+      [attr.aria-expanded]="menuOpen()"
+      (click)="openMenu()"
+    >
+      <app-icon name="menu" [size]="20" />
+    </button>
+  </header>
+
+  @if (menuOpen()) {
+    <div
+      id="mobile-menu"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Menu"
+      tabindex="-1"
+      class="fixed inset-0 z-40 flex flex-col bg-surface lg:hidden"
+      cdkTrapFocus
+      cdkTrapFocusAutoCapture
+      (keydown.escape)="closeMenu()"
+    >
+      <div class="flex h-15 shrink-0 items-center gap-2.25 border-b border-rule pr-2 pl-4.5">
+        <app-logo [size]="24" />
+        <span class="flex-1 font-serif text-dialog-title font-semibold text-ink">Heardback</span>
+        <button
+          appButton="ghost"
+          size="lg"
+          iconOnly
+          type="button"
+          aria-label="Close menu"
+          aria-expanded="true"
+          (click)="closeMenu()"
+        >
+          <app-icon name="close" [size]="18" />
+        </button>
+      </div>
+      <nav aria-label="Main" class="flex flex-1 flex-col px-3 pt-3">
+        <app-nav-menu layout="menu" [signingOut]="signingOut()" (signOut)="signOut()" />
+      </nav>
+    </div>
+  }
+
+  <main class="min-w-0 flex-1 lg:overflow-y-auto">
+    <router-outlet />
+  </main>
+</div>

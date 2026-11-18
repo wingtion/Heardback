@@ -93,6 +93,9 @@
   --radius-xl: 6px;
   --radius-sheet: 14px;
 
+  /* 3 px accent bar on the left of the active nav item and the selected row. */
+  --inset-shadow-selection: inset 3px 0 0 var(--color-accent);
+
   --shadow-dialog: 0 12px 32px light-dark(rgb(45 35 20 / 0.18), rgb(0 0 0 / 0.55));
 }
 

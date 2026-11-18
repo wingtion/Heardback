@@ -3,6 +3,8 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import {
   ActivatedRouteSnapshot,
+  CanActivateFn,
+  RedirectCommand,
   Router,
   RouterStateSnapshot,
   UrlTree,
@@ -31,42 +33,66 @@ describe('auth guards', () => {
 
   afterEach(() => http.verify());
 
-  it('authGuard sends signed-out users to login with a return URL', () => {
-    const result = TestBed.runInInjectionContext(() => authGuard(route, state));
+  function run(guard: CanActivateFn): Promise<unknown> {
+    return Promise.resolve(TestBed.runInInjectionContext(() => guard(route, state)));
+  }
 
-    expect(serialize(result)).toBe('/login?returnUrl=%2Fapplications%2F42');
+  it('authGuard sends signed-out users to login with a return URL', async () => {
+    expect(serialize(await run(authGuard))).toBe('/login?returnUrl=%2Fapplications%2F42');
   });
 
   it('authGuard lets signed-in users through', async () => {
     await signIn({ isAdmin: false });
 
-    expect(TestBed.runInInjectionContext(() => authGuard(route, state))).toBe(true);
+    expect(await run(authGuard)).toBe(true);
   });
 
-  it('adminGuard sends signed-in non-admins home', async () => {
-    await signIn({ isAdmin: false });
+  it('authGuard waits for the startup restore before deciding', async () => {
+    const auth = TestBed.inject(AuthService);
+    void auth.restoreSession();
+    let settled = false;
+    const result = run(authGuard).then((value) => {
+      settled = true;
+      return value;
+    });
 
-    const result = TestBed.runInInjectionContext(() => adminGuard(route, state));
+    await Promise.resolve();
+    expect(settled).toBe(false);
 
-    expect(serialize(result)).toBe('/');
+    http.expectOne(AUTH_API.refresh).flush(authResponse());
+
+    expect(await result).toBe(true);
   });
 
-  it('adminGuard lets admins through', async () => {
-    await signIn({ isAdmin: true });
-
-    expect(TestBed.runInInjectionContext(() => adminGuard(route, state))).toBe(true);
-  });
-
-  it('guestGuard lets signed-out users open sign in', () => {
-    expect(TestBed.runInInjectionContext(() => guestGuard(route, state))).toBe(true);
+  it('guestGuard lets signed-out users open sign in', async () => {
+    expect(await run(guestGuard)).toBe(true);
   });
 
   it('guestGuard sends signed-in users home', async () => {
     await signIn({ isAdmin: false });
 
-    const result = TestBed.runInInjectionContext(() => guestGuard(route, state));
+    expect(serialize(await run(guestGuard))).toBe('/');
+  });
 
-    expect(serialize(result)).toBe('/');
+  it('adminGuard sends signed-out users to login', async () => {
+    expect(serialize(await run(adminGuard))).toBe('/login?returnUrl=%2Fapplications%2F42');
+  });
+
+  it('adminGuard shows members the no-access page without changing the address', async () => {
+    await signIn({ isAdmin: false });
+
+    const result = await run(adminGuard);
+
+    expect(result).toBeInstanceOf(RedirectCommand);
+    const command = result as RedirectCommand;
+    expect(router.serializeUrl(command.redirectTo)).toBe('/no-access');
+    expect(command.navigationBehaviorOptions?.skipLocationChange).toBe(true);
+  });
+
+  it('adminGuard lets admins through', async () => {
+    await signIn({ isAdmin: true });
+
+    expect(await run(adminGuard)).toBe(true);
   });
 
   async function signIn(options: { isAdmin: boolean }): Promise<void> {
