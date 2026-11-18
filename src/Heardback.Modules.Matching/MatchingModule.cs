@@ -1,6 +1,7 @@
 using Heardback.Modules.Matching.Cvs;
 using Heardback.Modules.Matching.Cvs.Extraction;
 using Heardback.Modules.Matching.Endpoints;
+using Heardback.Modules.Matching.MatchResults;
 using Heardback.Modules.Matching.Persistence;
 using Heardback.Shared.Persistence;
 using Microsoft.AspNetCore.Routing;
@@ -14,7 +15,7 @@ namespace Heardback.Modules.Matching;
 /// </summary>
 public static class MatchingModule
 {
-    /// <summary>Registers the Matching module's services.</summary>
+    /// <summary>Registers the Matching module's services. Needs the Applications module.</summary>
     /// <param name="services">The application's service collection.</param>
     /// <returns>The same service collection, for chaining.</returns>
     public static IServiceCollection AddMatchingModule(this IServiceCollection services)
@@ -33,11 +34,12 @@ public static class MatchingModule
         services.AddScoped<UploadCvHandler>();
         services.AddScoped<GetCvHandler>();
         services.AddScoped<DeleteCvHandler>();
+        services.AddScoped<GetMatchHandler>();
 
         return services;
     }
 
-    /// <summary>Maps the Matching module's HTTP endpoints (<c>/api/cv</c>).</summary>
+    /// <summary>Maps the Matching module's HTTP endpoints (<c>/api/cv</c>, <c>/api/applications/{id}/match</c>).</summary>
     /// <param name="routes">The application's endpoint route builder.</param>
     /// <returns>The same route builder, for chaining.</returns>
     public static IEndpointRouteBuilder MapMatchingEndpoints(this IEndpointRouteBuilder routes)
@@ -45,6 +47,7 @@ public static class MatchingModule
         ArgumentNullException.ThrowIfNull(routes);
 
         routes.MapCvEndpoints();
+        routes.MapMatchEndpoints();
 
         return routes;
     }

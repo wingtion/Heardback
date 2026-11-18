@@ -1,4 +1,5 @@
 using Heardback.Modules.Applications.Board;
+using Heardback.Modules.Applications.Contracts;
 using Heardback.Modules.Applications.Create;
 using Heardback.Modules.Applications.Delete;
 using Heardback.Modules.Applications.Domain;
@@ -45,6 +46,7 @@ public static class ApplicationsModule
         services.AddScoped<DeleteApplicationHandler>();
         services.AddScoped<AddEventHandler>();
         services.AddScoped<GetBoardHandler>();
+        services.AddScoped<IApplicationPostings, ApplicationPostings>();
 
         return services;
     }

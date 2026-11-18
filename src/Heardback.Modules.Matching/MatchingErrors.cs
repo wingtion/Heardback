@@ -10,6 +10,9 @@ internal static class MatchingErrors
 
     private const int BytesPerMegabyte = 1024 * 1024;
 
+    public static readonly Error ApplicationNotFound =
+        Error.NotFound("matching.application_not_found", "This application doesn't exist or was deleted.");
+
     public static readonly Error CvMissing =
         Error.Validation("matching.cv_missing", FileField, "Choose a PDF file.");
 
