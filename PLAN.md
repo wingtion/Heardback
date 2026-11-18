@@ -163,11 +163,12 @@ Nothing visual is built until this is done (see section 8a). Backend work in lat
 ### Phase 7 — Privacy & hardening
 - Account deletion, data export, privacy page.
 - Rate limiting on LLM endpoints, global error handling, structured logs. (Auth endpoint rate limiting was built in Phase 1.)
+- Account recovery for forgotten passwords or emails, sized for a small invite-only group: an owner-run server command to reset a password and list admins, and an admin-issued one-time reset code for members. No email infrastructure unless the user base grows.
 
 ### Phase 8 — Deploy & showcase
 - API on Fly.io, frontend on Netlify, managed Postgres, environment config.
 - Client IP for rate limiting: set `ClientIp` for the real topology, verifying requests came through the proxy (e.g. Netlify signed proxy rewrites) before trusting its forwarded IP. The API refuses to start until this is configured (ADR-0002).
-- Demo account with seeded sample data.
+- One-click demo: a "Try the demo" button creates a temporary, per-visitor sandbox account with seeded sample data (no password, no invite). Sandboxes are deleted after about a day, cannot reach admin pages, have a small LLM quota, are excluded from community statistics, and the button is rate limited. Employers rarely get past a sign-in wall, so this is how the live site is shown.
 - README: what it is, architecture diagram, screenshots, how to run, design decisions.
 
 ## 8a. Design process
