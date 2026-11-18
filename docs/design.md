@@ -507,7 +507,7 @@ Saving re-links the application to the matching shared posting (§12); the user 
 ### Add update
 Opens from "Add update" on the timeline (desktop) or the sheet footer (mobile). Desktop dialog 410 px; mobile **bottom sheet** over the detail sheet with `scrim-sheet`. Title "Add update" with "Northwind Logistics · Backend Engineer (.NET)" under it (12.5, `ink-2`).
 1. **New status · optional** (`<fieldset>` + `<legend>`): radio chips (34 px; 44 on mobile), each a `<label>` with a radio, glyph and name: **No change** (default), Applied, Interview, Offer, Rejected. The current status is disabled and labelled "Interview · current" (`ink-muted`). Chip: 1 px `field-border`, radius 4, `base`; selected: 1.5 px `ink` border, `row-selected`, 600. Focus ring on the chip (`:focus-within`). Hint: "Leave “No change” to add a note only."
-2. **Date**: date field 180 px, defaults to today, hint "Today or an earlier date.", error "The date can't be in the future. Pick today or earlier."; **(proposed)** "Pick a date on or after the applied date (12 Nov 2026)" for a date before the applied date.
+2. **Date**: date field 180 px, defaults to today, hint "Today or an earlier date.", error "The date can't be in the future. Pick today or earlier."; **(decided)** "Pick a date on or after the applied date (12 Nov 2026)" for a date before the applied date.
 3. **Note · optional**: textarea (2 rows, max 280 characters, placeholder "e.g. Recruiter called, interview next week"), live counter "0 / 280" (DM Mono 12, `ink-muted`, right-aligned).
 
 Footer: Cancel + primary **"Save update"** ("Saving…").
