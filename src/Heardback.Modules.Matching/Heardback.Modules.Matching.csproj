@@ -5,7 +5,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="PdfPig" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Heardback.Shared\Heardback.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Heardback.UnitTests" />
   </ItemGroup>
 
 </Project>
