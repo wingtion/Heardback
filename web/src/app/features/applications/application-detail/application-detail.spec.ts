@@ -170,6 +170,17 @@ describe('ApplicationDetail', () => {
     expect(heading?.parentElement?.textContent).toContain('Add update');
   });
 
+  it('delete_Panel_SitsInTheHeaderBesideEdit', async () => {
+    await respond();
+
+    const header = detail().querySelector('[id="application-detail-title"]')?.parentElement;
+    const headerButtons = Array.from(header?.querySelectorAll('button') ?? [], (candidate) =>
+      candidate.textContent?.trim(),
+    );
+    expect(headerButtons).toEqual(['', 'Edit', 'Delete']);
+    expect(detail().querySelectorAll('button')).toHaveLength(4);
+  });
+
   it('addUpdate_Sheet_SitsInTheFooterBesideDelete', async () => {
     host.layout.set('sheet');
     await render();

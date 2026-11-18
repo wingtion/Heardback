@@ -34,6 +34,13 @@
       >
         Edit
       </button>
+      <!-- Desktop panel: Delete sits beside Edit (decided 2026-11-18); the sheet keeps it in the footer. -->
+      @if (!sheet()) {
+        <button appButton="danger" size="sm" type="button" (click)="confirmDelete(application)">
+          <app-icon name="trash" [size]="14" />
+          Delete
+        </button>
+      }
     }
   </div>
 
@@ -183,22 +190,19 @@
     }
   </div>
 
-  @if (application(); as application) {
-    <div
-      class="flex shrink-0 gap-2.5 border-t border-rule bg-base"
-      [class]="sheet() ? 'px-4 pt-3 pb-5' : 'px-5 py-3'"
-    >
-      <button
-        appButton="danger"
-        [size]="sheet() ? 'xl' : 'sm'"
-        type="button"
-        [class.flex-1]="sheet()"
-        (click)="confirmDelete(application)"
-      >
-        <app-icon name="trash" [size]="sheet() ? 16 : 14" />
-        Delete
-      </button>
-      @if (sheet()) {
+  @if (sheet()) {
+    @if (application(); as application) {
+      <div class="flex shrink-0 gap-2.5 border-t border-rule bg-base px-4 pt-3 pb-5">
+        <button
+          appButton="danger"
+          size="xl"
+          type="button"
+          class="flex-1"
+          (click)="confirmDelete(application)"
+        >
+          <app-icon name="trash" [size]="16" />
+          Delete
+        </button>
         <button
           appButton="primary"
           size="xl"
@@ -208,7 +212,7 @@
         >
           Add update
         </button>
-      }
-    </div>
+      </div>
+    }
   }
 </div>

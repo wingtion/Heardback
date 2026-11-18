@@ -64,8 +64,9 @@ type DetailView =
 
 /**
  * One application as an envelope (docs/design.md §8): a header bar with Close, the envelope with stamp,
- * postmark, addressee, status, notes and timeline with Add update, and a bar with Delete at the bottom
- * (decided 2026-11-18). Edit sits in the header. The sheet layout is a modal dialog.
+ * postmark, addressee, status, notes and timeline with Add update. In the desktop panel Edit and Delete
+ * sit in the header; the sheet keeps Edit in the header and Delete beside Add update in its footer
+ * (decided 2026-11-18). The sheet layout is a modal dialog.
  */
 @Component({
   selector: 'app-application-detail',
