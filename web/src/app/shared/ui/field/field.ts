@@ -17,6 +17,8 @@ let nextFieldId = 0;
       {{ label() }}
       @if (optional()) {
         <span class="font-normal text-ink-muted">· optional</span>
+      } @else if (required()) {
+        <span class="font-normal text-ink-muted">· required</span>
       }
     </label>
     <ng-content />
@@ -43,6 +45,8 @@ export class Field {
   readonly hintEnd = input<string | null>(null);
   readonly error = input<string | null>(null);
   readonly optional = input(false, { transform: booleanAttribute });
+  /** Shows "· required" after the label, for forms that mix required and optional fields. */
+  readonly required = input(false, { transform: booleanAttribute });
 
   readonly controlId = `field-${nextFieldId++}`;
   readonly hintId = `${this.controlId}-hint`;

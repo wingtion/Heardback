@@ -115,6 +115,8 @@
   --color-skeleton-line: light-dark(#cfc6b5, #4e4a41);
   /* 80 % opacity so the page behind a dialog stays faintly visible. */
   --color-scrim: light-dark(rgb(205 198 184 / 0.8), rgb(7 6 5 / 0.8));
+  /* Behind mobile bottom sheets (docs/design.md §3). */
+  --color-scrim-sheet: light-dark(rgb(30 27 22 / 0.45), rgb(0 0 0 / 0.65));
 
   /* Text and lines */
   --color-ink: light-dark(#1e1b16, #eee9df);
@@ -149,6 +151,12 @@
 @utility border-invalid {
   border-width: 1.5px;
   border-color: var(--color-danger);
+}
+
+/* Outer border of the postmark status label: 1.5 px dotted, coloured by the status (docs/design.md §5). */
+@utility border-dotted-thin {
+  border-width: 1.5px;
+  border-style: dotted;
 }
 
 @layer base {
