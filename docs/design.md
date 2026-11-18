@@ -58,6 +58,7 @@ Contrast is WCAG 2.1 against the surface the token is used on. Text ≥ 4.5 : 1,
 | `skeleton` | `#EAE3D5` | `#2F2C26` | Skeleton bars |
 | `skeleton-line` | `#CFC6B5` | `#4E4A41` | Skeleton status-label outline |
 | `scrim` | `#CDC6B8` | `#070605` | Dialog backdrop, at **80 % opacity** so the page stays faintly visible |
+| `scrim-sheet` | `rgba(30,27,22,0.45)` | `rgba(0,0,0,0.65)` | Backdrop behind mobile **bottom sheets** (Move to, Add update) |
 
 ### Text and lines
 
@@ -105,7 +106,9 @@ All status colours also pass on `row-selected`, `row-hover` and `envelope` (lowe
 
 | Token | Light | Dark | Used for |
 |---|---|---|---|
-| `shadow-dialog` | `0 12px 32px rgba(45,35,20,0.18)` | `0 12px 32px rgba(0,0,0,0.55)` | Dialogs only |
+| `shadow-dialog` | `0 12px 32px rgba(45,35,20,0.18)` | `0 12px 32px rgba(0,0,0,0.55)` | Dialogs |
+| `shadow-menu` | `0 8px 24px rgba(45,35,20,0.18)` | `0 8px 24px rgba(0,0,0,0.55)` | "Move to" menu on board cards |
+| `shadow-drag` | `0 10px 24px rgba(45,35,20,0.18)` | `0 10px 24px rgba(0,0,0,0.55)` | Board card while it is dragged |
 
 ---
 
@@ -182,7 +185,7 @@ Touch targets on mobile are **≥ 44 px**.
 
 **Borders:** 1 px everywhere. Exceptions: invalid input 1.5 px `danger`; postmark status label 1.5 px dotted outer + 1 px solid inner; stamps 2 px dotted outer + 1 px solid (or dashed, for No response) inner; dividers inside the envelope and above auth footers are 1 px **dashed** `rule-strong`.
 
-**Layout widths:** sidebar 208 px; detail panel 380 px; auth card 400 px (sign in) / 420 px (create account); Add application dialog 460 px; invite dialogs 392 px; no-access text max 520 px.
+**Layout widths:** sidebar 208 px; detail panel 380 px; auth card 400 px (sign in) / 420 px (create account); Add application and Edit dialogs 420 px; Add update dialog 410 px; board "Move to" menu 214 px; invite dialogs 392 px; no-access text max 520 px.
 
 ---
 
@@ -291,9 +294,9 @@ Header 60 px, `surface`, bottom `rule`: logo 24 px + wordmark 20 px + 44 px menu
 `role="dialog"`, `aria-modal`, `surface`. Header 60 px (`base`): 44 px ✕ "Close and go back to applications", title "Application" (15, 600), Edit (36 px). Same envelope inside with 16 px margin (slightly smaller stamp and postmark); the channel/date line wraps to its own row. Sticky footer (`base`, top `rule`): **Delete** (danger outline with trash, 48 px) and **Add update** (primary, 48 px), side by side.
 
 ### Dialog — `app-dialog` (CDK Dialog)
-`base`, 1 px `rule-strong`, radius 5, `shadow-dialog`. Header: padding 16 20 14, bottom `rule`; optional small stamp mark (Add application), title (`dialog-title`), close icon button (30–32 px, bordered). Body: padding 18 20 20, fields 14 px apart, two-column rows where shown. Footer: `surface`, top `rule`, right-aligned Cancel/Done (secondary) + primary action. `aria-modal`, `aria-labelledby` = title, focus trapped, Escape closes, focus returns to the trigger.
+`base`, 1 px `rule-strong`, radius 5, `shadow-dialog`. Header: padding 16 20 14, bottom `rule`; title (`dialog-title`), close icon button (30–32 px, bordered). Body: padding 18 20 20, fields 14 px apart, two-column rows where shown. Footer: `surface`, top `rule`, right-aligned Cancel/Done (secondary) + primary action. `aria-modal`, `aria-labelledby` = title, focus trapped, Escape closes, focus returns to the trigger.
 
-**Mobile:** dialogs become bottom sheets: full width, top radius 14, top border `rule-strong`, 44 px close button, full-width 48 px buttons side by side.
+**Mobile:** dialogs become bottom sheets: full width, top radius 14, top border `rule-strong`, 44 px close button, full-width 48 px buttons side by side, `scrim-sheet` behind. **Exception:** the long forms (Add application, Edit application) become **full-screen sheets** instead (§14).
 
 ### Confirm delete — alert dialog
 `role="alertdialog"`, `envelope` background, 1 px `rule-strong`, radius 5, padding 16. Title with a `danger` warning icon ("Delete this application?", 14, 600). Body names what will be removed ("Northwind Logistics and its timeline will be removed. You can't undo this."). Buttons: Cancel (secondary) + **solid danger** "Delete application". Initial focus goes to Cancel.
@@ -318,7 +321,7 @@ Code in DM Mono 500, 30 px (mobile 26), +0.06em, centred in a 72 px box: 1 px `a
 ## 9. Layout and responsive behaviour
 
 - **Desktop app frame:** sidebar (208) | main column (fluid, padding 24 28 20) | detail panel (380, only while an application is selected).
-- **Mobile (390 designed):** header + full-screen menu instead of the sidebar; tables become lists; the detail panel becomes a full-screen sheet; the page's primary action moves to a sticky bottom bar (48 px button).
+- **Mobile (390 designed):** header + full-screen menu instead of the sidebar; tables become lists; the detail panel becomes a full-screen sheet; the page's primary action moves to a sticky bottom bar (48 px button). **Exception:** on Applications (list and board) the primary action is an "Add" button in the mobile header; there is no sticky bottom bar on that page (§14).
 - **Breakpoints (decided):**
   | Width | Layout |
   |---|---|
@@ -368,7 +371,7 @@ Heading "Invite codes", summary "34 codes · 9 active" (total from the paged res
 - **States:** empty ("No invite codes yet" / "Create a code to let someone join Heardback."), loading ("Loading invite codes…" + skeleton), error ("Couldn't load invite codes" / "The server didn't respond. Existing codes still work." + Try again).
 
 ### Applications (Phase 2; designed, not built yet)
-List page with heading, summary ("8 applications · 2 with no response"), toolbar (Search, Status, Channel, primary "Add application"), table (Company, Role, Channel, Applied, Status, Last update), detail panel / sheet, Add application dialog (Company, Role, Job posting URL with "Enter a full link that starts with https://", Channel, Applied date), confirm delete, and empty / loading / error states. Exact rules are in §8.
+List page with heading, summary ("8 applications · 2 with no response"), List / Board toggle, toolbar (Search, Status, Channel, primary "Add application"), table (Company, Role, Channel, Applied, Status, Last update), detail panel / sheet, confirm delete, and empty / loading / error states. Exact rules are in §8. The board view, Add application, Edit application and Add update are in **§14** (the Add application form there replaces the earlier version).
 
 - The toolbar **Delete** button in the desktop artboard was only a style sample. **Delete lives in the detail panel/sheet**, not the toolbar.
 - "No response · N days" is **derived from dates** (applied/last event + threshold), not stored by a background job. The timeline row "Marked automatically after 14 days" is a computed row, not a stored event.
@@ -403,10 +406,119 @@ Decisions the author made where the handoff was silent or showed only a sample.
 | Auth card breakpoint | Card from 640 px; full-width form only on phones | §9 |
 | Invite row copy feedback | After copying from a table row or list item, the copy icon turns into a check in `status-offer` for 2 seconds; screen readers hear "Code copied to clipboard" | §10 |
 | Create invite code failure | Error banner inside the dialog: "Couldn't create the invite code" / "The server didn't respond. Try again." | §10 |
+| Link autofill (Phase 2 handoff) | **Not built.** The server never fetches posting pages (PLAN.md "No scraping"; avoids SSRF). The link is stored and used to find a posting the user already tracks. Filling fields from the posting *text* may come with the Phase 4 LLM work | §14 |
+| Editing a shared posting | A shared `JobPosting` is never changed by one user. Saving Edit re-runs the posting dedup and links the application to the matching posting (a new one if none matches) | §14 |
+| Board size | Each column shows at most the **200 newest** cards; the column count is the real total; a truncated column ends with "Showing 200 of 340 · see all in the list" | §14 |
+| Board card detail (desktop) | Same as the list: 380 px panel beside the board from 1280 px (columns shrink), full-screen sheet below. Revisit if it feels cramped in use | §14 |
 
 ## 13. Still to design (before the phase that needs it)
 
 These go back to Claude Design with a brief written from the API that exists at that point. Nothing here is improvised.
 
-- **Phase 2:** kanban board, Edit application form, Add update form, Add application on mobile.
+- **Phase 2:** nothing left. The board, Edit application, Add update and Add application on mobile came in the "B refined · Board and forms" handoff (§14).
+
+---
+
+## 14. Board and forms (Phase 2 handoff)
+
+Source: `project/B4-*.dc.html` in the Claude Design canvas, page "B refined · Board and forms". It uses only the existing tokens plus `scrim-sheet`, `shadow-menu` and `shadow-drag` (§3). Items marked **(decided)** are not in the handoff (or differ from it) and were approved by the author on 2026-11-18.
+
+### New icons and glyphs
+Added to the `shared/ui/icon` set: **move** (two opposite arrows), **list** (three lines), **board** (three columns), **clipboard** (Paste), **grip** (2 × 3 dots, drag preview only), **refresh** (conflict banner).
+Timeline/chip glyphs: **Note** = circle with two short lines in `ink-2`; **No change** = dotted circle in `ink-muted`.
+
+### View toggle (List / Board)
+Segmented control at the right of the page heading: 1 px `field-border`, radius 4, two buttons with `aria-pressed`. Off: `base`, `ink-2`, 400. On: `nav-active`, inset 2 px `accent` bar at the bottom, `ink`, 600. Desktop 34 px with list/board icons; mobile without icons. The handoff shows 40 px on mobile; it is built at **44 px** (touch rule, §5) **(decided)**.
+
+### Board page, desktop
+- **Header:** "Applications" (`page-title`), summary "8 applications · 2 with no response" (`small`, `ink-2`, tabular numbers), view toggle (`ml-auto`), primary "Add application" (36 px, plus icon).
+- **Toolbar:** Search (320 px, placeholder "Company or role") and Channel ("All channels" + the six channels) as toolbar field groups (§8). **No Status filter** on the board, because the columns are the statuses.
+- **Columns:** a 4-column grid with 12 px gaps: **Applied, Interview, Offer, Rejected**. "No response · N days" is a label on Applied cards, **not a column**. Each column: `surface`, 1 px `rule`, radius 4, padding 8, gap 8, min height 520. Column heading (`<h2>`): status glyph + name (13.5, 600, `ink`) + count at the right (DM Mono 12.5, `ink-muted`), padding 4 4 8, bottom `rule`. Cards sit in an `<ol>`.
+- **Card** (`<article>`, `aria-label` "Company, Role"): `base`, 1 px `rule-strong`, radius 4, padding 10 6 10 12, gap 6, `cursor: grab`; hover border `field-border`. Content: company (14, 600) and role (13, `ink-2`) together as one link that opens the detail; meta "Channel · 12 Nov 2026" (12.5, `ink-2`, date in DM Mono); optional "No response · N days" status label (§8, table form).
+- **Move to… button:** 30 px icon-only (move icon), `aria-label` "Move {Company} to…", `aria-haspopup="menu"`; transparent border and background until hover or open (then `field-border` border + `row-hover`).
+- **Move to menu** (`role="menu"`, CDK Menu): 214 px, under the button, right-aligned, `base`, 1 px `rule-strong`, radius 4, padding 4, `shadow-menu`. Heading "Move to" (12, 600, `ink-muted`). Items: the **three other statuses** (36 px, glyph + name, 13.5, radius 3; active item `row-hover`). Footer: `rule` divider + "Adds a timeline event dated today." (12, `ink-muted`). Arrow keys move between items; Escape closes and returns focus to the button.
+- **Truncated column (decided):** after the 200th card, one line "Showing 200 of 340 · see all in the list" (12.5, `ink-2`); "see all in the list" is a link-button that switches to the List view filtered to that status.
+- **Detail (decided):** a card opens the same detail panel / sheet as the list (§8, §9).
+
+### Drag and drop (desktop only, CDK drag-drop)
+| Part | Look |
+|---|---|
+| Card being dragged | Follows the pointer: `base`, 1.5 px `accent` border, `shadow-drag`, grip icon (`ink-muted`) on the left, shows company, role, channel · date; `cursor: grabbing` |
+| Where it came from | 84 px placeholder with a 1.5 px dashed `rule-strong` border |
+| Drop target column | 1.5 px dashed `accent` border, `row-selected` background |
+| Where it will land | 3 px `accent` bar (radius 2) with a 10 px ring at the left end (2 px `accent`, `base` fill) |
+
+Escape cancels the drag. Keyboard and screen reader users use "Move to…". A move updates the board at once (optimistic) and adds a timeline event dated today.
+
+### Board states
+| State | Shown as |
+|---|---|
+| Loading | Bordered box (`base`, `rule-strong`, padding 16): spinner + "Loading your board…" (`role="status"`), then four `aria-hidden` skeleton columns with 3 / 2 / 1 / 1 skeleton cards (three `skeleton` bars each) |
+| Error | The four column names as a plain header row (12.5, 600, `ink-muted`, `rule` underline), then an error banner "Couldn't load your board" / "The server didn't respond. Your applications are safe." + Try again (30 px) |
+| No applications at all | The same empty state as the list (envelope, "No applications yet", "Add a job you applied for and Heardback will keep track of who replies.", Add application) |
+| Empty column | A box filling the column: 1.5 px dashed `rule-strong`, radius 4, padding 14 12: "No applications in Offer" (13.5, 600) + "Drag a card here, or use Move to… on any card." (12.5, `ink-2`) |
+| Move failed | The card goes back to its old column with a 1.5 px `danger` border and an inline alert inside it (`danger-tint`, radius 3, padding 8, `role="alert"`): warning icon + "Couldn't move this application. Try again." (12.5, 500, `danger`) + Try again (30 px secondary). The column counts go back too |
+
+### Board, mobile (< 1024 px)
+- **Header:** logo + wordmark + primary **"Add"** button (plus icon, `aria-label` "Add application") + menu button. No sticky bottom bar on this page. The handoff's Add button is 40 px tall; it is built at **44 px** **(decided)**.
+- Below the header: "Applications" (`page-title-sm`) + view toggle; then Search (icon-only label, flex) and Channel (150 px, option "All"), both 44 px.
+- **Status tabs** (`role="tablist"`, one column at a time, **no dragging**): 4 equal tabs, 54 px, `surface` strip with `rule` lines above and below. Each tab: glyph + name (13) over the count (DM Mono 12, `ink-muted`). Selected: `base`, inset 3 px `accent` bar at the bottom, `ink`, 600, `aria-selected="true"`. Others: transparent, `ink-2`, 500.
+- **Tab panel:** padding 12 16, gap 8. Cards: padding 12 10 10 14; company 15 / 600, role 13.5 `ink-2`, meta 12.5; on the right a 44 px secondary **"Move to…"** button (move icon + text, `aria-haspopup="dialog"`).
+- **Move to sheet:** bottom sheet with `scrim-sheet`: title "Move to" (`dialog-title`), line "Larkspur Labs · Backend Engineering Intern · now in Applied" (13.5, `ink-2`), a bordered list (`rule`, radius 4) of the three other statuses as 52 px rows (glyph + name, 15), the note "Adds a timeline event dated today." (12.5, `ink-muted`), and a full-width 48 px Cancel.
+- **Empty tab:** dashed box "No applications in Offer" (15, 600) + "Use Move to… on any card to move it here." (13.5, `ink-2`).
+- **Move failed:** the same alert as on desktop, with the Try again button on its own line (44 px; the handoff shows 40 px) **(decided)**.
+
+### Form layout shared by Add application and Edit
+- **Desktop dialog:** 420 px (§8 dialog). Inputs and buttons 36 px, fields 14 px apart.
+- **Mobile:** a **full-screen sheet** (not a bottom sheet): header with title and a 44 px ✕, scrolling body with padding 16, inputs 44 px, **sticky footer** (`surface`, top `rule`) with Cancel and the primary button side by side, 48 px each.
+- Fields are disabled while saving; the primary button shows the spinner (§7).
+- Field labels use the "· required" / "· optional" suffix (§8 text field).
+
+### Add application
+Opens with the cursor in the link field.
+1. **Job posting link · optional**: URL input (`inputmode="url"`, placeholder "Paste the job link") + a secondary **Paste** button (clipboard icon, same height) that pastes from the clipboard. The button is hidden when the browser has no Clipboard API. Error: "Enter a full link that starts with https://". Hint **(decided, replaces the autofill hint)**: "Used to spot a posting you already track."
+2. **Company · required** ("Enter the company name"), **Role · required** ("Enter the role").
+3. **Channel** (select, the six channels) and **Applied date** (date field, defaults to today) side by side.
+4. **Job posting text · optional**: textarea (3 rows, placeholder "Paste the job description"), hint "Paste the job description only. Don't add personal notes here; use Notes for those." (posting text is shared between users; Notes are in Edit).
+
+Footer: Cancel + primary **"Add application"** ("Adding…" while busy).
+
+Not built: the "· optional, fastest" label suffix and the "Company, role and posting text filled in from the link" message (§12, no autofill).
+
+| State | Shown as |
+|---|---|
+| Validation | Field errors as above |
+| Server error | Error banner at the top of the body: "Couldn't add the application" / "The server didn't respond. Your details are still filled in. Try again." |
+| Already tracked | Shown when the link matches a posting this user already tracks (checked after the link is entered, and again by the server on submit). The other fields are replaced by a panel (`envelope`, 1 px `field-border`, radius 4, padding 12, `role="status"`): info icon + "You already track this posting" (14, 600); a small card (`base`, `rule-strong`, radius 4) with company, role, status label and "Applied 03 Nov 2026"; then "Open it to add an update instead of creating a second copy." (12.5, `ink-2`). Footer: Cancel + primary **"View application"**, which opens that application's detail |
+
+### Edit application
+Opens from Edit in the detail panel or sheet header. Title "Edit application" with the line "Status changes through the board or Add update." under it (12.5, `ink-muted`).
+Fields: **Job posting link · optional** (full width); **Company · required** | **Role · required**; **Channel** | **Applied date**; **Job posting text · optional** (same hint as Add); **Notes · optional, only you see these** (textarea, 3 rows).
+Errors: "Enter a full link that starts with https://", "Enter the company name", "Enter the role", "Pick today or an earlier date", "Pick a date after 1 January 2000", and **(decided)** "Pick a date on or before your first update (12 Nov 2026)" when the applied date would move past a later timeline event (that would silently change the status).
+Footer: Cancel + primary **"Save"** ("Saving…").
+Saving re-links the application to the matching shared posting (§12); the user sees nothing special unless it hits the "already tracked" case below.
+
+| State | Shown as |
+|---|---|
+| Server error | Error banner "Couldn't save your changes" / "The server didn't respond. Your edits are still here. Try again." |
+| Changed elsewhere (409, version check) | Warning banner (`status-no-response` border and title, `warn-tint`, refresh icon): "This application changed since you opened it." / "It was edited in another tab or on another device. Reload to see the latest version. Your edits here will be lost when you reload." + secondary "Reload latest version" (32 px; 44 on mobile). **Save is disabled** |
+| Link matches another application you track **(decided; not in the handoff)** | Error banner "You already track this posting" / "Another of your applications uses this link. Open that one instead, or change the link." |
+
+### Add update
+Opens from "Add update" on the timeline (desktop) or the sheet footer (mobile). Desktop dialog 410 px; mobile **bottom sheet** over the detail sheet with `scrim-sheet`. Title "Add update" with "Northwind Logistics · Backend Engineer (.NET)" under it (12.5, `ink-2`).
+1. **New status · optional** (`<fieldset>` + `<legend>`): radio chips (34 px; 44 on mobile), each a `<label>` with a radio, glyph and name: **No change** (default), Applied, Interview, Offer, Rejected. The current status is disabled and labelled "Interview · current" (`ink-muted`). Chip: 1 px `field-border`, radius 4, `base`; selected: 1.5 px `ink` border, `row-selected`, 600. Focus ring on the chip (`:focus-within`). Hint: "Leave “No change” to add a note only."
+2. **Date**: date field 180 px, defaults to today, hint "Today or an earlier date.", error "The date can't be in the future. Pick today or earlier."; **(decided)** "Pick a date on or after the applied date (12 Nov 2026)" for a date before the applied date.
+3. **Note · optional**: textarea (2 rows, max 280 characters, placeholder "e.g. Recruiter called, interview next week"), live counter "0 / 280" (DM Mono 12, `ink-muted`, right-aligned).
+
+Footer: Cancel + primary **"Save update"** ("Saving…").
+
+| State | Shown as |
+|---|---|
+| Nothing chosen | Error banner (title only): "Choose a new status or write a note." |
+| Server error | Error banner "Couldn't save the update" / "The server didn't respond. Nothing was added to the timeline. Try again." |
+| Saved, status changed | The dialog closes. The envelope status label shows the new status and "Updated today". Above the timeline: "Update added" (inline success, §8). The new event is at the top of the timeline on a `row-selected` background (padding 6, radius 4) |
+| Saved, note only | Same, but the status stays and the new event is a **Note**: stamp in `ink-2` with a **dashed** inner border, title "Note" in `ink` with the note glyph, line "24 Nov · Recruiter called, second interview next week" |
+
+### Dates
+Applied and update dates are calendar dates in the user's own day. "Today or earlier" is checked in the browser against the local date. The server accepts dates up to one day after the UTC date, so users in time zones ahead of UTC are not rejected.
 - **Settings page** (including the theme setting), Dashboard, CV, Companies: in their phases.

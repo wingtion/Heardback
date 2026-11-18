@@ -6,6 +6,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Heardback.Shared\Heardback.Shared.csproj" />
+    <ProjectReference Include="..\Heardback.Modules.Postings\Heardback.Modules.Postings.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Heardback.UnitTests" />
   </ItemGroup>
 
 </Project>
