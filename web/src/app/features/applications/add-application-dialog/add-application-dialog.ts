@@ -21,7 +21,7 @@ import {
   ValidationErrors,
 } from '@angular/forms';
 import { catchError, debounceTime, distinctUntilChanged, map, of, switchMap } from 'rxjs';
-import { httpErrorOf, validationErrors } from '../../../core/http-errors';
+import { httpErrorOf, problemCode, validationErrors } from '../../../core/http-errors';
 import { Banner } from '../../../shared/ui/banner/banner';
 import { Button } from '../../../shared/ui/button/button';
 import { AppDialog } from '../../../shared/ui/dialog/dialog';
@@ -62,7 +62,6 @@ const DEFAULT_CHANNEL: ApplicationChannel = 'LinkedInEasyApply';
 const TRACKED_LOOKUP_DELAY_MS = 400;
 const HTTP_SCHEMES = new Set(['http:', 'https:']);
 const HOST_LABEL_SEPARATOR = '.';
-const ERROR_CODE = 'code';
 
 type FieldName = 'url' | 'company' | 'role' | 'appliedOn' | 'postingText' | 'channel';
 
@@ -269,7 +268,7 @@ export class AddApplicationDialog {
 
     if (
       response?.status === HttpStatusCode.Conflict &&
-      this.errorCode(body) === APPLICATION_ERROR_CODES.alreadyTracked
+      problemCode(body) === APPLICATION_ERROR_CODES.alreadyTracked
     ) {
       this.showAlreadyTracked(url);
       return;
@@ -298,12 +297,6 @@ export class AddApplicationDialog {
         next: (tracked) => (tracked ? this.tracked.set(tracked) : this.duplicateText.set(true)),
         error: () => this.duplicateText.set(true),
       });
-  }
-
-  private errorCode(body: unknown): unknown {
-    return typeof body === 'object' && body !== null && ERROR_CODE in body
-      ? body[ERROR_CODE]
-      : null;
   }
 
   private setBusy(busy: boolean): void {

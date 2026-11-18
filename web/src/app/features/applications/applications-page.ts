@@ -1,5 +1,5 @@
 import { BreakpointObserver } from '@angular/cdk/layout';
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import { Component, Signal, computed, inject, signal } from '@angular/core';
 import { rxResource, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -7,7 +7,6 @@ import { debounceTime, map } from 'rxjs';
 import { DESKTOP_MEDIA_QUERY, WIDE_MEDIA_QUERY } from '../../core/breakpoints';
 import { ShellMobileAction } from '../../shell/shell-actions';
 import { Banner } from '../../shared/ui/banner/banner';
-import { EnvelopeIllustration } from '../../shared/ui/brand/envelope-illustration';
 import { Button } from '../../shared/ui/button/button';
 import { DialogLauncher } from '../../shared/ui/dialog/dialog-launcher';
 import { Select } from '../../shared/ui/field/select';
@@ -18,6 +17,9 @@ import { StatusLabel } from '../../shared/ui/status-label/status-label';
 import { ToolbarControl, ToolbarField } from '../../shared/ui/toolbar-field/toolbar-field';
 import { AddApplicationDialog } from './add-application-dialog/add-application-dialog';
 import { ApplicationDetail } from './application-detail/application-detail';
+import { ApplicationsBoard } from './board/applications-board';
+import { ApplicationsEmptyState } from './empty-state/applications-empty-state';
+import { ApplicationsView, ApplicationsViewToggle } from './view-toggle/applications-view-toggle';
 import {
   APPLICATION_DATE_FORMAT,
   CHANNELS,
@@ -36,10 +38,16 @@ import {
   ApplicationListItem,
   ApplicationListStatus,
   ApplicationPage,
+  ApplicationStatus,
+  BoardFilter,
 } from './applications.models';
 
 /** The selected application's id, in the query string so the browser's Back closes the detail. */
 export const SELECTED_PARAM = 'id';
+
+/** "board" in the query string shows the board; the list is the default. */
+export const VIEW_PARAM = 'view';
+const BOARD_VIEW: ApplicationsView = 'board';
 
 const SEARCH_DELAY_MS = 300;
 const SKELETON_ROWS = 4;
@@ -52,19 +60,23 @@ type ListView =
   | { readonly kind: 'list'; readonly data: ApplicationPage };
 
 /**
- * The applications list (docs/design.md §8–10, §14): heading with counts, search and filters, a table from
- * the lg breakpoint and a list below it, paged 20 at a time. The selected application opens as a panel
- * beside the list from the xl breakpoint and as a full-screen sheet below it.
+ * The applications page (docs/design.md §8–10, §14): heading with counts and the List / Board toggle, search
+ * and filters, then either the list (a table from the lg breakpoint, a list below it, paged 20 at a time) or
+ * the board. The selected application opens as a panel beside them from the xl breakpoint and as a
+ * full-screen sheet below it.
  */
 @Component({
   selector: 'app-applications-page',
   imports: [
     DatePipe,
+    NgTemplateOutlet,
     RouterLink,
     ApplicationDetail,
+    ApplicationsBoard,
+    ApplicationsEmptyState,
+    ApplicationsViewToggle,
     Banner,
     Button,
-    EnvelopeIllustration,
     Icon,
     Pagination,
     Select,
@@ -111,8 +123,31 @@ export class ApplicationsPage {
   }));
 
   // A new page or filter cancels the previous request, so a slow response cannot win.
+  protected readonly view = toSignal(
+    this.route.queryParamMap.pipe(
+      map((params): ApplicationsView => (params.get(VIEW_PARAM) === BOARD_VIEW ? 'board' : 'list')),
+    ),
+    { initialValue: 'list' },
+  );
+
+  /** Search and channel apply to the board too; its columns are the statuses. */
+  protected readonly boardFilter = computed<BoardFilter>(() => ({
+    search: this.debouncedSearch(),
+    channel: this.channel(),
+  }));
+
+  protected readonly boardFiltered = computed(
+    () => this.debouncedSearch().trim() !== '' || this.channel() !== null,
+  );
+
+  /** Bumped to reload the board, and the open detail after a board move. */
+  protected readonly boardRevision = signal(0);
+  protected readonly detailRevision = signal(0);
+
+  // Only the visible view loads; switching back to the list fetches it fresh.
   private readonly applications = rxResource({
-    params: () => ({ page: this.page(), filter: this.filter() }),
+    params: () =>
+      this.view() === 'list' ? { page: this.page(), filter: this.filter() } : undefined,
     stream: ({ params }) => this.api.list(params.page, params.filter),
   });
 
@@ -122,7 +157,7 @@ export class ApplicationsPage {
   });
 
   // A reload (after adding or deleting) keeps the rows on screen; a page or filter change shows loading.
-  protected readonly view = computed<ListView>(() => {
+  protected readonly listView = computed<ListView>(() => {
     const status = this.applications.status();
     if (status === 'error') {
       return { kind: 'error' };
@@ -193,14 +228,30 @@ export class ApplicationsPage {
   }
 
   protected select(id: string): void {
-    void this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: { [SELECTED_PARAM]: id },
-    });
+    this.navigate({ [SELECTED_PARAM]: id });
   }
 
   protected closeDetail(): void {
-    void this.router.navigate([], { relativeTo: this.route, queryParams: {} });
+    this.navigate({ [SELECTED_PARAM]: null });
+  }
+
+  protected setView(view: ApplicationsView): void {
+    this.navigate({ [VIEW_PARAM]: view === BOARD_VIEW ? BOARD_VIEW : null });
+  }
+
+  /** "see all in the list" under a full board column: the list, filtered to that status when given. */
+  protected seeAllInList(status: ApplicationStatus | null): void {
+    this.status.set(status);
+    this.page.set(1);
+    this.setView('list');
+  }
+
+  /** A board move changed the application: counts and the open detail are out of date. */
+  protected onBoardMoved(id: string): void {
+    this.summaryStore.reload();
+    if (id === this.selectedId()) {
+      this.detailRevision.update((revision) => revision + 1);
+    }
   }
 
   protected onKeydownRow(event: Event, id: string): void {
@@ -223,6 +274,14 @@ export class ApplicationsPage {
     this.closeDetail();
   }
 
+  private navigate(queryParams: Record<string, string | null>): void {
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams,
+      queryParamsHandling: 'merge',
+    });
+  }
+
   private matches(query: string): Signal<boolean> {
     return toSignal(this.breakpoints.observe(query).pipe(map((state) => state.matches)), {
       initialValue: this.breakpoints.isMatched(query),
@@ -232,7 +291,9 @@ export class ApplicationsPage {
   // New and changed applications sort first, so the first page is where they show up.
   private refresh(): void {
     this.summaryStore.reload();
-    if (this.page() === 1) {
+    if (this.view() === BOARD_VIEW) {
+      this.boardRevision.update((revision) => revision + 1);
+    } else if (this.page() === 1) {
       this.applications.reload();
     } else {
       this.page.set(1);

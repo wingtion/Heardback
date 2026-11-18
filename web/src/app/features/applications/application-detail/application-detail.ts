@@ -1,7 +1,7 @@
 import { A11yModule } from '@angular/cdk/a11y';
 import { DatePipe } from '@angular/common';
 import { HttpStatusCode } from '@angular/common/http';
-import { Component, computed, inject, input, output } from '@angular/core';
+import { Component, computed, effect, inject, input, output, untracked } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { httpErrorOf } from '../../../core/http-errors';
 import { Banner } from '../../../shared/ui/banner/banner';
@@ -77,6 +77,8 @@ export class ApplicationDetail {
 
   readonly applicationId = input.required<string>();
   readonly layout = input<DetailLayout>('panel');
+  /** Bumped by the page when the application changed somewhere else on it, e.g. a board move. */
+  readonly revision = input(0);
 
   readonly closed = output();
   readonly deleted = output();
@@ -98,7 +100,8 @@ export class ApplicationDetail {
       const status = httpErrorOf(this.resource.error())?.status;
       return status === HttpStatusCode.NotFound ? { kind: 'not-found' } : { kind: 'error' };
     }
-    return this.resource.hasValue() && !this.resource.isLoading()
+    // A reload keeps the envelope on screen; another application shows loading.
+    return this.resource.hasValue() && this.resource.status() !== 'loading'
       ? { kind: 'loaded', application: this.resource.value() }
       : { kind: 'loading' };
   });
@@ -128,6 +131,18 @@ export class ApplicationDetail {
       ? 'fixed inset-0 z-40 flex flex-col bg-surface'
       : 'flex h-full w-95 shrink-0 flex-col border-l border-rule bg-surface',
   );
+
+  constructor() {
+    let first = true;
+    effect(() => {
+      this.revision();
+      if (first) {
+        first = false;
+        return;
+      }
+      untracked(() => this.resource.reload());
+    });
+  }
 
   /** "northwind-logistics.example/jobs/4471": the link without its scheme, as the design shows it. */
   protected linkText(url: string): string {
