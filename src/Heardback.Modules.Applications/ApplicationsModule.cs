@@ -1,3 +1,5 @@
+using Heardback.Modules.Applications.Persistence;
+using Heardback.Shared.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Heardback.Modules.Applications;
@@ -14,6 +16,14 @@ public static class ApplicationsModule
     public static IServiceCollection AddApplicationsModule(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
+
+        services.AddOptions<ApplicationsSettings>()
+            .BindConfiguration(ApplicationsSettings.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddModuleDbContext<ApplicationsDbContext>(ApplicationsDbContext.Schema);
+
         return services;
     }
 }
