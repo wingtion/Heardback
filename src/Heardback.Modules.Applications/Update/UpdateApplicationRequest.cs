@@ -16,7 +16,7 @@ internal sealed record UpdateApplicationRequest(
     string Role,
     [property: MaxLength(PostingLimits.UrlMaxLength), PostingUrl] string? Url,
     [property: MaxLength(PostingLimits.TextMaxLength)] string? PostingText,
-    [property: Required] ApplicationChannel? Channel,
+    [property: Required, EnumDataType(typeof(ApplicationChannel))] ApplicationChannel? Channel,
     [property: Required] DateOnly? AppliedOn,
     [property: MaxLength(Application.NotesMaxLength)] string? Notes,
     [property: Required] uint? Version)

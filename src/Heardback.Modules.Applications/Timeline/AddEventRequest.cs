@@ -8,6 +8,6 @@ namespace Heardback.Modules.Applications.Timeline;
 /// the user's today.
 /// </summary>
 internal sealed record AddEventRequest(
-    ApplicationStatus? Status,
+    [property: EnumDataType(typeof(ApplicationStatus))] ApplicationStatus? Status,
     [property: Required] DateOnly? OccurredOn,
     [property: MaxLength(ApplicationEvent.NoteMaxLength)] string? Note);

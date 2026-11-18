@@ -12,7 +12,7 @@ internal sealed record CreateApplicationRequest(
     string Role,
     [property: MaxLength(PostingLimits.UrlMaxLength), PostingUrl] string? Url,
     [property: MaxLength(PostingLimits.TextMaxLength)] string? PostingText,
-    [property: Required] ApplicationChannel? Channel,
+    [property: Required, EnumDataType(typeof(ApplicationChannel))] ApplicationChannel? Channel,
     [property: Required] DateOnly? AppliedOn)
 {
     public ApplicationDetails ToDetails() => new(Company, Role, Url, PostingText, Channel!.Value, AppliedOn!.Value);
