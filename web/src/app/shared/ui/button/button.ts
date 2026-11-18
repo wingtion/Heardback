@@ -2,7 +2,7 @@ import { Directive, booleanAttribute, computed, input } from '@angular/core';
 
 export type ButtonVariant =
   'primary' | 'secondary' | 'outline' | 'danger' | 'danger-solid' | 'ghost';
-export type ButtonSize = 'sm' | 'md' | 'lg' | 'xl';
+export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
 const DEFAULT_VARIANT: ButtonVariant = 'secondary';
 
@@ -33,6 +33,7 @@ const VARIANTS: Record<ButtonVariant, string> = {
 };
 
 const SIZES: Record<ButtonSize, { readonly text: string; readonly icon: string }> = {
+  xs: { text: 'h-7 px-2.5 text-label', icon: 'size-7' },
   sm: { text: 'h-7.5 px-3 text-small', icon: 'size-7.5' },
   md: { text: 'h-9 px-3.5 text-cell', icon: 'size-9' },
   lg: { text: 'h-11 px-4 text-ui-md', icon: 'size-11' },

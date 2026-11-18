@@ -235,7 +235,7 @@ Reusable pieces are standalone components and directives in `web/src/app/shared/
 | Danger (solid) | `danger` bg, `on-danger` text, 600 | Only the confirm button in a delete confirmation |
 | Icon-only | transparent, no border (close in panel/sheet/menu) or `field-border` border (dialog close) | `aria-label` required |
 
-Sizes: `sm` 28–32, `md` 36 (default), `lg` 44 (auth), `xl` 48 (mobile full-width). Padding 12–14 px horizontal. Radius 4.
+Sizes: `xs` 28 (row copy, timeline "Add update"), `sm` 30–32, `md` 36 (default), `lg` 44 (auth), `xl` 48 (mobile full-width). Padding 12–14 px horizontal. Radius 4.
 
 ### Text field — `<app-field>` + `appInput` directive
 Label above (`label`, 600, `ink-2`), 5 px gap, input 36 px desktop / 42 px auth / 44 px mobile, `field` bg, `field-border`, radius 4, padding 10–12 px. Optional hint below (`caption`, `ink-muted`). Error: border 1.5 px `danger`, `aria-invalid="true"`, message below with warning icon (`label`, 500, `danger`), linked via `aria-describedby` (hint and error both). Optional "· optional" suffix on the label in `ink-muted`, 400.

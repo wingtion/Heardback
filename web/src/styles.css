@@ -7,4 +7,8 @@
 @import '@fontsource/dm-mono/400.css';
 @import '@fontsource/dm-mono/500.css';
 
+/* Structural CSS for CDK dialogs (overlay container, backdrop, positioning). No colours are used
+   from it: dialogs set their own backdrop class from the tokens. */
+@import '@angular/cdk/overlay-prebuilt.css';
+
 @import './styles/tokens.css';

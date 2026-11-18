@@ -1,4 +1,5 @@
 import { HttpErrorResponse, HttpStatusCode } from '@angular/common/http';
+import { validationErrors } from '../../core/http-errors';
 
 /** Stable error codes from the Identity API (ProblemDetails "code" extension). */
 export const AUTH_ERROR_CODES = {
@@ -83,24 +84,4 @@ function errorCode(error: HttpErrorResponse): string | null {
 function retryAfterSeconds(error: HttpErrorResponse): number {
   const seconds = Number.parseInt(error.headers.get('Retry-After') ?? '', 10);
   return Number.isFinite(seconds) && seconds > 0 ? seconds : DEFAULT_RETRY_AFTER_SECONDS;
-}
-
-/** First message per field from a ValidationProblem body ({ errors: { field: [messages] } }). */
-function validationErrors(body: unknown): Record<string, string> {
-  if (typeof body !== 'object' || body === null || !('errors' in body)) {
-    return {};
-  }
-
-  const errors: unknown = body.errors;
-  if (typeof errors !== 'object' || errors === null) {
-    return {};
-  }
-
-  const result: Record<string, string> = {};
-  for (const [field, messages] of Object.entries(errors)) {
-    if (Array.isArray(messages) && typeof messages[0] === 'string') {
-      result[field] = messages[0];
-    }
-  }
-  return result;
 }
