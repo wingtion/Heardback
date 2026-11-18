@@ -18,6 +18,10 @@ export type MobileDialogLayout = 'bottom-sheet' | 'full-screen';
 
 export interface DialogLaunchOptions {
   readonly mobile?: MobileDialogLayout;
+  /** "alertdialog" for confirmations of something that cannot be undone, such as a delete. */
+  readonly role?: 'dialog' | 'alertdialog';
+  /** Read in the dialog with inject(DIALOG_DATA). */
+  readonly data?: unknown;
 }
 
 let nextTitleId = 0;
@@ -40,6 +44,8 @@ export class DialogLauncher {
     const desktop = this.breakpoints.isMatched(DESKTOP_MEDIA_QUERY);
     const ref = this.dialog.open<unknown, unknown, C>(component, {
       ariaLabelledBy: `dialog-title-${nextTitleId++}`,
+      role: options.role ?? 'dialog',
+      data: options.data,
       backdropClass: this.backdrop(desktop, mobile),
       positionStrategy: this.position(desktop, mobile),
       ...this.size(desktop, mobile),

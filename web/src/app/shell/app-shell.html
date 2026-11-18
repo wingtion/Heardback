@@ -8,7 +8,12 @@
       <app-logo />
       <span class="font-serif text-wordmark font-semibold text-ink">Heardback</span>
     </div>
-    <app-nav-menu layout="sidebar" [signingOut]="signingOut()" (signOut)="signOut()" />
+    <app-nav-menu
+      layout="sidebar"
+      [signingOut]="signingOut()"
+      [counts]="navCounts()"
+      (signOut)="signOut()"
+    />
   </nav>
 
   <!-- Mobile header -->
@@ -17,6 +22,9 @@
   >
     <app-logo [size]="24" />
     <span class="flex-1 font-serif text-dialog-title font-semibold text-ink">Heardback</span>
+    @if (mobileAction(); as action) {
+      <ng-container [ngTemplateOutlet]="action" />
+    }
     <button
       appButton="ghost"
       size="lg"
@@ -59,7 +67,12 @@
         </button>
       </div>
       <nav aria-label="Main" class="flex flex-1 flex-col px-3 pt-3">
-        <app-nav-menu layout="menu" [signingOut]="signingOut()" (signOut)="signOut()" />
+        <app-nav-menu
+          layout="menu"
+          [signingOut]="signingOut()"
+          [counts]="navCounts()"
+          (signOut)="signOut()"
+        />
       </nav>
     </div>
   }

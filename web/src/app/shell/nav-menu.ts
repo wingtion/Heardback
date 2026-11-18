@@ -34,6 +34,10 @@ const ACTIVE = 'bg-nav-active font-semibold text-ink! inset-shadow-selection';
         [class]="itemClass()"
       >
         {{ item.label }}
+        @let count = counts()[item.path];
+        @if (count !== undefined) {
+          <span class="ml-auto font-mono text-caption font-normal text-ink-muted">{{ count }}</span>
+        }
       </a>
     }
 
@@ -89,6 +93,8 @@ export class NavMenu {
 
   readonly layout = input<NavMenuLayout>('sidebar');
   readonly signingOut = input(false);
+  /** A count shown at the right of an item, keyed by its path (Applications, docs/design.md §8). */
+  readonly counts = input<Readonly<Record<string, number>>>({});
   readonly signOut = output();
 
   protected readonly itemClass = computed(() => ITEM[this.layout()]);
