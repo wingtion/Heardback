@@ -22,6 +22,7 @@ import { DialogLauncher } from '../../../shared/ui/dialog/dialog-launcher';
 import { Icon } from '../../../shared/ui/icon/icon';
 import { InlineSuccess } from '../../../shared/ui/inline-success/inline-success';
 import { Spinner } from '../../../shared/ui/spinner/spinner';
+import { MatchPanel } from '../../cv/match-panel';
 import { StatusGlyphIcon } from '../../../shared/ui/status-label/status-glyph';
 import { StatusLabel } from '../../../shared/ui/status-label/status-label';
 import {
@@ -77,6 +78,7 @@ type DetailView =
     Button,
     Icon,
     InlineSuccess,
+    MatchPanel,
     PostageStamp,
     Postmark,
     Spinner,

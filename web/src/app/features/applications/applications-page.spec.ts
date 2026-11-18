@@ -5,6 +5,9 @@ import {
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { of } from 'rxjs';
+import { CvApi } from '../cv/cv-api';
+import { ApplicationMatch } from '../cv/cv.models';
 import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { ShellActions } from '../../shell/shell-actions';
@@ -15,6 +18,13 @@ import { application, applicationItem, applicationPage } from './applications.te
 
 const SUMMARY_URL = `${APPLICATIONS_API}/summary`;
 const SEARCH_WAIT_MS = 350;
+
+const NO_MATCH: ApplicationMatch = {
+  state: 'NoSkillsInPosting',
+  score: null,
+  matched: [],
+  missing: [],
+};
 
 describe('ApplicationsPage', () => {
   let harness: RouterTestingHarness;
@@ -29,6 +39,8 @@ describe('ApplicationsPage', () => {
         // Both come from the shell in the app.
         ApplicationsSummaryStore,
         ShellActions,
+        // The match panel has its own tests; here it only needs an answer.
+        { provide: CvApi, useValue: { match: () => of(NO_MATCH) } },
       ],
     });
     http = TestBed.inject(HttpTestingController);
