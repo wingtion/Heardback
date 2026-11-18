@@ -1,3 +1,10 @@
-/* You can add global styles to this file, and also import other style files */
-
 @import 'tailwindcss';
+
+/* Self-hosted fonts (docs/design.md §4). Each file is split by unicode-range, so browsers only
+   download the latin / latin-ext parts they need. */
+@import '@fontsource-variable/newsreader/opsz.css';
+@import '@fontsource-variable/public-sans/wght.css';
+@import '@fontsource/dm-mono/400.css';
+@import '@fontsource/dm-mono/500.css';
+
+@import './styles/tokens.css';

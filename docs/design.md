@@ -33,10 +33,10 @@ Handoff link (owner access only): https://claude.ai/code/artifact/b8cef516-80a0-
 
 Light and dark themes are both fully specified. Tokens are CSS custom properties, so components use one class (`bg-surface`) and never `dark:` variants.
 
-- **Default: follow the OS.** The dark values are swapped in under `prefers-color-scheme: dark`.
+- **Default: follow the OS.** Each colour token is `light-dark(light, dark)` and `:root` has `color-scheme: light dark`, so the browser picks the OS theme.
 - **Manual choice (decided):** a Light / Dark / System setting will live on the Settings page. The tokens already support it: `data-theme="light"` or `data-theme="dark"` on `<html>` overrides the OS setting. The choice is stored on the device. The control itself is built with the Settings page, which still needs its design.
 
-Set `color-scheme: light` / `dark` on `:root` so native controls (scrollbars, date pickers, select menus) match.
+Because the theme runs through `color-scheme`, native controls (scrollbars, date pickers, select menus) match it too.
 
 ## 3. Colour tokens
 
@@ -134,18 +134,18 @@ Smallest readable text is **12 px**. The only exception is the decorative stamp 
 | `panel-title` | Newsreader 600, −0.01em | 23 / 28 | Company name in the envelope |
 | `dialog-title` | Newsreader 600 | 20 / 26 | Dialog titles, section titles |
 | `empty-title` | Newsreader 600 | 18 / 24 | Empty-state title |
-| `wordmark` | Newsreader 600, −0.01em | 22 (desktop), 20 (mobile header), 30 / 26 (session loading) | "Heardback" next to the logo |
+| `wordmark` | Newsreader 600, −0.01em | 22 (desktop); mobile header uses `dialog-title` (20); session loading uses `display` / `display-sm` (30 / 26) | "Heardback" next to the logo |
 | `body` | Public Sans 400 | 14 / 20 | Notes, descriptions, nav items |
 | `cell` | Public Sans 400–600 | 13.5 / 20 | Table cells, inputs, buttons |
 | `small` | Public Sans 400 | 13 / 18 | Page subtitles ("8 applications · 2 with no response"), small buttons, banner body |
 | `label` | Public Sans 500–600 | 12.5 / 18 | Field labels, column headers, status labels, field errors |
 | `caption` | Public Sans 400 | 12 / 16 | Meta text, hints, "To", role under the user's name |
-| `date` | DM Mono 400 | 12.5 / 18 | Applied column, timeline dates, Created/Expires/Used |
-| `code` | DM Mono 400–500, +0.04em | 13.5 (table), 16 (mobile list), 30 / 26 (created dialog desktop / mobile) | Invite codes |
-| `stamp-numeral` | DM Mono 500 | 15 / 15 (14 on mobile) | Day number in timeline stamps |
-| `stamp-month` | DM Mono 400, +0.1em, uppercase | 8 / 8 | Month in stamps (decorative only) |
+| `label` + `font-mono` | DM Mono 400 | 12.5 / 18 | Applied column, timeline dates, Created/Expires/Used |
+| `cell` / `ui-xl` / `display` / `display-sm` | DM Mono 400–500, `tracking-code` (+0.04em), `tracking-code-lg` (+0.06em) in the created dialog | 13.5 (table), 16 (mobile list), 30 / 26 (created dialog desktop / mobile) | Invite codes |
+| `ui-lg` + `leading-none` | DM Mono 500 | 15 (14 = `body` on mobile) | Day number in timeline stamps |
+| `stamp` / `stamp-sm` | DM Mono 400, +0.1em (`tracking-stamp`), uppercase | 8 / 7.5 | Month in stamps (decorative only) |
 
-**Mobile and auth sizes:** mobile list company 15 / 600; mobile nav items 16; mobile full-width buttons 15 / 600; auth buttons 14.5 / 600; auth inputs 14; invite-code input DM Mono 15, +0.08em, uppercase.
+**Mobile and auth sizes:** `ui-lg` (15 / 22): mobile list company, mobile full-width buttons, invite-code input (DM Mono, `tracking-code-input` +0.08em, uppercase); `ui-xl` (16 / 24): mobile nav items; `ui-md` (14.5 / 20): auth buttons; `body` (14): auth inputs.
 
 ---
 
@@ -173,12 +173,12 @@ Touch targets on mobile are **≥ 44 px**.
 
 | Token | Value | Used for |
 |---|---|---|
-| `radius-xs` | 2 px | Postmark status label outer border, skeleton bars |
-| `radius-sm` | 3 px | Status labels, sidebar items, ghost-risk box |
-| `radius` | 4 px | Inputs, buttons, table container, envelope, banners |
-| `radius-md` | 5 px | Dialogs, confirm-delete box |
-| `radius-lg` | 6 px | Auth card, outer app frame |
-| `radius-sheet` | 14 px | Top corners of mobile bottom sheets |
+| `rounded-xs` | 2 px | Postmark status label outer border, skeleton bars |
+| `rounded-sm` | 3 px | Status labels, sidebar items, ghost-risk box |
+| `rounded-md` | 4 px | Inputs, buttons, table container, envelope, banners |
+| `rounded-lg` | 5 px | Dialogs, confirm-delete box |
+| `rounded-xl` | 6 px | Auth card, outer app frame |
+| `rounded-sheet` (top corners) | 14 px | Top corners of mobile bottom sheets |
 
 **Borders:** 1 px everywhere. Exceptions: invalid input 1.5 px `danger`; postmark status label 1.5 px dotted outer + 1 px solid inner; stamps 2 px dotted outer + 1 px solid (or dashed, for No response) inner; dividers inside the envelope and above auth footers are 1 px **dashed** `rule-strong`.
 
@@ -264,7 +264,7 @@ Title 13.5 / 600 in the border colour; body 13 in `ink-2` (warning body in `ink`
 - Text is plain: "Applied", "No response · 14 days", "Interview", "Rejected", "Offer". Invite codes: "Active", "Used", "Expired".
 
 ### Data table
-Container: 1 px `rule` border, radius 4, horizontal scroll inside the box when narrow. Header: `surface`, `label` 600 `ink-2`, 1 px `rule-strong` underline. Rows: 46 px, 1 px `rule` dividers (none on the last row), `cell` text. Company 500 (600 when selected); secondary columns (Channel, Last update) in `ink-2`; date columns in DM Mono `date`; right-aligned "Last update" in tabular numbers; cells don't wrap. Rows are focusable (`tabindex="0"`) and open the detail with Enter/Space as well as click. Footer count "Showing 8 of 8" in `label` `ink-muted`.
+Container: 1 px `rule` border, radius 4, horizontal scroll inside the box when narrow. Header: `surface`, `label` 600 `ink-2`, 1 px `rule-strong` underline. Rows: 46 px, 1 px `rule` dividers (none on the last row), `cell` text. Company 500 (600 when selected); secondary columns (Channel, Last update) in `ink-2`; date columns in DM Mono at `label` size; right-aligned "Last update" in tabular numbers; cells don't wrap. Rows are focusable (`tabindex="0"`) and open the detail with Enter/Space as well as click. Footer count "Showing 8 of 8" in `label` `ink-muted`.
 
 ### Pagination
 Bar inside the table container: `surface` background, 52 px tall. "Showing 1–20 of 34" on the left (13, `ink-2`), "Page 1 of 2" (13, `ink-muted`) plus Previous / Next secondary buttons (32 px, chevron icons) on the right. Previous is disabled on page 1, Next on the last page. Mobile: 44 px icon-only Previous/Next with `aria-label`, "Showing 1–20 of 34" centred.
@@ -376,7 +376,7 @@ List page with heading, summary ("8 applications · 2 with no response"), toolba
 
 ## 11. Implementing in Tailwind v4
 
-- Tokens live in `web/src/styles/tokens.css`: CSS variables on `:root` plus the dark set under `@media (prefers-color-scheme: dark)`. `@theme inline` maps them to Tailwind names (`--color-surface: var(--hb-surface)`, `--text-cell: 13.5px` with `--text-cell--line-height: 20px`, `--font-serif`, `--radius-sm`, `--shadow-dialog`, …). Utilities read `bg-surface`, `text-ink-2`, `border-rule-strong`, `text-cell`, `font-mono`, `rounded-sm`.
+- Tokens live in `web/src/styles/tokens.css` as Tailwind `@theme` variables. Each colour is written once as `light-dark(light, dark)`; `color-scheme` on `:root` follows the OS, and `data-theme="light" | "dark"` on `<html>` overrides it. Utilities read `bg-surface`, `text-ink-2`, `border-rule-strong`, `text-cell`, `font-mono`, `rounded-md`, `shadow-dialog`.
 - Tailwind's default colour palette is removed (`--color-*: initial`), so only design tokens exist. A stray `bg-indigo-500` fails to compile instead of slipping in.
 - No arbitrary values (`text-[#…]`, `mt-[13px]`) and no inline styles; anything missing becomes a token here first.
 - Focus ring, hover and disabled rules live inside the shared components, not repeated in every screen.
