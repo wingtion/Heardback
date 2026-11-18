@@ -142,6 +142,12 @@
   --color-status-offer: light-dark(#2d6236, #8cc79a);
 }
 
+/* Invalid input border: 1.5 px in danger (docs/design.md §5). */
+@utility border-invalid {
+  border-width: 1.5px;
+  border-color: var(--color-danger);
+}
+
 @layer base {
   html {
     background-color: var(--color-base);

@@ -224,9 +224,9 @@ Brand marks (also inline SVG, `aria-hidden`): **logo** (double ring with two wav
 
 ## 8. Components
 
-Reusable pieces become standalone OnPush components in `web/src/app/shared/ui/`.
+Reusable pieces are standalone components and directives in `web/src/app/shared/ui/` (prefix `app`, OnPush by default).
 
-### Buttons — `hb-button`
+### Buttons — `appButton` directive on `<button>` / `<a>`
 | Variant | Default | Notes |
 |---|---|---|
 | Primary | `accent` bg + border, `on-accent` text, 600 | One per view. Optional leading plus icon. |
@@ -237,7 +237,7 @@ Reusable pieces become standalone OnPush components in `web/src/app/shared/ui/`.
 
 Sizes: `sm` 28–32, `md` 36 (default), `lg` 44 (auth), `xl` 48 (mobile full-width). Padding 12–14 px horizontal. Radius 4.
 
-### Text field — `hb-field`
+### Text field — `<app-field>` + `appInput` directive
 Label above (`label`, 600, `ink-2`), 5 px gap, input 36 px desktop / 42 px auth / 44 px mobile, `field` bg, `field-border`, radius 4, padding 10–12 px. Optional hint below (`caption`, `ink-muted`). Error: border 1.5 px `danger`, `aria-invalid="true"`, message below with warning icon (`label`, 500, `danger`), linked via `aria-describedby` (hint and error both). Optional "· optional" suffix on the label in `ink-muted`, 400.
 
 Variants: **select** (native `<select>`, `appearance: none`, chevron icon at right); **date** (DM Mono 13 px value, calendar icon at right); **number** (DM Mono, 96 px wide, with trailing unit text "days"); **invite code** (DM Mono 15, +0.08em, uppercase, dashes added while typing, `maxlength` 14, `autocomplete="off"`, `spellcheck="false"`); **password** with a live character counter in DM Mono at the right of the hint ("12–128 characters" · "19 characters").
@@ -245,7 +245,7 @@ Variants: **select** (native `<select>`, `appearance: none`, chevron icon at rig
 ### Toolbar field group
 Search, Status filter and Channel filter on the list page: one 36 px bordered box, label cell on the left (`label`, `ink-2`, divided by a `rule` line), input or select on the right without its own border. Search label includes the search icon. Mobile: 44 px, search label is visually hidden (icon only), filters in a 2-column grid.
 
-### Banners — `hb-banner`
+### Banners — `app-banner`
 Row of icon + text, padding 10–12 px, radius 4, 1 px border.
 | Kind | Border / title colour | Background | Icon | Role |
 |---|---|---|---|---|
@@ -258,7 +258,7 @@ Title 13.5 / 600 in the border colour; body 13 in `ink-2` (warning body in `ink`
 ### Inline success
 "Copied to clipboard": check-in-filled-circle icon + 13 px 600 text in `status-offer`, `role="status"`.
 
-### Status label — `hb-status-label`
+### Status label — `app-status-label`
 - **Table / list form:** 22 px tall, padding 0 8 0 6, 1 px border in the status colour, radius 3, glyph + text (`label`, 500), all in the status colour, no fill.
 - **Postmark form (detail panel and sheet only):** same label inside a 1.5 px dotted outer border, 2 px gap, radius 2.
 - Text is plain: "Applied", "No response · 14 days", "Interview", "Rejected", "Offer". Invite codes: "Active", "Used", "Expired".
@@ -277,7 +277,7 @@ Bar inside the table container: `surface` background, 52 px tall. "Showing 1–2
 ### Mobile header and menu
 Header 60 px, `surface`, bottom `rule`: logo 24 px + wordmark 20 px + 44 px menu button ("Open menu"). The open menu is a full-screen panel (`surface`) with the header's button switched to ✕ ("Close menu", `aria-expanded="true"`), 48 px items at 16 px, the same Admin section, and the user + 44 px Sign out button pinned at the bottom. It traps focus and closes on Escape.
 
-### Envelope detail panel (desktop) — `hb-envelope`
+### Envelope detail panel (desktop) — `app-envelope`
 380 px column, `surface` background, left border `rule`.
 1. **Header bar** (52 px, `base`, bottom `rule`): ✕ icon button "Close details", title "Application" (14, 600), Edit secondary button (32 px). **Buttons never sit inside the envelope, and no flap line passes behind a button.**
 2. **Envelope** (inset 16/20 px): `envelope` background, 1 px `rule-strong`, radius 4, padding 0 20 16. Decorations, all `aria-hidden`: flap V-line (`rule-strong`) across the top; postage stamp top-right (50 × 60); postmark (waves + 46 px double-ring date circle) overlapping it.
@@ -290,7 +290,7 @@ Header 60 px, `surface`, bottom `rule`: logo 24 px + wordmark 20 px + 44 px menu
 ### Full-screen detail sheet (mobile)
 `role="dialog"`, `aria-modal`, `surface`. Header 60 px (`base`): 44 px ✕ "Close and go back to applications", title "Application" (15, 600), Edit (36 px). Same envelope inside with 16 px margin (slightly smaller stamp and postmark); the channel/date line wraps to its own row. Sticky footer (`base`, top `rule`): **Delete** (danger outline with trash, 48 px) and **Add update** (primary, 48 px), side by side.
 
-### Dialog — `hb-dialog` (CDK Dialog)
+### Dialog — `app-dialog` (CDK Dialog)
 `base`, 1 px `rule-strong`, radius 5, `shadow-dialog`. Header: padding 16 20 14, bottom `rule`; optional small stamp mark (Add application), title (`dialog-title`), close icon button (30–32 px, bordered). Body: padding 18 20 20, fields 14 px apart, two-column rows where shown. Footer: `surface`, top `rule`, right-aligned Cancel/Done (secondary) + primary action. `aria-modal`, `aria-labelledby` = title, focus trapped, Escape closes, focus returns to the trigger.
 
 **Mobile:** dialogs become bottom sheets: full width, top radius 14, top border `rule-strong`, 44 px close button, full-width 48 px buttons side by side.
