@@ -59,5 +59,6 @@ app.MapHealthChecks("/health").AllowAnonymous();
 // All module endpoints hang off one root group so request validation covers every one of them.
 var api = app.MapGroup(string.Empty).WithRequestValidation();
 api.MapIdentityEndpoints();
+api.MapApplicationsEndpoints();
 
 await app.RunAsync();

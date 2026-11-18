@@ -26,4 +26,12 @@ internal static class NoResponseRule
         return application => application.Status == ApplicationStatus.Applied
             && application.LastActivityOn <= latestQualifyingActivity;
     }
+
+    /// <summary>Applied applications that do not show the label yet: the list's "Applied" filter.</summary>
+    public static Expression<Func<Application, bool>> MatchesRecentlyApplied(DateOnly today, int thresholdDays)
+    {
+        var latestQualifyingActivity = today.AddDays(-thresholdDays);
+        return application => application.Status == ApplicationStatus.Applied
+            && application.LastActivityOn > latestQualifyingActivity;
+    }
 }
