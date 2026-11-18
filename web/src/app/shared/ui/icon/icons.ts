@@ -41,6 +41,10 @@ export const ICONS = {
     ],
     1.4,
   ),
+  clipboard: icon(
+    ['M4 3.5h8a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1z', 'M6 3.5V2.5h4v1'],
+    1.4,
+  ),
   check: icon(['M3.5 8.5l3 3 6-7'], 1.8),
   warning: icon(['M8 2.5l6 10.5H2z', 'M8 6.6v3M8 11.4v.1']),
   info: icon([CIRCLE_R6, 'M8 7.2v4M8 4.8v.1']),

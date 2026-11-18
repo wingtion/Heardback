@@ -6,6 +6,7 @@ import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { firstValueFrom } from 'rxjs';
 import { AUTH_API } from '../features/auth/auth-paths';
+import { APPLICATIONS_API } from '../features/applications/applications-api';
 import { AuthService } from '../features/auth/auth.service';
 import { authResponse } from '../features/auth/auth.testing';
 import { AppShell } from './app-shell';
@@ -15,6 +16,8 @@ class StubPage {}
 
 @Component({ template: '<p>Sign in page</p>' })
 class StubLogin {}
+
+const SUMMARY_URL = `${APPLICATIONS_API}/summary`;
 
 describe('AppShell', () => {
   let harness: RouterTestingHarness;
@@ -47,6 +50,10 @@ describe('AppShell', () => {
     http.expectOne(AUTH_API.login).flush(authResponse(options));
     await login;
     harness = await RouterTestingHarness.create('/applications');
+    http.expectOne(SUMMARY_URL).flush({ total: 8, noResponse: 2 });
+    // The count arrives through a signal resource, which settles after a macrotask.
+    await new Promise((resolve) => setTimeout(resolve));
+    harness.detectChanges();
     return harness.fixture.nativeElement as HTMLElement;
   }
 
@@ -55,6 +62,13 @@ describe('AppShell', () => {
 
     expect(root.textContent).toContain('Ada');
     expect(root.textContent).toContain('Member');
+  });
+
+  it('render_Signedin_ShowsTheApplicationsCountInTheNavigation', async () => {
+    const root = await openAs({ isAdmin: false });
+
+    const link = root.querySelector<HTMLElement>('nav[aria-label="Main"] a[href="/applications"]');
+    expect(link?.textContent?.replace(/\s+/g, ' ').trim()).toBe('Applications 8');
   });
 
   it('render_Member_HidesTheAdminSection', async () => {

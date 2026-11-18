@@ -1,5 +1,6 @@
 import { A11yModule } from '@angular/cdk/a11y';
-import { Component, DestroyRef, effect, inject, signal, untracked } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import { Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
@@ -9,11 +10,14 @@ import {
   LOGIN_REASON_PARAM,
   RETURN_URL_PARAM,
 } from '../features/auth/auth-paths';
+import { ApplicationsSummaryStore } from '../features/applications/applications-summary';
 import { AuthService } from '../features/auth/auth.service';
 import { Logo } from '../shared/ui/brand/logo';
 import { Button } from '../shared/ui/button/button';
 import { Icon } from '../shared/ui/icon/icon';
+import { SHELL_ROUTES } from './nav-items';
 import { NavMenu } from './nav-menu';
+import { ShellActions } from './shell-actions';
 
 /**
  * The signed-in frame (docs/design.md §8–9): sidebar from the lg breakpoint, header with a
@@ -21,7 +25,9 @@ import { NavMenu } from './nav-menu';
  */
 @Component({
   selector: 'app-shell',
-  imports: [A11yModule, RouterOutlet, Logo, Button, Icon, NavMenu],
+  imports: [A11yModule, NgTemplateOutlet, RouterOutlet, Logo, Button, Icon, NavMenu],
+  // Per signed-in session: the shell is destroyed on sign-out, and these with it.
+  providers: [ApplicationsSummaryStore, ShellActions],
   templateUrl: './app-shell.html',
 })
 export class AppShell {
@@ -30,6 +36,18 @@ export class AppShell {
 
   protected readonly menuOpen = signal(false);
   protected readonly signingOut = signal(false);
+
+  protected readonly mobileAction = inject(ShellActions).mobileAction;
+
+  private readonly summary = inject(ApplicationsSummaryStore).summary;
+  protected readonly navCounts = computed(() => {
+    const summary = this.summary();
+    const counts: Record<string, number> = {};
+    if (summary) {
+      counts[SHELL_ROUTES.applications] = summary.total;
+    }
+    return counts;
+  });
 
   constructor() {
     this.router.events

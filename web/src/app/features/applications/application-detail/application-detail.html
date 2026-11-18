@@ -1,0 +1,174 @@
+<div
+  class="flex h-full min-h-0 flex-col"
+  [cdkTrapFocus]="sheet()"
+  [cdkTrapFocusAutoCapture]="sheet()"
+>
+  <!-- Header bar: buttons never sit inside the envelope (docs/design.md §8). -->
+  <div
+    class="flex shrink-0 items-center gap-2 border-b border-rule bg-base"
+    [class]="sheet() ? 'h-15 pr-3 pl-1.5' : 'h-13 pr-3.5 pl-2'"
+  >
+    <button
+      appButton="ghost"
+      [size]="sheet() ? 'lg' : 'md'"
+      iconOnly
+      type="button"
+      [attr.aria-label]="sheet() ? 'Close and go back to applications' : 'Close details'"
+      (click)="closed.emit()"
+    >
+      <app-icon name="close" [size]="sheet() ? 18 : 16" />
+    </button>
+    <span
+      [id]="titleId"
+      class="flex-1 font-semibold text-ink"
+      [class]="sheet() ? 'text-ui-lg' : 'text-body'"
+    >
+      Application
+    </span>
+  </div>
+
+  <div class="min-h-0 flex-1 overflow-y-auto" [class]="sheet() ? 'p-4' : 'px-5 pt-4 pb-5'">
+    @switch (view().kind) {
+      @case ('loading') {
+        <div role="status" class="flex items-center gap-2 py-3 text-small text-ink-2">
+          <app-spinner />
+          Loading application…
+        </div>
+      }
+      @case ('not-found') {
+        <app-banner kind="info" heading="Couldn’t find this application">
+          It may have been deleted in another tab or on another device.
+        </app-banner>
+      }
+      @case ('error') {
+        <app-banner kind="error" heading="Couldn’t load this application">
+          <p>The server didn’t respond. Try again.</p>
+          <button appButton size="sm" type="button" class="mt-1.5" (click)="retry()">
+            Try again
+          </button>
+        </app-banner>
+      }
+    }
+
+    @if (application(); as application) {
+      <article
+        class="relative flex min-h-full flex-col rounded-md border border-rule-strong bg-envelope"
+        [class]="sheet() ? 'gap-3.5 px-4.5 pb-4.5' : 'gap-3 px-5 pb-4'"
+      >
+        <!-- Envelope flap, stamp and postmark: decorative. -->
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          class="absolute inset-x-0 top-0 h-14.5 w-full text-rule-strong"
+          viewBox="0 0 338 58"
+          preserveAspectRatio="none"
+          fill="none"
+        >
+          <path
+            d="M0 0L169 52L338 0"
+            stroke="currentColor"
+            stroke-width="1"
+            vector-effect="non-scaling-stroke"
+          />
+        </svg>
+        <app-postage-stamp
+          class="absolute"
+          [class]="sheet() ? 'top-3 right-3' : 'top-3.5 right-3.5'"
+          [size]="sheet() ? 'envelope-compact' : 'envelope'"
+        />
+        <!-- The waves cancel the stamp: they cross its left edge. -->
+        <app-postmark class="absolute" [class]="sheet() ? 'top-7 right-8' : 'top-7.5 right-9'" />
+
+        <div [class]="sheet() ? 'pt-17.5' : 'pt-18'">
+          <div class="text-caption text-ink-muted">To</div>
+          <h2 class="font-serif text-panel-title font-semibold text-ink">
+            {{ application.company }}
+          </h2>
+          <div class="text-body text-ink-2">{{ application.role }}</div>
+          @if (application.url; as url) {
+            <a
+              class="mt-0.5 inline-block break-all text-link underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              [class]="sheet() ? 'text-cell' : 'text-small'"
+              [href]="url"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {{ linkText(url) }}
+            </a>
+          }
+        </div>
+
+        <div
+          class="flex flex-wrap items-center gap-2.5 border-t border-dashed border-rule-strong pt-2.5"
+        >
+          @if (status(); as status) {
+            <app-status-label
+              postmark
+              [label]="status.label"
+              [tone]="status.tone"
+              [glyph]="status.glyph"
+            />
+          }
+          <span class="text-label text-ink-muted">Updated {{ updated() }}</span>
+          <span class="text-label text-ink-2" [class]="sheet() ? 'w-full' : 'ml-auto'">
+            {{ channelLabels[application.channel] }} ·
+            <span class="font-mono">{{ application.appliedOn | date: dateFormat }}</span>
+          </span>
+        </div>
+
+        @if (application.notes; as notes) {
+          <section class="flex flex-col gap-1">
+            <h3 class="text-label font-semibold text-ink-2">Notes</h3>
+            <p class="whitespace-pre-line text-ink" [class]="sheet() ? 'text-body' : 'text-cell'">
+              {{ notes }}
+            </p>
+          </section>
+        }
+
+        <section class="flex flex-col gap-2.5">
+          <h3 class="text-label font-semibold text-ink-2">Timeline</h3>
+          <ol class="flex flex-col gap-2.5">
+            @for (row of timeline(); track row.key) {
+              <li class="flex items-center gap-3.5">
+                <app-timeline-stamp [date]="row.date" [tone]="row.tone" />
+                <div class="min-w-0">
+                  <div
+                    class="flex items-center gap-1.5 font-semibold"
+                    [class]="(sheet() ? 'text-body ' : 'text-cell ') + row.titleClass"
+                  >
+                    <app-status-glyph [glyph]="row.glyph" [class]="row.glyphClass" />
+                    {{ row.title }}
+                  </div>
+                  <div class="text-label break-words text-ink-2">
+                    <span class="font-mono">{{ row.date | date: timelineDateFormat }}</span>
+                    @if (row.description; as description) {
+                      · {{ description }}
+                    }
+                  </div>
+                </div>
+              </li>
+            }
+          </ol>
+        </section>
+      </article>
+    }
+  </div>
+
+  @if (application(); as application) {
+    <div
+      class="flex shrink-0 gap-2.5 border-t border-rule bg-base"
+      [class]="sheet() ? 'px-4 pt-3 pb-5' : 'px-5 py-3'"
+    >
+      <button
+        appButton="danger"
+        [size]="sheet() ? 'xl' : 'sm'"
+        type="button"
+        [class.flex-1]="sheet()"
+        (click)="confirmDelete(application)"
+      >
+        <app-icon name="trash" [size]="sheet() ? 16 : 14" />
+        Delete
+      </button>
+    </div>
+  }
+</div>

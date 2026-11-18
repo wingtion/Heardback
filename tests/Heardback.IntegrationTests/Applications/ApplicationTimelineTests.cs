@@ -37,6 +37,19 @@ public sealed class ApplicationTimelineTests(PostgresFixture postgres) : Applica
     }
 
     [Fact]
+    public async Task Get_NoResponse_ReportsTheDayTheLabelStarted()
+    {
+        var old = await Client.CreateApplicationOkAsync(Alice, NewApplication(appliedOn: Today.AddDays(-20)));
+        var recent = await Client.CreateApplicationOkAsync(Alice, NewApplication(url: null, appliedOn: Today));
+
+        using var oldResponse = await Client.GetApplicationAsync(Alice, old.Id);
+        using var recentResponse = await Client.GetApplicationAsync(Alice, recent.Id);
+
+        Assert.Equal(Today.AddDays(-6), (await oldResponse.ReadAsync<ApplicationDto>()).NoResponseSince);
+        Assert.Null((await recentResponse.ReadAsync<ApplicationDto>()).NoResponseSince);
+    }
+
+    [Fact]
     public async Task AddEvent_BoardMoveWithoutNote_ChangesStatus()
     {
         var created = await Client.CreateApplicationOkAsync(Alice, NewApplication());
