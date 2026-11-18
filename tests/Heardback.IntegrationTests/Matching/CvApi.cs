@@ -72,4 +72,4 @@ internal static class CvApi
     }
 }
 
-internal sealed record CvDto(DateTimeOffset UploadedAt, int PageCount, string Text);
+internal sealed record CvDto(DateTimeOffset UploadedAt, int PageCount, string Text, string[] Skills);

@@ -47,7 +47,7 @@ internal sealed partial class UploadCvHandler(
         var cv = await SaveAsync(text, extracted.Value.PageCount, cancellationToken);
 
         LogUploaded(cv.PageCount, cv.Text.Length);
-        return new CvResponse(cv.UploadedAt, cv.PageCount, cv.Text);
+        return CvResponse.From(cv.UploadedAt, cv.PageCount, cv.Text);
     }
 
     private static async Task<byte[]> ReadAsync(IFormFile file, CancellationToken cancellationToken)

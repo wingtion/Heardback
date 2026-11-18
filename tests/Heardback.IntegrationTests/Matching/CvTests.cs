@@ -22,11 +22,15 @@ public sealed class CvTests(PostgresFixture postgres) : ApplicationsTestBase(pos
         Assert.Equal(HttpStatusCode.OK, upload.StatusCode);
         var uploaded = await upload.ReadAsync<CvDto>();
         Assert.Equal(AdasStoredText, uploaded.Text);
+        Assert.Equal(["C#", ".NET", "PostgreSQL", "Docker"], uploaded.Skills);
         Assert.Equal(1, uploaded.PageCount);
         Assert.Equal(Clock.GetUtcNow(), uploaded.UploadedAt, TimeSpan.FromMilliseconds(1));
 
         using var read = await Client.GetCvAsync(Alice);
-        Assert.Equal(uploaded, await read.ReadAsync<CvDto>());
+        var stored = await read.ReadAsync<CvDto>();
+        Assert.Equal(uploaded.Text, stored.Text);
+        Assert.Equal(uploaded.Skills, stored.Skills);
+        Assert.Equal(uploaded.UploadedAt, stored.UploadedAt);
     }
 
     [Fact]
