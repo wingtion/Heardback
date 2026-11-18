@@ -28,7 +28,8 @@ internal static class ApplicationsRateLimiting
         return services;
     }
 
-    // Writes require sign-in, so a missing id never reaches a handler; it gets its own tiny bucket regardless.
+    // The limiter runs after authorization, and writes require sign-in, so the user id is always known here.
+    // Guid.Empty is only a fallback key; if it were ever reached, all such callers would share one bucket.
     private static RateLimitPartition<Guid> PerUser(HttpContext context, int permitLimit) =>
         RateLimitPartition.GetFixedWindowLimiter(
             context.RequestServices.GetRequiredService<ICurrentUser>().UserId ?? Guid.Empty,
