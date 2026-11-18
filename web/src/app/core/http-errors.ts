@@ -17,6 +17,14 @@ export function isForbidden(error: unknown): boolean {
   return httpErrorOf(error)?.status === HttpStatusCode.Forbidden;
 }
 
+/** The `code` of a ProblemDetails body, e.g. "applications.already_tracked"; null when there is none. */
+export function problemCode(body: unknown): string | null {
+  if (typeof body !== 'object' || body === null || !('code' in body)) {
+    return null;
+  }
+  return typeof body.code === 'string' ? body.code : null;
+}
+
 /** First message per field from a ValidationProblem body ({ errors: { field: [messages] } }). */
 export function validationErrors(body: unknown): Record<string, string> {
   if (typeof body !== 'object' || body === null || !('errors' in body)) {

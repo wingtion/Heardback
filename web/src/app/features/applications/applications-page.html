@@ -14,17 +14,28 @@
 </ng-template>
 
 <div class="flex min-w-0 flex-1 flex-col lg:gap-4.5 lg:px-7 lg:pt-6 lg:pb-5 xl:overflow-y-auto">
-  <div class="flex flex-col px-4 pt-4 lg:flex-row lg:items-baseline lg:gap-3.5 lg:p-0">
-    <h1 class="font-serif text-page-title-sm font-semibold text-ink lg:text-page-title">
+  <div
+    class="flex flex-wrap items-center gap-x-3.5 px-4 pt-4 lg:flex-nowrap lg:items-baseline lg:p-0"
+  >
+    <h1
+      class="font-serif text-page-title-sm font-semibold text-ink max-lg:flex-1 lg:text-page-title"
+    >
       Applications
     </h1>
     @if (summary(); as text) {
-      <span class="text-small text-ink-2 tabular-nums">{{ text }}</span>
+      <span class="text-small text-ink-2 tabular-nums max-lg:order-last max-lg:w-full">
+        {{ text }}
+      </span>
     }
+    <app-applications-view-toggle
+      class="self-center lg:ml-auto"
+      [value]="view()"
+      (valueChange)="setView($event)"
+    />
     <button
       appButton="primary"
       type="button"
-      class="self-center max-lg:hidden lg:ml-auto"
+      class="self-center max-lg:hidden"
       (click)="openAddDialog()"
     >
       <app-icon name="plus" [size]="14" />
@@ -32,8 +43,17 @@
     </button>
   </div>
 
-  <div class="flex flex-col gap-2 px-4 pt-2.5 pb-3 lg:flex-row lg:items-center lg:gap-2.5 lg:p-0">
-    <app-toolbar-field label="Search" icon="search" iconOnlyOnMobile class="lg:w-80">
+  <div
+    class="flex gap-2 px-4 pt-2.5 pb-3 lg:flex-row lg:items-center lg:gap-2.5 lg:p-0"
+    [class]="view() === 'list' ? 'flex-col' : 'flex-row'"
+  >
+    <app-toolbar-field
+      label="Search"
+      icon="search"
+      iconOnlyOnMobile
+      class="lg:w-80"
+      [class]="view() === 'list' ? '' : 'max-lg:flex-1'"
+    >
       <input
         appToolbarControl
         type="search"
@@ -45,220 +65,235 @@
         (input)="setSearch(searchInput.value)"
       />
     </app-toolbar-field>
-    <div class="grid grid-cols-2 gap-2 lg:flex lg:gap-2.5">
-      <app-toolbar-field label="Status">
-        <app-select class="h-full min-w-0 flex-1">
-          <select
-            appToolbarControl
-            class="appearance-none pr-7.5 max-lg:pl-1 max-lg:text-body max-lg:font-medium"
-            #statusSelect
-            (change)="setStatus(statusSelect.value)"
-          >
-            <option value="" [selected]="status() === null">
-              {{ desktop() ? 'All statuses' : 'All' }}
-            </option>
-            @for (option of statusFilters; track option.value) {
-              <option [value]="option.value" [selected]="status() === option.value">
-                {{ option.label }}
+    @if (view() === 'list') {
+      <div class="grid grid-cols-2 gap-2 lg:flex lg:gap-2.5">
+        <app-toolbar-field label="Status">
+          <app-select class="h-full min-w-0 flex-1">
+            <select
+              appToolbarControl
+              class="appearance-none pr-7.5 max-lg:pl-1 max-lg:text-body max-lg:font-medium"
+              #statusSelect
+              (change)="setStatus(statusSelect.value)"
+            >
+              <option value="" [selected]="status() === null">
+                {{ desktop() ? 'All statuses' : 'All' }}
               </option>
-            }
-          </select>
-        </app-select>
-      </app-toolbar-field>
-      <app-toolbar-field label="Channel">
-        <app-select class="h-full min-w-0 flex-1">
-          <select
-            appToolbarControl
-            class="appearance-none pr-7.5 max-lg:pl-1 max-lg:text-body max-lg:font-medium"
-            #channelSelect
-            (change)="setChannel(channelSelect.value)"
-          >
-            <option value="" [selected]="channel() === null">
-              {{ desktop() ? 'All channels' : 'All' }}
-            </option>
-            @for (option of channels; track option) {
-              <option [value]="option" [selected]="channel() === option">
-                {{ channelLabels[option] }}
-              </option>
-            }
-          </select>
-        </app-select>
-      </app-toolbar-field>
-    </div>
+              @for (option of statusFilters; track option.value) {
+                <option [value]="option.value" [selected]="status() === option.value">
+                  {{ option.label }}
+                </option>
+              }
+            </select>
+          </app-select>
+        </app-toolbar-field>
+        <ng-container [ngTemplateOutlet]="channelFilter" />
+      </div>
+    } @else {
+      <ng-container [ngTemplateOutlet]="channelFilter" />
+    }
   </div>
 
-  <section aria-label="Applications" class="lg:rounded-md lg:border lg:border-rule">
-    <!-- Desktop table; the header also frames the loading, empty and error states. -->
-    <div class="overflow-x-auto max-lg:hidden">
-      <table class="w-full border-collapse text-left text-cell text-ink">
-        <thead>
-          <tr
-            class="h-10 border-b border-rule-strong bg-surface text-label font-semibold text-ink-2"
-          >
-            <th scope="col" class="rounded-tl-md pr-3 pl-4">Company</th>
-            <th scope="col" class="px-3">Role</th>
-            <th scope="col" class="px-3">Channel</th>
-            <th scope="col" class="px-3">Applied</th>
-            <th scope="col" class="px-3">Status</th>
-            <th scope="col" class="rounded-tr-md pr-4 pl-3 text-right">Last update</th>
-          </tr>
-        </thead>
-        @if (view(); as view) {
-          @if (view.kind === 'list') {
-            <tbody>
-              @for (item of view.data.items; track item.id) {
-                @let selected = item.id === selectedId();
-                @let status = statusOf(item.status, item.noResponseDays);
-                <tr
-                  tabindex="0"
-                  class="h-11.5 cursor-pointer border-b border-rule last:border-b-0 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
-                  [class]="selected ? 'bg-row-selected' : 'hover:bg-row-hover'"
-                  [attr.aria-current]="selected ? 'true' : null"
-                  (click)="select(item.id)"
-                  (keydown.enter)="onKeydownRow($event, item.id)"
-                  (keydown.space)="onKeydownRow($event, item.id)"
-                >
-                  <td
-                    class="pr-3 pl-4 whitespace-nowrap"
-                    [class]="selected ? 'font-semibold inset-shadow-selection' : 'font-medium'"
+  <ng-template #channelFilter>
+    <app-toolbar-field
+      label="Channel"
+      [class]="view() === 'list' ? '' : 'max-lg:w-37.5 max-lg:shrink-0'"
+    >
+      <app-select class="h-full min-w-0 flex-1">
+        <select
+          appToolbarControl
+          class="appearance-none pr-7.5 max-lg:pl-1 max-lg:text-body max-lg:font-medium"
+          #channelSelect
+          (change)="setChannel(channelSelect.value)"
+        >
+          <option value="" [selected]="channel() === null">
+            {{ desktop() ? 'All channels' : 'All' }}
+          </option>
+          @for (option of channels; track option) {
+            <option [value]="option" [selected]="channel() === option">
+              {{ channelLabels[option] }}
+            </option>
+          }
+        </select>
+      </app-select>
+    </app-toolbar-field>
+  </ng-template>
+
+  @if (view() === 'list') {
+    <section aria-label="Applications" class="lg:rounded-md lg:border lg:border-rule">
+      <!-- Desktop table; the header also frames the loading, empty and error states. -->
+      <div class="overflow-x-auto max-lg:hidden">
+        <table class="w-full border-collapse text-left text-cell text-ink">
+          <thead>
+            <tr
+              class="h-10 border-b border-rule-strong bg-surface text-label font-semibold text-ink-2"
+            >
+              <th scope="col" class="rounded-tl-md pr-3 pl-4">Company</th>
+              <th scope="col" class="px-3">Role</th>
+              <th scope="col" class="px-3">Channel</th>
+              <th scope="col" class="px-3">Applied</th>
+              <th scope="col" class="px-3">Status</th>
+              <th scope="col" class="rounded-tr-md pr-4 pl-3 text-right">Last update</th>
+            </tr>
+          </thead>
+          @if (listView(); as view) {
+            @if (view.kind === 'list') {
+              <tbody>
+                @for (item of view.data.items; track item.id) {
+                  @let selected = item.id === selectedId();
+                  @let status = statusOf(item.status, item.noResponseDays);
+                  <tr
+                    tabindex="0"
+                    class="h-11.5 cursor-pointer border-b border-rule last:border-b-0 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
+                    [class]="selected ? 'bg-row-selected' : 'hover:bg-row-hover'"
+                    [attr.aria-current]="selected ? 'true' : null"
+                    (click)="select(item.id)"
+                    (keydown.enter)="onKeydownRow($event, item.id)"
+                    (keydown.space)="onKeydownRow($event, item.id)"
                   >
-                    {{ item.company }}
-                  </td>
-                  <td class="px-3 whitespace-nowrap">{{ item.role }}</td>
-                  <td class="px-3 whitespace-nowrap text-ink-2">
-                    {{ channelLabels[item.channel] }}
-                  </td>
-                  <td class="px-3 font-mono text-label whitespace-nowrap">
-                    {{ item.appliedOn | date: dateFormat }}
-                  </td>
-                  <td class="px-3">
+                    <td
+                      class="pr-3 pl-4 whitespace-nowrap"
+                      [class]="selected ? 'font-semibold inset-shadow-selection' : 'font-medium'"
+                    >
+                      {{ item.company }}
+                    </td>
+                    <td class="px-3 whitespace-nowrap">{{ item.role }}</td>
+                    <td class="px-3 whitespace-nowrap text-ink-2">
+                      {{ channelLabels[item.channel] }}
+                    </td>
+                    <td class="px-3 font-mono text-label whitespace-nowrap">
+                      {{ item.appliedOn | date: dateFormat }}
+                    </td>
+                    <td class="px-3">
+                      <app-status-label
+                        [label]="status.label"
+                        [tone]="status.tone"
+                        [glyph]="status.glyph"
+                      />
+                    </td>
+                    <td class="pr-4 pl-3 text-right whitespace-nowrap text-ink-2 tabular-nums">
+                      {{ updatedAgo(item) }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            }
+          }
+        </table>
+      </div>
+
+      @switch (listView().kind) {
+        @case ('loading') {
+          <div
+            role="status"
+            class="flex items-center gap-2 border-rule px-4 py-3 text-small text-ink-2 max-lg:border-t lg:border-b"
+          >
+            <app-spinner />
+            Loading applications…
+          </div>
+          <div aria-hidden="true">
+            @for (row of skeletonRows; track row) {
+              <div
+                class="flex h-10.5 items-center gap-3.5 border-b border-rule px-4 last:border-b-0"
+              >
+                <span class="h-2 w-21 rounded-xs bg-skeleton"></span>
+                <span class="h-2 w-24 rounded-xs bg-skeleton"></span>
+                <span class="h-5 w-14 rounded-sm border border-skeleton-line"></span>
+              </div>
+            }
+          </div>
+        }
+        @case ('error') {
+          <div class="p-4 max-lg:pt-0">
+            <app-banner kind="error" heading="Couldn’t load applications">
+              <p>The server didn’t respond. Your saved applications are safe.</p>
+              <button appButton size="sm" type="button" class="mt-1.5" (click)="retry()">
+                Try again
+              </button>
+            </app-banner>
+          </div>
+        }
+        @case ('empty') {
+          <app-applications-empty-state
+            class="px-4.5 py-5.5 max-lg:border-t max-lg:border-rule"
+            (add)="openAddDialog()"
+          />
+        }
+        @case ('no-matches') {
+          <app-applications-empty-state
+            filtered
+            class="px-4.5 py-5.5 max-lg:border-t max-lg:border-rule"
+            (clearFilters)="clearFilters()"
+          />
+        }
+      }
+
+      @if (listView(); as view) {
+        @if (view.kind === 'list') {
+          <!-- Phone and tablet list -->
+          <ul class="border-t border-rule lg:hidden">
+            @for (item of view.data.items; track item.id) {
+              @let selected = item.id === selectedId();
+              @let status = statusOf(item.status, item.noResponseDays);
+              <li>
+                <a
+                  class="flex flex-col gap-1 border-b border-rule px-4 py-3 text-ink no-underline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
+                  [class]="selected ? 'bg-row-selected inset-shadow-selection' : ''"
+                  [routerLink]="[]"
+                  [queryParams]="{ id: item.id }"
+                  queryParamsHandling="merge"
+                  [attr.aria-current]="selected ? 'true' : null"
+                >
+                  <span class="flex justify-between gap-2">
+                    <span class="text-ui-lg font-semibold">{{ item.company }}</span>
+                    <span class="shrink-0 text-label text-ink-muted">{{ updatedAgo(item) }}</span>
+                  </span>
+                  <span class="text-cell text-ink-2">{{ item.role }}</span>
+                  <span class="mt-0.5 flex flex-wrap items-center gap-2.5">
                     <app-status-label
                       [label]="status.label"
                       [tone]="status.tone"
                       [glyph]="status.glyph"
                     />
-                  </td>
-                  <td class="pr-4 pl-3 text-right whitespace-nowrap text-ink-2 tabular-nums">
-                    {{ updatedAgo(item) }}
-                  </td>
-                </tr>
-              }
-            </tbody>
-          }
+                    <span class="text-label text-ink-2">{{ channelLabels[item.channel] }}</span>
+                  </span>
+                </a>
+              </li>
+            }
+          </ul>
+
+          <app-pagination
+            [page]="view.data.page"
+            [pageSize]="view.data.pageSize"
+            [totalCount]="view.data.totalCount"
+            [totalPages]="view.data.totalPages"
+            [disabled]="loading()"
+            (pageChange)="goToPage($event)"
+          />
         }
-      </table>
-    </div>
-
-    @switch (view().kind) {
-      @case ('loading') {
-        <div
-          role="status"
-          class="flex items-center gap-2 border-rule px-4 py-3 text-small text-ink-2 max-lg:border-t lg:border-b"
-        >
-          <app-spinner />
-          Loading applications…
-        </div>
-        <div aria-hidden="true">
-          @for (row of skeletonRows; track row) {
-            <div class="flex h-10.5 items-center gap-3.5 border-b border-rule px-4 last:border-b-0">
-              <span class="h-2 w-21 rounded-xs bg-skeleton"></span>
-              <span class="h-2 w-24 rounded-xs bg-skeleton"></span>
-              <span class="h-5 w-14 rounded-sm border border-skeleton-line"></span>
-            </div>
-          }
-        </div>
       }
-      @case ('error') {
-        <div class="p-4 max-lg:pt-0">
-          <app-banner kind="error" heading="Couldn’t load applications">
-            <p>The server didn’t respond. Your saved applications are safe.</p>
-            <button appButton size="sm" type="button" class="mt-1.5" (click)="retry()">
-              Try again
-            </button>
-          </app-banner>
-        </div>
-      }
-      @case ('empty') {
-        <div
-          class="flex flex-col items-start gap-2.5 px-4.5 py-5.5 max-lg:border-t max-lg:border-rule"
-        >
-          <app-envelope-illustration />
-          <h2 class="font-serif text-empty-title font-semibold text-ink">No applications yet</h2>
-          <p class="text-small text-ink-2">
-            Add a job you applied for and Heardback will keep track of who replies.
-          </p>
-          <button appButton="primary" type="button" class="mt-1 h-8.5" (click)="openAddDialog()">
-            <app-icon name="plus" [size]="13" />
-            Add application
-          </button>
-        </div>
-      }
-      @case ('no-matches') {
-        <div
-          class="flex flex-col items-start gap-2.5 px-4.5 py-5.5 max-lg:border-t max-lg:border-rule"
-        >
-          <h2 class="font-serif text-empty-title font-semibold text-ink">
-            No matching applications
-          </h2>
-          <p class="text-small text-ink-2">Try another search or clear the filters.</p>
-          <button appButton size="sm" type="button" class="mt-1" (click)="clearFilters()">
-            Clear filters
-          </button>
-        </div>
-      }
-    }
-
-    @if (view(); as view) {
-      @if (view.kind === 'list') {
-        <!-- Phone and tablet list -->
-        <ul class="border-t border-rule lg:hidden">
-          @for (item of view.data.items; track item.id) {
-            @let selected = item.id === selectedId();
-            @let status = statusOf(item.status, item.noResponseDays);
-            <li>
-              <a
-                class="flex flex-col gap-1 border-b border-rule px-4 py-3 text-ink no-underline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
-                [class]="selected ? 'bg-row-selected inset-shadow-selection' : ''"
-                [routerLink]="[]"
-                [queryParams]="{ id: item.id }"
-                [attr.aria-current]="selected ? 'true' : null"
-              >
-                <span class="flex justify-between gap-2">
-                  <span class="text-ui-lg font-semibold">{{ item.company }}</span>
-                  <span class="shrink-0 text-label text-ink-muted">{{ updatedAgo(item) }}</span>
-                </span>
-                <span class="text-cell text-ink-2">{{ item.role }}</span>
-                <span class="mt-0.5 flex flex-wrap items-center gap-2.5">
-                  <app-status-label
-                    [label]="status.label"
-                    [tone]="status.tone"
-                    [glyph]="status.glyph"
-                  />
-                  <span class="text-label text-ink-2">{{ channelLabels[item.channel] }}</span>
-                </span>
-              </a>
-            </li>
-          }
-        </ul>
-
-        <app-pagination
-          [page]="view.data.page"
-          [pageSize]="view.data.pageSize"
-          [totalCount]="view.data.totalCount"
-          [totalPages]="view.data.totalPages"
-          [disabled]="loading()"
-          (pageChange)="goToPage($event)"
-        />
-      }
-    }
-  </section>
+    </section>
+  } @else {
+    <app-applications-board
+      [filter]="boardFilter()"
+      [filtered]="boardFiltered()"
+      [desktop]="desktop()"
+      [revision]="boardRevision()"
+      [selectedId]="selectedId()"
+      (moved)="onBoardMoved($event)"
+      (seeAll)="seeAllInList($event)"
+      (add)="openAddDialog()"
+      (clearFilters)="clearFilters()"
+    />
+  }
 </div>
 
 @if (selectedId(); as id) {
   <app-application-detail
     [applicationId]="id"
     [layout]="wide() ? 'panel' : 'sheet'"
+    [revision]="detailRevision()"
     (closed)="closeDetail()"
     (deleted)="onDeleted()"
+    (changed)="onDetailChanged()"
   />
 }

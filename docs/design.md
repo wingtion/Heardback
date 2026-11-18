@@ -282,7 +282,7 @@ Header 60 px, `surface`, bottom `rule`: logo 24 px + wordmark 20 px + 44 px menu
 
 ### Envelope detail panel (desktop) — `app-envelope`
 380 px column, `surface` background, left border `rule`.
-1. **Header bar** (52 px, `base`, bottom `rule`): ✕ icon button "Close details", title "Application" (14, 600), Edit secondary button (32 px). **Buttons never sit inside the envelope, and no flap line passes behind a button.**
+1. **Header bar** (52 px, `base`, bottom `rule`): ✕ icon button "Close details", title "Application" (14, 600), Edit secondary button (32 px) and, in the desktop panel, a danger outline Delete with the trash icon right of it (§12). **Buttons never sit inside the envelope, and no flap line passes behind a button.**
 2. **Envelope** (inset 16/20 px): `envelope` background, 1 px `rule-strong`, radius 4, padding 0 20 16. Decorations, all `aria-hidden`: flap V-line (`rule-strong`) across the top; postage stamp top-right (50 × 60); postmark waves (44 × 22) crossing the stamp's left edge. No dated circle (§12).
 3. Content, 72 px below the top: "To" (caption, `ink-muted`) → company (`panel-title`) → role (14, `ink-2`) → posting link (13, `link`, underline offset 2).
 4. Dashed divider, then a row: postmark status label · "Updated 3 days ago" (12.5, `ink-muted`) · channel + applied date at the right (DM Mono date).
@@ -410,9 +410,11 @@ Decisions the author made where the handoff was silent or showed only a sample.
 | Editing a shared posting | A shared `JobPosting` is never changed by one user. Saving Edit re-runs the posting dedup and links the application to the matching posting (a new one if none matches) | §14 |
 | Board size | Each column shows at most the **200 newest** cards; the column count is the real total; a truncated column ends with "Showing 200 of 340 · see all in the list" | §14 |
 | Board card detail (desktop) | Same as the list: 380 px panel beside the board from 1280 px (columns shrink), full-screen sheet below. Revisit if it feels cramped in use | §14 |
-| Delete in the desktop panel | A bar pinned at the bottom of the panel (`base`, top `rule`) with a 30 px danger outline **Delete** (trash icon) on the left, the same structure as the mobile sheet footer. Add update joins it on the right with the board/forms PR | §8 |
+| Delete in the desktop panel | In the header bar, right of **Edit**: a 30 px danger outline **Delete** with the trash icon. There is no bottom bar in the desktop panel; **Add update** is the 28 px button beside the Timeline heading. On phones and tablets the sheet footer keeps **Delete** and **Add update** side by side (decided 2026-11-18, after testing; replaces the earlier bottom bar) | §8, §14 |
 | Selected row semantics | The selected table row and list item carry `aria-current="true"` (`aria-selected` is only valid inside a grid) | §7 |
 | After adding | The new application opens in the detail (panel or sheet) and the list returns to page 1 | §10 |
+| Board "see all" for Applied | The Applied column also holds the "No response" cards, while the list's Applied filter leaves them out, so its "see all in the list" opens the list **without a status filter**. The other columns open the list filtered to their status (decided 2026-11-18) | §14 |
+| Board with filters and no results | The list's "No matching applications" state with Clear filters, instead of four empty columns (decided 2026-11-18) | §14 |
 | Postmark date circle | **Removed** (2026-11-18): its 8 px month was hard to read and the date is already in the timeline. Only the cancellation waves stay, crossing the stamp's left edge | §6, §8 |
 
 **Decided during the Phase 2 UI build** (approved by the author after testing, 2026-11-18). States the design did not cover, built from existing components and copy patterns:
@@ -425,6 +427,20 @@ Decisions the author made where the handoff was silent or showed only a sample.
 | Delete fails | Error banner inside the confirm box: "Couldn't delete the application" / "The server didn't respond. Try again." A 404 counts as deleted |
 | Add: same posting text, no link | Error banner "You already track this posting" / "Another of your applications has the same posting text." (the "already tracked" panel needs a link to look the application up) |
 | Applied date field | The browser's native date field, so the picker and keyboard entry are accessible; it shows the date in the browser's own format (e.g. "18.11.2026") rather than "18 Nov 2026" |
+
+**Decided during the board and forms build** (approved by the author, 2026-11-18). Built from existing components and copy; nothing new visually:
+
+| Topic | Built as |
+|---|---|
+| Where a moved card lands | At the **top** of the new column, because the board shows the most recently changed first. The drop indicator (accent bar with ring) is therefore always drawn at the top of the target column |
+| Move rejected because the board is out of date | If the application was deleted, or already has that status, in another tab or device, the board reloads instead of showing "Couldn't move this application" (Try again could never work) |
+| Move announcement | A visually hidden status line reads "Moved Larkspur Labs to Offer." for screen readers, because the card leaves the column the user was in |
+| Focus after a move | From the desktop menu: the card's Move to… button in its new column. From the mobile sheet: the selected status tab |
+| Mobile board summary | "8 applications · 2 with no response" stays under the title, as on the mobile list (the board handoff shows no summary) |
+| Edit: application deleted elsewhere | Error banner with the detail's copy: "Couldn't find this application" / "It may have been deleted in another tab or on another device." |
+| Reload latest version | Shows the spinner while the latest version loads; the conflict banner stays if loading fails |
+| Tall dialogs | Never taller than the window; the body scrolls between the fixed header and footer |
+| 1.5 px borders | Drawn as 1.5 px; browsers round them to 1 px on 1× screens |
 
 ## 13. Still to design (before the phase that needs it)
 

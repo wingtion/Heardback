@@ -3,17 +3,22 @@ import { Component, booleanAttribute, computed, inject, input } from '@angular/c
 import { Button } from '../button/button';
 import { Icon } from '../icon/icon';
 
-/** Width from the lg breakpoint: "narrow" for short dialogs (392 px), "form" for forms (420 px). */
-export type DialogWidth = 'narrow' | 'form';
+/**
+ * Width from the lg breakpoint: "narrow" for short dialogs (392 px), "update" for Add update (410 px),
+ * "form" for forms (420 px).
+ */
+export type DialogWidth = 'narrow' | 'update' | 'form';
 
 const WIDTHS: Record<DialogWidth, string> = {
   narrow: 'lg:w-98',
+  update: 'lg:w-102.5',
   form: 'lg:w-105',
 };
 
 /**
  * The frame of a dialog opened with DialogLauncher (docs/design.md §8): title and close button,
- * then the projected body and <app-dialog-footer>. Centred from the lg breakpoint. Below it, a bottom
+ * then the projected body and <app-dialog-footer>. A line under the title goes in an element marked
+ * `appDialogSubtitle`. Centred from the lg breakpoint. Below it, a bottom
  * sheet with rounded top corners, or a full-screen sheet when `fullScreenOnMobile` is set (open it
  * with `mobile: 'full-screen'` too); its content should then fill the height and scroll in the middle.
  */
@@ -23,9 +28,12 @@ const WIDTHS: Record<DialogWidth, string> = {
   host: { '[class]': 'hostClass()' },
   template: `
     <div [class]="headerClass()">
-      <h2 [id]="titleId" class="flex-1 font-serif text-dialog-title font-semibold text-ink">
-        {{ heading() }}
-      </h2>
+      <div class="min-w-0 flex-1">
+        <h2 [id]="titleId" class="font-serif text-dialog-title font-semibold text-ink">
+          {{ heading() }}
+        </h2>
+        <ng-content select="[appDialogSubtitle]" />
+      </div>
       <button
         appButton="outline"
         size="sm"
@@ -57,7 +65,7 @@ export class AppDialog {
     const mobile = this.fullScreenOnMobile()
       ? 'max-lg:h-full'
       : 'max-lg:rounded-t-sheet max-lg:border-t';
-    return `flex flex-col border-rule-strong bg-base lg:rounded-lg lg:border lg:shadow-dialog ${mobile} ${WIDTHS[this.width()]}`;
+    return `flex flex-col border-rule-strong bg-base lg:max-h-svh lg:rounded-lg lg:border lg:shadow-dialog ${mobile} ${WIDTHS[this.width()]}`;
   });
 
   protected readonly headerClass = computed(() =>

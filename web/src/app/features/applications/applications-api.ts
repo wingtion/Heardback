@@ -4,12 +4,16 @@ import { Observable, map } from 'rxjs';
 import { API_BASE_URL } from '../../core/api-base-url';
 import {
   APPLICATIONS_PAGE_SIZE,
+  AddEventRequest,
   Application,
   ApplicationFilter,
   ApplicationPage,
   ApplicationSummary,
+  Board,
+  BoardFilter,
   CreateApplicationRequest,
   TrackedApplication,
+  UpdateApplicationRequest,
 } from './applications.models';
 
 export const APPLICATIONS_API = '/api/applications';
@@ -58,7 +62,30 @@ export class ApplicationsApi {
     return this.http.post<Application>(this.url, request);
   }
 
+  /** Sends the version the form was opened with; 409 "changed elsewhere" when it is out of date. */
+  update(id: string, request: UpdateApplicationRequest): Observable<Application> {
+    return this.http.put<Application>(`${this.url}/${encodeURIComponent(id)}`, request);
+  }
+
   delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.url}/${encodeURIComponent(id)}`);
+  }
+
+  /** Add update and board moves. Returns the application with its new timeline. */
+  addEvent(id: string, request: AddEventRequest): Observable<Application> {
+    return this.http.post<Application>(`${this.url}/${encodeURIComponent(id)}/events`, request);
+  }
+
+  /** Four columns with the newest cards each and the real totals. Empty filters are left out. */
+  board(filter: BoardFilter): Observable<Board> {
+    let params = new HttpParams();
+    const search = filter.search.trim();
+    if (search !== '') {
+      params = params.set('search', search);
+    }
+    if (filter.channel) {
+      params = params.set('channel', filter.channel);
+    }
+    return this.http.get<Board>(`${this.url}/board`, { params });
   }
 }

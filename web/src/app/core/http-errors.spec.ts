@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { httpErrorOf, isForbidden, validationErrors } from './http-errors';
+import { httpErrorOf, isForbidden, problemCode, validationErrors } from './http-errors';
 
 describe('http errors', () => {
   const forbidden = new HttpErrorResponse({ status: 403 });
@@ -19,5 +19,17 @@ describe('http errors', () => {
     const body = { errors: { expiresInDays: ['Too long', 'Second'], other: 'not a list' } };
 
     expect(validationErrors(body)).toEqual({ expiresInDays: 'Too long' });
+  });
+
+  it('problemCode_ProblemBodyWithCode_ReturnsIt', () => {
+    expect(problemCode({ code: 'applications.same_status', detail: 'x' })).toBe(
+      'applications.same_status',
+    );
+  });
+
+  it('problemCode_MissingOrNotText_IsNull', () => {
+    expect(problemCode(null)).toBeNull();
+    expect(problemCode({ detail: 'x' })).toBeNull();
+    expect(problemCode({ code: 7 })).toBeNull();
   });
 });

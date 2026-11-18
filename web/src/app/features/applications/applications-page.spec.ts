@@ -264,4 +264,95 @@ describe('ApplicationsPage', () => {
     expect(TestBed.inject(Router).url).toBe('/applications?id=new-id');
     expect(document.querySelector('app-add-application-dialog')).toBeNull();
   });
+
+  describe('board view', () => {
+    const BOARD_URL = `${APPLICATIONS_API}/board`;
+
+    function boardBody(totalCount = 1): object {
+      return {
+        columns: ['Applied', 'Interview', 'Offer', 'Rejected'].map((status) => {
+          const items = status === 'Interview' ? [applicationItem()] : [];
+          return { status, totalCount: status === 'Interview' ? totalCount : 0, items };
+        }),
+      };
+    }
+
+    // jsdom has no wide viewport, so the page shows the phone board: tabs, and the detail as a sheet.
+    async function showBoard(totalCount = 1): Promise<void> {
+      await respondToList();
+      buttonIn(root(), 'Board').click();
+      await render();
+      http.expectOne((request) => request.url === BOARD_URL).flush(boardBody(totalCount));
+      await render();
+      root().querySelectorAll<HTMLElement>('[role="tab"]')[1].click();
+      await render();
+    }
+
+    it('toggle_Board_ShowsTheBoardInTheUrlWithoutLoadingTheList', async () => {
+      await showBoard();
+
+      expect(TestBed.inject(Router).url).toBe('/applications?view=board');
+      expect(buttonIn(root(), 'Board').getAttribute('aria-pressed')).toBe('true');
+      expect(root().querySelector('table')).toBeNull();
+      expect(root().textContent).not.toContain('All statuses');
+      expect(root().querySelector('[role="tablist"]')?.textContent).toContain('Interview');
+    });
+
+    it('toggle_BackToList_LoadsTheListAgain', async () => {
+      await showBoard();
+
+      buttonIn(root(), 'List').click();
+      await respondToList();
+
+      expect(TestBed.inject(Router).url).toBe('/applications');
+      expect(root().querySelectorAll('tbody tr')).toHaveLength(1);
+    });
+
+    it('select_CardOnTheBoard_KeepsTheBoardOpen', async () => {
+      await showBoard();
+
+      root().querySelector<HTMLAnchorElement>('[role="tabpanel"] article a')?.click();
+      await render();
+      http.expectOne(`${APPLICATIONS_API}/app-1`).flush(application());
+      await render();
+
+      expect(TestBed.inject(Router).url).toBe('/applications?view=board&id=app-1');
+      buttonIn(root(), 'Close and go back to applications').click();
+      await render();
+      expect(TestBed.inject(Router).url).toBe('/applications?view=board');
+    });
+
+    it('seeAll_FullColumn_OpensTheListFilteredToThatStatus', async () => {
+      await showBoard(340);
+
+      buttonIn(root(), 'see all in the list').click();
+      const request = await respondToList();
+
+      expect(request.request.params.get('status')).toBe('Interview');
+      expect(select('Status').value).toBe('Interview');
+      expect(TestBed.inject(Router).url).toBe('/applications');
+    });
+
+    it('move_OfTheOpenApplication_RefreshesCountsAndTheDetail', async () => {
+      await showBoard();
+      root().querySelector<HTMLAnchorElement>('[role="tabpanel"] article a')?.click();
+      await render();
+      http.expectOne(`${APPLICATIONS_API}/app-1`).flush(application());
+      await render();
+
+      buttonIn(root(), 'Move Northwind Logistics to…').click();
+      await render();
+      const sheet = document.querySelector('app-move-to-sheet');
+      if (!sheet) throw new Error('No sheet');
+      buttonIn(sheet, 'Offer').click();
+      await render();
+      http.expectOne(`${APPLICATIONS_API}/app-1/events`).flush(application({ status: 'Offer' }));
+      await render();
+
+      http.expectOne(SUMMARY_URL).flush({ total: 8, noResponse: 2 });
+      http.expectOne(`${APPLICATIONS_API}/app-1`).flush(application({ status: 'Offer' }));
+      await render();
+      expect(root().querySelector('app-application-detail')?.textContent).toContain('Offer');
+    });
+  });
 });

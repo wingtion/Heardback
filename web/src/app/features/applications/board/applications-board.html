@@ -1,0 +1,407 @@
+<!-- Moves are announced here: the card leaves the column the user was looking at. -->
+<p role="status" class="sr-only">{{ announcement() }}</p>
+
+@switch (view()) {
+  @case ('loading') {
+    <div
+      class="flex flex-col gap-3 border-rule-strong bg-base p-4 max-lg:border-t lg:rounded-md lg:border"
+    >
+      <div role="status" class="flex items-center gap-2 text-small text-ink-2">
+        <app-spinner />
+        Loading your board…
+      </div>
+      <div aria-hidden="true" class="flex flex-col gap-2.5 lg:grid lg:grid-cols-4">
+        @for (cards of skeletonColumns; track $index; let index = $index) {
+          <div
+            class="flex flex-col gap-2 rounded-md border border-rule bg-surface p-2"
+            [class]="index > 0 ? 'max-lg:hidden' : ''"
+          >
+            <span class="mt-1 mb-1.5 h-2.5 w-3/5 rounded-xs bg-skeleton"></span>
+            @for (card of cards; track card) {
+              <div class="flex flex-col gap-1.5 rounded-md border border-rule bg-base p-2.5">
+                <span class="h-2.25 w-4/5 rounded-xs bg-skeleton"></span>
+                <span class="h-2 w-3/5 rounded-xs bg-skeleton"></span>
+                <span class="h-2 w-9/20 rounded-xs bg-skeleton"></span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+  @case ('error') {
+    <div
+      class="flex flex-col gap-3.5 border-rule-strong bg-base p-4 max-lg:border-t lg:rounded-md lg:border"
+    >
+      <div
+        aria-hidden="true"
+        class="grid grid-cols-4 gap-2 text-label font-semibold text-ink-muted max-lg:hidden"
+      >
+        @for (status of statuses; track status) {
+          <span class="border-b border-rule pb-1.5">{{ statusLabels[status].label }}</span>
+        }
+      </div>
+      <app-banner kind="error" heading="Couldn’t load your board">
+        <p>The server didn’t respond. Your applications are safe.</p>
+        <button appButton size="sm" type="button" class="mt-1.5" (click)="retryLoad()">
+          Try again
+        </button>
+      </app-banner>
+    </div>
+  }
+  @case ('empty') {
+    <app-applications-empty-state
+      class="border-rule-strong bg-base px-4.5 py-5.5 max-lg:border-t lg:rounded-md lg:border lg:px-6 lg:py-7"
+      (add)="add.emit()"
+    />
+  }
+  @case ('no-matches') {
+    <app-applications-empty-state
+      filtered
+      class="border-rule-strong bg-base px-4.5 py-5.5 max-lg:border-t lg:rounded-md lg:border lg:px-6 lg:py-7"
+      (clearFilters)="clearFilters.emit()"
+    />
+  }
+  @case ('board') {
+    @if (desktop()) {
+      <div class="grid grid-cols-4 items-start gap-3">
+        @for (column of columns(); track column.status) {
+          @let label = statusLabels[column.status].label;
+          @let target = dropTarget() === column.status;
+          <section
+            class="flex min-h-130 min-w-0 flex-col gap-2 rounded-md p-2"
+            [class]="
+              target
+                ? 'border-thick border-dashed border-accent bg-row-selected'
+                : 'border border-rule bg-surface'
+            "
+            [attr.data-board-status]="column.status"
+            [attr.aria-labelledby]="'board-column-' + column.status"
+          >
+            <h2
+              [id]="'board-column-' + column.status"
+              class="flex items-center gap-1.75 border-b border-rule px-1 pt-1 pb-2 text-cell font-semibold text-ink"
+            >
+              <app-status-glyph
+                [glyph]="statusLabels[column.status].glyph"
+                [class]="glyphColours[column.status]"
+              />
+              {{ label }}
+              <span class="ml-auto font-mono text-label font-normal text-ink-muted">
+                {{ column.totalCount }}
+              </span>
+            </h2>
+
+            <ol
+              cdkDropList
+              cdkDropListSortingDisabled
+              class="flex flex-col gap-2"
+              [cdkDropListData]="column.status"
+            >
+              @if (target) {
+                <!-- Where the card will land: moved cards go to the top (newest first). -->
+                <li
+                  aria-hidden="true"
+                  class="mx-1 my-0.5 flex h-0.75 items-center rounded-xs bg-accent"
+                >
+                  <span
+                    class="-ml-1.25 size-2.5 shrink-0 rounded-full border-2 border-accent bg-base"
+                  ></span>
+                </li>
+              }
+              @for (item of column.items; track item.id) {
+                @let failedMove = failed().has(item.id);
+                @let noResponse = item.noResponseDays !== null;
+                <li>
+                  <article
+                    cdkDrag
+                    class="flex cursor-grab flex-col gap-1.5 rounded-md bg-base py-2.5 pr-1.5 pl-3"
+                    [class]="
+                      failedMove
+                        ? 'border-thick border-danger'
+                        : 'border border-rule-strong hover:border-field-border'
+                    "
+                    [cdkDragData]="item"
+                    [cdkDragDisabled]="pending().has(item.id)"
+                    [attr.aria-label]="item.company + ', ' + item.role"
+                    (cdkDragStarted)="onDragStarted($event)"
+                    (cdkDragMoved)="onDragMoved($event)"
+                    (cdkDragEnded)="onDragEnded($event)"
+                  >
+                    <div class="flex items-start gap-1.5">
+                      <a
+                        class="min-w-0 flex-1 rounded-xs text-ink no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                        [routerLink]="[]"
+                        [queryParams]="{ id: item.id }"
+                        queryParamsHandling="merge"
+                        [attr.aria-current]="item.id === selectedId() ? 'true' : null"
+                      >
+                        <span class="block text-body font-semibold">{{ item.company }}</span>
+                        <span class="block text-small text-ink-2">{{ item.role }}</span>
+                      </a>
+                      <button
+                        type="button"
+                        class="inline-flex size-7.5 shrink-0 cursor-pointer items-center justify-center rounded-md border border-transparent text-ink-2 hover:border-field-border hover:bg-row-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus aria-expanded:border-field-border aria-expanded:bg-row-hover"
+                        [cdkMenuTriggerFor]="moveMenu"
+                        [cdkMenuTriggerData]="{ $implicit: item }"
+                        [cdkMenuPosition]="menuPositions"
+                        [attr.data-move-button]="item.id"
+                        [attr.aria-label]="'Move ' + item.company + ' to…'"
+                      >
+                        <app-icon name="move" [size]="15" />
+                      </button>
+                    </div>
+                    <span class="text-label text-ink-2">
+                      {{ channelLabels[item.channel] }} ·
+                      <span class="font-mono">{{ item.appliedOn | date: dateFormat }}</span>
+                    </span>
+                    @if (noResponse) {
+                      @let status = statusOf(item.status, item.noResponseDays);
+                      <app-status-label
+                        class="self-start"
+                        [label]="status.label"
+                        [tone]="status.tone"
+                        [glyph]="status.glyph"
+                      />
+                    }
+                    @if (failedMove) {
+                      <div
+                        role="alert"
+                        class="mt-0.5 flex items-center gap-2 rounded-sm bg-danger-tint p-2"
+                      >
+                        <app-icon name="warning" [size]="15" class="text-danger" />
+                        <span class="flex-1 text-label font-medium text-danger">
+                          Couldn’t move this application. Try again.
+                        </span>
+                        <button appButton size="sm" type="button" (click)="retryMove(item)">
+                          Try again
+                        </button>
+                      </div>
+                    }
+
+                    <div
+                      *cdkDragPlaceholder
+                      class="h-21 rounded-md border-thick border-dashed border-rule-strong"
+                    ></div>
+                    <!-- CDK resets the preview root's border and background with unlayered CSS,
+                         which beats Tailwind's layer, so the look sits on an inner element. -->
+                    <ng-template cdkDragPreview [matchSize]="true">
+                      <div>
+                        <div
+                          class="flex size-full cursor-grabbing gap-2 rounded-md border-thick border-accent bg-base py-2.5 pr-3 pl-2 shadow-drag"
+                        >
+                          <app-icon name="grip" class="mt-0.5 text-ink-muted" />
+                          <span class="flex min-w-0 flex-col gap-1">
+                            <span class="text-body font-semibold text-ink">{{ item.company }}</span>
+                            <span class="text-small text-ink-2">{{ item.role }}</span>
+                            <span class="text-label text-ink-2">
+                              {{ channelLabels[item.channel] }} ·
+                              <span class="font-mono">{{ item.appliedOn | date: dateFormat }}</span>
+                            </span>
+                          </span>
+                        </div>
+                      </div>
+                    </ng-template>
+                  </article>
+                </li>
+              }
+            </ol>
+
+            @if (column.items.length === 0) {
+              <div
+                class="flex flex-1 flex-col gap-1 rounded-md border-thick border-dashed border-rule-strong px-3 py-3.5"
+              >
+                <span class="text-cell font-semibold text-ink">{{ emptyTitle(label) }}</span>
+                <span class="text-label text-ink-2">
+                  Drag a card here, or use Move to… on any card.
+                </span>
+              </div>
+            }
+            @if (column.totalCount > column.items.length) {
+              <ng-container
+                [ngTemplateOutlet]="truncated"
+                [ngTemplateOutletContext]="{ $implicit: column }"
+              />
+            }
+          </section>
+        }
+      </div>
+    } @else {
+      <div
+        role="tablist"
+        aria-label="Status"
+        class="grid shrink-0 grid-cols-4 border-y border-rule bg-surface"
+      >
+        @for (column of columns(); track column.status) {
+          @let selected = column.status === selectedTab();
+          <button
+            type="button"
+            role="tab"
+            class="flex h-13.5 cursor-pointer flex-col items-center justify-center gap-px focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
+            [class]="
+              selected
+                ? 'bg-base font-semibold text-ink inset-shadow-tab'
+                : 'bg-transparent font-medium text-ink-2'
+            "
+            [id]="'board-tab-' + column.status"
+            [attr.aria-selected]="selected"
+            [attr.aria-controls]="'board-panel'"
+            [attr.tabindex]="selected ? 0 : -1"
+            (click)="selectTab(column.status)"
+            (keydown)="onTabKeydown($event)"
+          >
+            <span class="inline-flex items-center gap-1.25 text-small">
+              <app-status-glyph
+                [glyph]="statusLabels[column.status].glyph"
+                [size]="12"
+                [class]="glyphColours[column.status]"
+              />
+              {{ statusLabels[column.status].label }}
+            </span>
+            <span class="font-mono text-caption font-normal text-ink-muted">
+              {{ column.totalCount }}
+            </span>
+          </button>
+        }
+      </div>
+
+      @if (selectedColumn(); as column) {
+        <div
+          id="board-panel"
+          role="tabpanel"
+          class="flex flex-col gap-2 px-4 py-3"
+          [attr.aria-labelledby]="'board-tab-' + column.status"
+        >
+          @if (column.items.length === 0) {
+            <div
+              class="flex flex-col gap-1 rounded-md border-thick border-dashed border-rule-strong px-4 py-4.5"
+            >
+              <span class="text-ui-lg font-semibold text-ink">
+                {{ emptyTitle(statusLabels[column.status].label) }}
+              </span>
+              <span class="text-cell text-ink-2">Use Move to… on any card to move it here.</span>
+            </div>
+          }
+          <ol class="flex flex-col gap-2">
+            @for (item of column.items; track item.id) {
+              @let failedMove = failed().has(item.id);
+              <li>
+                <article
+                  class="flex flex-col gap-1.5 rounded-md bg-base pt-3 pr-2.5 pb-2.5 pl-3.5"
+                  [class]="failedMove ? 'border-thick border-danger' : 'border border-rule-strong'"
+                  [attr.aria-label]="item.company + ', ' + item.role"
+                >
+                  <a
+                    class="rounded-xs text-ink no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                    [routerLink]="[]"
+                    [queryParams]="{ id: item.id }"
+                    queryParamsHandling="merge"
+                    [attr.aria-current]="item.id === selectedId() ? 'true' : null"
+                  >
+                    <span class="block text-ui-lg font-semibold">{{ item.company }}</span>
+                    <span class="block text-cell text-ink-2">{{ item.role }}</span>
+                  </a>
+                  <div class="flex items-center gap-2">
+                    <div class="flex min-w-0 flex-1 flex-col gap-1.5">
+                      <span class="text-label text-ink-2">
+                        {{ channelLabels[item.channel] }} ·
+                        <span class="font-mono">{{ item.appliedOn | date: mobileDateFormat }}</span>
+                      </span>
+                      @if (item.noResponseDays !== null) {
+                        @let status = statusOf(item.status, item.noResponseDays);
+                        <app-status-label
+                          class="self-start"
+                          [label]="status.label"
+                          [tone]="status.tone"
+                          [glyph]="status.glyph"
+                        />
+                      }
+                    </div>
+                    <button
+                      appButton
+                      size="lg"
+                      type="button"
+                      class="shrink-0 px-3"
+                      aria-haspopup="dialog"
+                      [attr.aria-label]="'Move ' + item.company + ' to…'"
+                      (click)="openMoveSheet(item)"
+                    >
+                      <app-icon name="move" [size]="15" />
+                      Move to…
+                    </button>
+                  </div>
+                  @if (failedMove) {
+                    <div role="alert" class="flex flex-col gap-2 rounded-sm bg-danger-tint p-2.5">
+                      <span class="flex items-start gap-2 text-small font-medium text-danger">
+                        <app-icon name="warning" [size]="15" class="mt-0.5" />
+                        Couldn’t move this application. Try again.
+                      </span>
+                      <button
+                        appButton
+                        size="lg"
+                        type="button"
+                        class="self-start"
+                        (click)="retryMove(item)"
+                      >
+                        Try again
+                      </button>
+                    </div>
+                  }
+                </article>
+              </li>
+            }
+          </ol>
+          @if (column.totalCount > column.items.length) {
+            <ng-container
+              [ngTemplateOutlet]="truncated"
+              [ngTemplateOutletContext]="{ $implicit: column }"
+            />
+          }
+        </div>
+      }
+    }
+  }
+}
+
+<ng-template #truncated let-column>
+  <p class="px-1 text-label text-ink-2 tabular-nums">
+    Showing {{ column.items.length }} of {{ column.totalCount }} ·
+    <button
+      type="button"
+      class="cursor-pointer rounded-xs text-link underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+      (click)="seeAll.emit(column.status === 'Applied' ? null : column.status)"
+    >
+      see all in the list
+    </button>
+  </p>
+</ng-template>
+
+<ng-template #moveMenu let-item>
+  <div
+    cdkMenu
+    class="flex w-53.5 flex-col rounded-md border border-rule-strong bg-base p-1 shadow-menu"
+    aria-describedby="move-menu-note"
+    [attr.aria-label]="'Move ' + item.company + ' to'"
+  >
+    <div aria-hidden="true" class="px-2 pt-1.5 pb-1 text-caption font-semibold text-ink-muted">
+      Move to
+    </div>
+    @for (status of targetsFor(item.status); track status) {
+      <button
+        cdkMenuItem
+        type="button"
+        class="flex h-9 w-full cursor-pointer items-center gap-2 rounded-sm px-2 text-left text-cell text-ink hover:bg-row-hover focus:bg-row-hover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
+        (cdkMenuItemTriggered)="moveFromMenu(item, status)"
+      >
+        <app-status-glyph [glyph]="statusLabels[status].glyph" [class]="glyphColours[status]" />
+        {{ statusLabels[status].label }}
+      </button>
+    }
+    <p
+      id="move-menu-note"
+      class="mt-1 border-t border-rule px-2 pt-1.75 pb-1.25 text-caption text-ink-muted"
+    >
+      Adds a timeline event dated today.
+    </p>
+  </div>
+</ng-template>

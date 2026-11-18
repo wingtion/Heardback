@@ -50,6 +50,19 @@ export const ICONS = {
   info: icon([CIRCLE_R6, 'M8 7.2v4M8 4.8v.1']),
   clock: icon([CIRCLE_R6, 'M8 4.8V8l2.2 1.5']),
   menu: icon(['M3 6h14M3 10h14M3 14h14'], 1.6, 20),
+  move: icon(['M2.5 5.5h9M9 3l2.5 2.5L9 8M13.5 10.5h-9M7 8l-2.5 2.5L7 13'], 1.4),
+  list: icon(['M2.5 4h11M2.5 8h11M2.5 12h11'], 1.4),
+  board: icon(
+    [
+      'M2.5 2.5H5a.5.5 0 0 1 .5.5v10a.5.5 0 0 1-.5.5H2.5a.5.5 0 0 1-.5-.5V3a.5.5 0 0 1 .5-.5z',
+      'M6.75 2.5h2.5a.5.5 0 0 1 .5.5v6.5a.5.5 0 0 1-.5.5h-2.5a.5.5 0 0 1-.5-.5V3a.5.5 0 0 1 .5-.5z',
+      'M11 2.5h2.5a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-.5.5H11a.5.5 0 0 1-.5-.5V3a.5.5 0 0 1 .5-.5z',
+    ],
+    1.4,
+  ),
+  // Six dots as zero-length strokes with round caps: the handoff's 1.2 px circles in a stroke icon.
+  grip: icon(['M6 3h0M10 3h0M6 8h0M10 8h0M6 13h0M10 13h0'], 2.4),
+  refresh: icon(['M13 8a5 5 0 1 1-1.5-3.6', 'M13 2.5v2.6h-2.6']),
   mail: icon(
     ['M3 4h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z', 'M2 5l6 4.5L14 5'],
     1.4,

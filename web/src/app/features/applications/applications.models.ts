@@ -2,6 +2,14 @@
 
 export type ApplicationStatus = 'Applied' | 'Interview' | 'Offer' | 'Rejected';
 
+/** Board column order (docs/design.md §14); "No response" is a label on Applied cards, not a column. */
+export const APPLICATION_STATUSES: readonly ApplicationStatus[] = [
+  'Applied',
+  'Interview',
+  'Offer',
+  'Rejected',
+];
+
 export type ApplicationChannel =
   'LinkedInEasyApply' | 'CompanySite' | 'Referral' | 'DirectMessage' | 'KariyerNet' | 'Other';
 
@@ -74,6 +82,24 @@ export interface TrackedApplication {
   readonly appliedOn: IsoDate;
 }
 
+/** One board column: at most the newest 200 cards, and the real total for "Showing 200 of 340". */
+export interface BoardColumn {
+  readonly status: ApplicationStatus;
+  readonly totalCount: number;
+  readonly items: readonly ApplicationListItem[];
+}
+
+export interface Board {
+  /** In board order: Applied, Interview, Offer, Rejected. */
+  readonly columns: readonly BoardColumn[];
+}
+
+/** The board's toolbar: no status filter, the columns are the statuses. */
+export interface BoardFilter {
+  readonly search: string;
+  readonly channel: ApplicationChannel | null;
+}
+
 export interface ApplicationFilter {
   readonly search: string;
   readonly status: ApplicationListStatus | null;
@@ -89,12 +115,27 @@ export interface CreateApplicationRequest {
   readonly appliedOn: IsoDate;
 }
 
-/** Limits the server enforces (PostingLimits, Application.NotesMaxLength). */
+/** Add update and board moves: a new status, a note, or both. */
+export interface AddEventRequest {
+  readonly status: ApplicationStatus | null;
+  readonly occurredOn: IsoDate;
+  readonly note: string | null;
+}
+
+/** The whole Edit form. `version` is the one the form was opened with; 409 when it changed since. */
+export interface UpdateApplicationRequest extends CreateApplicationRequest {
+  readonly notes: string | null;
+  readonly version: number;
+}
+
+/** Limits the server enforces (PostingLimits, Application.NotesMaxLength, ApplicationEvent.NoteMaxLength). */
 export const APPLICATION_LIMITS = {
   company: 200,
   role: 200,
   url: 2048,
   postingText: 20_000,
+  notes: 4000,
+  eventNote: 280,
   search: 200,
 } as const;
 
@@ -107,4 +148,6 @@ export const APPLICATIONS_PAGE_SIZE = 20;
 export const APPLICATION_ERROR_CODES = {
   alreadyTracked: 'applications.already_tracked',
   notFound: 'applications.not_found',
+  changedElsewhere: 'applications.changed_elsewhere',
+  sameStatus: 'applications.same_status',
 } as const;

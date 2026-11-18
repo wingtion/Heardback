@@ -14,14 +14,9 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import {
-  AbstractControl,
-  NonNullableFormBuilder,
-  ReactiveFormsModule,
-  ValidationErrors,
-} from '@angular/forms';
+import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { catchError, debounceTime, distinctUntilChanged, map, of, switchMap } from 'rxjs';
-import { httpErrorOf, validationErrors } from '../../../core/http-errors';
+import { httpErrorOf, problemCode, validationErrors } from '../../../core/http-errors';
 import { Banner } from '../../../shared/ui/banner/banner';
 import { Button } from '../../../shared/ui/button/button';
 import { AppDialog } from '../../../shared/ui/dialog/dialog';
@@ -39,60 +34,26 @@ import {
   localToday,
   statusDisplay,
 } from '../application-display';
+import {
+  APPLICATION_FORM_MESSAGES,
+  ApplicationFormField,
+  DEFAULT_CHANNEL,
+  appliedOnError,
+  appliedOnValidator,
+  isPostingLink,
+  linkValidator,
+  requiredText,
+} from '../application-form';
 import { ApplicationsApi } from '../applications-api';
 import {
   APPLICATION_ERROR_CODES,
   APPLICATION_LIMITS,
   Application,
-  ApplicationChannel,
   EARLIEST_DATE,
   TrackedApplication,
 } from '../applications.models';
 
-/** Field copy from docs/design.md §14. */
-export const ADD_APPLICATION_MESSAGES = {
-  url: 'Enter a full link that starts with https://',
-  company: 'Enter the company name',
-  role: 'Enter the role',
-  dateInFuture: 'Pick today or an earlier date',
-  dateTooEarly: 'Pick a date after 1 January 2000',
-} as const;
-
-const DEFAULT_CHANNEL: ApplicationChannel = 'LinkedInEasyApply';
 const TRACKED_LOOKUP_DELAY_MS = 400;
-const HTTP_SCHEMES = new Set(['http:', 'https:']);
-const HOST_LABEL_SEPARATOR = '.';
-const ERROR_CODE = 'code';
-
-type FieldName = 'url' | 'company' | 'role' | 'appliedOn' | 'postingText' | 'channel';
-
-/** A link the server would accept: absolute http(s) with a dotted host. The server has the last word. */
-export function isPostingLink(value: string): boolean {
-  try {
-    const url = new URL(value.trim());
-    return HTTP_SCHEMES.has(url.protocol) && url.hostname.includes(HOST_LABEL_SEPARATOR);
-  } catch {
-    return false;
-  }
-}
-
-function linkValidator(control: AbstractControl<string>): ValidationErrors | null {
-  const value = control.value.trim();
-  return value === '' || isPostingLink(value) ? null : { link: true };
-}
-
-function requiredText(control: AbstractControl<string>): ValidationErrors | null {
-  return control.value.trim() === '' ? { required: true } : null;
-}
-
-/** Today or earlier on this device, and not before 2000. */
-function appliedOnValidator(control: AbstractControl<string>): ValidationErrors | null {
-  const value = control.value;
-  if (value === '' || value > localToday(new Date())) {
-    return { future: true };
-  }
-  return value < EARLIEST_DATE ? { tooEarly: true } : null;
-}
 
 /**
  * Add application (docs/design.md §14): the link first, with Paste, then company, role, channel, applied
@@ -156,7 +117,7 @@ export class AddApplicationDialog {
   protected readonly tracked = signal<TrackedApplication | null>(null);
 
   private readonly submitted = signal(false);
-  private readonly serverErrors = signal<Partial<Record<FieldName, string>>>({});
+  private readonly serverErrors = signal<Partial<Record<ApplicationFormField, string>>>({});
   private readonly formValue = toSignal(this.form.valueChanges, { initialValue: this.form.value });
 
   protected readonly trackedStatus = computed(() => {
@@ -164,7 +125,7 @@ export class AddApplicationDialog {
     return tracked ? statusDisplay(tracked.status, tracked.noResponseDays) : null;
   });
 
-  protected readonly errors = computed<Partial<Record<FieldName, string>>>(() => {
+  protected readonly errors = computed<Partial<Record<ApplicationFormField, string>>>(() => {
     this.formValue();
     const server = this.serverErrors();
     if (!this.submitted()) {
@@ -172,14 +133,10 @@ export class AddApplicationDialog {
     }
     const controls = this.form.controls;
     return {
-      url: controls.url.hasError('link') ? ADD_APPLICATION_MESSAGES.url : undefined,
-      company: controls.company.invalid ? ADD_APPLICATION_MESSAGES.company : undefined,
-      role: controls.role.invalid ? ADD_APPLICATION_MESSAGES.role : undefined,
-      appliedOn: controls.appliedOn.hasError('future')
-        ? ADD_APPLICATION_MESSAGES.dateInFuture
-        : controls.appliedOn.hasError('tooEarly')
-          ? ADD_APPLICATION_MESSAGES.dateTooEarly
-          : undefined,
+      url: controls.url.hasError('link') ? APPLICATION_FORM_MESSAGES.url : undefined,
+      company: controls.company.invalid ? APPLICATION_FORM_MESSAGES.company : undefined,
+      role: controls.role.invalid ? APPLICATION_FORM_MESSAGES.role : undefined,
+      appliedOn: appliedOnError(controls.appliedOn),
       ...server,
     };
   });
@@ -269,7 +226,7 @@ export class AddApplicationDialog {
 
     if (
       response?.status === HttpStatusCode.Conflict &&
-      this.errorCode(body) === APPLICATION_ERROR_CODES.alreadyTracked
+      problemCode(body) === APPLICATION_ERROR_CODES.alreadyTracked
     ) {
       this.showAlreadyTracked(url);
       return;
@@ -298,12 +255,6 @@ export class AddApplicationDialog {
         next: (tracked) => (tracked ? this.tracked.set(tracked) : this.duplicateText.set(true)),
         error: () => this.duplicateText.set(true),
       });
-  }
-
-  private errorCode(body: unknown): unknown {
-    return typeof body === 'object' && body !== null && ERROR_CODE in body
-      ? body[ERROR_CODE]
-      : null;
   }
 
   private setBusy(busy: boolean): void {
