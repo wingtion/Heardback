@@ -182,6 +182,39 @@ public sealed class ApplicationCrudTests(PostgresFixture postgres) : Application
     }
 
     [Fact]
+    public async Task Delete_SeveralTimesAtOnce_OneSucceedsAndTheRestGet404()
+    {
+        for (var round = 0; round < 3; round++)
+        {
+            var created = await Client.CreateApplicationOkAsync(Alice, NewApplication(company: $"Round {round}", url: null));
+
+            var statuses = await SendAllAsync(Enumerable.Range(0, 4)
+                .Select(_ => CreateClient().DeleteApplicationAsync(Alice, created.Id)));
+
+            Assert.Equal(1, statuses.Count(status => status == HttpStatusCode.NoContent));
+            Assert.All(statuses, status => Assert.Contains(status, new[] { HttpStatusCode.NoContent, HttpStatusCode.NotFound }));
+        }
+    }
+
+    [Fact]
+    public async Task AddEvent_RacingADelete_Returns404InsteadOfAServerError()
+    {
+        for (var round = 0; round < 5; round++)
+        {
+            var created = await Client.CreateApplicationOkAsync(Alice, NewApplication(company: $"Round {round}", url: null));
+
+            var statuses = await SendAllAsync(
+            [
+                CreateClient().DeleteApplicationAsync(Alice, created.Id),
+                CreateClient().AddEventAsync(Alice, created.Id, new { status = "Interview", occurredOn = Today }),
+            ]);
+
+            Assert.Equal(HttpStatusCode.NoContent, statuses[0]);
+            Assert.Contains(statuses[1], new[] { HttpStatusCode.OK, HttpStatusCode.NotFound });
+        }
+    }
+
+    [Fact]
     public async Task Delete_AnotherUsersApplication_Returns404AndKeepsIt()
     {
         var created = await Client.CreateApplicationOkAsync(Alice, NewApplication());
@@ -198,5 +231,17 @@ public sealed class ApplicationCrudTests(PostgresFixture postgres) : Application
         using var response = await Client.GetAsync(new Uri(ApplicationsApi.BasePath, UriKind.Relative), CancellationToken);
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    private static async Task<List<HttpStatusCode>> SendAllAsync(IEnumerable<Task<HttpResponseMessage>> requests)
+    {
+        var responses = await Task.WhenAll(requests);
+        var statuses = responses.Select(response => response.StatusCode).ToList();
+        foreach (var response in responses)
+        {
+            response.Dispose();
+        }
+
+        return statuses;
     }
 }
