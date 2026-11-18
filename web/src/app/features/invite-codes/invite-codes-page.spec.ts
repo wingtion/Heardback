@@ -175,6 +175,28 @@ describe('InviteCodesPage', () => {
     expect(announce).toHaveBeenCalledWith('Code copied to clipboard');
   });
 
+  it('copy_RowButton_ShowsACheckForTwoSeconds', async () => {
+    const checkPath = 'M3.5 8.5l3 3 6-7';
+    await respondToList(invitePage());
+    const button = root().querySelector<HTMLButtonElement>(
+      'tbody button[aria-label="Copy code K7QM-2XRD-9PLA"]',
+    );
+    const iconPath = () => button?.querySelector('path')?.getAttribute('d');
+    vi.useFakeTimers();
+
+    try {
+      button?.click();
+      TestBed.tick();
+      expect(iconPath()).toBe(checkPath);
+
+      vi.advanceTimersByTime(2000);
+      TestBed.tick();
+      expect(iconPath()).not.toBe(checkPath);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('create_DefaultExpiry_ShowsTheNewCodeAndRefreshesTheList', async () => {
     await respondToList(invitePage({ items: [] }));
     await openCreateDialog();

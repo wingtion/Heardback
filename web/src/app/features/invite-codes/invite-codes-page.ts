@@ -1,7 +1,7 @@
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { DatePipe } from '@angular/common';
-import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
+import { Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { isForbidden } from '../../core/http-errors';
@@ -23,9 +23,10 @@ import {
 } from './invite-code-display';
 import { InviteCodeDialog } from './invite-code-dialog/invite-code-dialog';
 import { InviteCodesApi } from './invite-codes-api';
-import { InviteCodePage } from './invite-codes.models';
+import { InviteCode, InviteCodePage } from './invite-codes.models';
 
 const SKELETON_ROWS = 4;
+const COPY_FEEDBACK_MS = 2000;
 
 type PageView =
   | { readonly kind: 'loading' }
@@ -85,7 +86,13 @@ export class InviteCodesPage {
 
   protected readonly loading = this.invites.isLoading;
 
+  /** The row whose code was just copied; its copy icon shows a check until the timer ends. */
+  protected readonly copiedId = signal<string | null>(null);
+  private copyFeedbackTimer: ReturnType<typeof setTimeout> | undefined;
+
   constructor() {
+    inject(DestroyRef).onDestroy(() => clearTimeout(this.copyFeedbackTimer));
+
     effect(() => {
       if (isForbidden(this.invites.error())) {
         untracked(() => this.showNoAccess());
@@ -106,9 +113,15 @@ export class InviteCodesPage {
     this.invites.reload();
   }
 
-  protected copy(code: string): void {
-    const copied = this.clipboard.copy(code);
+  /** Copies a row's code; its icon turns into a check for a moment (decided by the author). */
+  protected copy(invite: InviteCode): void {
+    const copied = this.clipboard.copy(invite.code);
     this.announcer.announce(copied ? 'Code copied to clipboard' : 'Couldn’t copy the code');
+    clearTimeout(this.copyFeedbackTimer);
+    this.copiedId.set(copied ? invite.id : null);
+    if (copied) {
+      this.copyFeedbackTimer = setTimeout(() => this.copiedId.set(null), COPY_FEEDBACK_MS);
+    }
   }
 
   /** New codes are listed first, so after creating one the first page is shown. */

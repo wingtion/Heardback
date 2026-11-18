@@ -54,9 +54,13 @@
                       iconOnly
                       type="button"
                       [attr.aria-label]="'Copy code ' + invite.code"
-                      (click)="copy(invite.code)"
+                      (click)="copy(invite)"
                     >
-                      <app-icon name="copy" [size]="14" class="text-ink-2" />
+                      <app-icon
+                        [name]="copiedId() === invite.id ? 'check' : 'copy'"
+                        [size]="14"
+                        [class]="copiedId() === invite.id ? 'text-status-offer' : 'text-ink-2'"
+                      />
                     </button>
                   </span>
                 </td>
@@ -146,9 +150,13 @@
                 iconOnly
                 type="button"
                 [attr.aria-label]="'Copy code ' + invite.code"
-                (click)="copy(invite.code)"
+                (click)="copy(invite)"
               >
-                <app-icon name="copy" [size]="18" class="text-ink-2" />
+                <app-icon
+                  [name]="copiedId() === invite.id ? 'check' : 'copy'"
+                  [size]="18"
+                  [class]="copiedId() === invite.id ? 'text-status-offer' : 'text-ink-2'"
+                />
               </button>
             </div>
             <div class="flex flex-wrap items-center gap-2.5">

@@ -400,6 +400,8 @@ Decisions the author made where the handoff was silent or showed only a sample.
 | Detail panel header | ✕ and Edit in a plain header bar above the envelope; no flap line behind a button | §8 |
 | List toolbar Delete | Not built; delete lives in the detail panel/sheet | §10 |
 | Auth card breakpoint | Card from 640 px; full-width form only on phones | §9 |
+| Invite row copy feedback | After copying from a table row or list item, the copy icon turns into a check in `status-offer` for 2 seconds; screen readers hear "Code copied to clipboard" | §10 |
+| Create invite code failure | Error banner inside the dialog: "Couldn't create the invite code" / "The server didn't respond. Try again." | §10 |
 
 ## 13. Still to design (before the phase that needs it)
 
