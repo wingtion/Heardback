@@ -110,6 +110,7 @@ internal sealed record ApplicationDto(
     DateOnly AppliedOn,
     string Status,
     int? NoResponseDays,
+    DateOnly? NoResponseSince,
     string? Notes,
     DateTimeOffset UpdatedAt,
     uint Version,

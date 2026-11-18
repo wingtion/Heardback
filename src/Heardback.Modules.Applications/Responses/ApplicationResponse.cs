@@ -3,7 +3,8 @@ using Heardback.Modules.Applications.Domain;
 namespace Heardback.Modules.Applications.Responses;
 
 /// <summary>
-/// One application with its timeline, newest event first. <see cref="Version"/> goes back with an edit so a
+/// One application with its timeline, newest event first. <see cref="NoResponseSince"/> dates the computed
+/// "No response" timeline row. <see cref="Version"/> goes back with an edit so a
 /// change made elsewhere in the meantime is detected.
 /// </summary>
 internal sealed record ApplicationResponse(
@@ -16,6 +17,7 @@ internal sealed record ApplicationResponse(
     DateOnly AppliedOn,
     ApplicationStatus Status,
     int? NoResponseDays,
+    DateOnly? NoResponseSince,
     string? Notes,
     DateTimeOffset UpdatedAt,
     uint Version,
@@ -32,6 +34,7 @@ internal sealed record ApplicationResponse(
             application.AppliedOn,
             application.Status,
             noResponse.DaysFor(application.Status, application.LastActivityOn),
+            noResponse.SinceFor(application.Status, application.LastActivityOn),
             application.Notes,
             application.UpdatedAt,
             application.Version,

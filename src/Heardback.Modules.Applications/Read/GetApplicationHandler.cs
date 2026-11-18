@@ -24,6 +24,7 @@ internal sealed class GetApplicationHandler(ApplicationsDbContext dbContext, NoR
                 candidate.AppliedOn,
                 candidate.Status,
                 noResponse.DaysFor(candidate.Status, candidate.LastActivityOn),
+                noResponse.SinceFor(candidate.Status, candidate.LastActivityOn),
                 candidate.Notes,
                 candidate.UpdatedAt,
                 candidate.Version,
