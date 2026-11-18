@@ -25,7 +25,7 @@ internal static class InviteCodeEndpoints
 
         invites.MapGet(string.Empty, ListAsync)
             .WithSummary("List invite codes, newest first.")
-            .Produces<PagedResponse<InviteCodeResponse>>()
+            .Produces<InviteCodeListResponse>()
             .ProducesValidationProblem();
     }
 

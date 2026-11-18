@@ -46,4 +46,18 @@ public sealed class InviteCodeTests
 
         Assert.Equal(InviteCodeStatus.Expired, invite.GetStatus(Now + Lifetime));
     }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(0)]
+    [InlineData(1)]
+    public void IsActiveAt_AroundExpiry_AgreesWithGetStatus(int secondsFromExpiry)
+    {
+        var invite = InviteCode.Generate(Guid.CreateVersion7(), Now, Lifetime);
+        var at = Now + Lifetime + TimeSpan.FromSeconds(secondsFromExpiry);
+
+        var isActive = InviteCode.IsActiveAt(at).Compile()(invite);
+
+        Assert.Equal(invite.GetStatus(at) == InviteCodeStatus.Active, isActive);
+    }
 }
