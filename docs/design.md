@@ -410,6 +410,20 @@ Decisions the author made where the handoff was silent or showed only a sample.
 | Editing a shared posting | A shared `JobPosting` is never changed by one user. Saving Edit re-runs the posting dedup and links the application to the matching posting (a new one if none matches) | §14 |
 | Board size | Each column shows at most the **200 newest** cards; the column count is the real total; a truncated column ends with "Showing 200 of 340 · see all in the list" | §14 |
 | Board card detail (desktop) | Same as the list: 380 px panel beside the board from 1280 px (columns shrink), full-screen sheet below. Revisit if it feels cramped in use | §14 |
+| Delete in the desktop panel | A bar pinned at the bottom of the panel (`base`, top `rule`) with a 30 px danger outline **Delete** (trash icon) on the left, the same structure as the mobile sheet footer. Add update joins it on the right with the board/forms PR | §8 |
+| Selected row semantics | The selected table row and list item carry `aria-current="true"` (`aria-selected` is only valid inside a grid) | §7 |
+| After adding | The new application opens in the detail (panel or sheet) and the list returns to page 1 | §10 |
+
+**Proposed during the Phase 2 UI build (author to confirm).** States the design did not cover, built from existing components and copy patterns:
+
+| State | Shown as |
+|---|---|
+| Filters match nothing | Inside the table container: "No matching applications" (`empty-title`) + "Try another search or clear the filters." + secondary "Clear filters" (30 px). No envelope illustration, so it is not mistaken for "No applications yet" |
+| Detail can't load | Error banner "Couldn't load this application" / "The server didn't respond. Try again." + Try again |
+| Detail not found (deleted elsewhere) | Info banner "Couldn't find this application" / "It may have been deleted in another tab or on another device." |
+| Delete fails | Error banner inside the confirm box: "Couldn't delete the application" / "The server didn't respond. Try again." A 404 counts as deleted |
+| Add: same posting text, no link | Error banner "You already track this posting" / "Another of your applications has the same posting text." (the "already tracked" panel needs a link to look the application up) |
+| Applied date field | The browser's native date field, so the picker and keyboard entry are accessible; it shows the date in the browser's own format (e.g. "18.11.2026") rather than "18 Nov 2026" |
 
 ## 13. Still to design (before the phase that needs it)
 
