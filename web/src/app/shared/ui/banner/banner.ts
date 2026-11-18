@@ -1,4 +1,4 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, booleanAttribute, computed, input } from '@angular/core';
 import { Icon } from '../icon/icon';
 import { IconName } from '../icon/icons';
 
@@ -45,10 +45,10 @@ const STYLES: Record<BannerKind, BannerStyle> = {
   imports: [Icon],
   host: {
     '[class]': '"flex gap-2.5 rounded-md border px-3 py-2.5 " + style().box',
-    '[attr.role]': 'style().role',
+    '[attr.role]': 'alert() ? "alert" : style().role',
   },
   template: `
-    <app-icon [name]="style().icon" [class]="'mt-0.5 ' + iconColour()" />
+    <app-icon [name]="icon() ?? style().icon" [class]="'mt-0.5 ' + iconColour()" />
     <div class="flex flex-col items-start gap-0.5">
       @if (heading(); as text) {
         <span [class]="'text-cell font-semibold ' + style().title">{{ text }}</span>
@@ -60,6 +60,10 @@ const STYLES: Record<BannerKind, BannerStyle> = {
 export class Banner {
   readonly kind = input.required<BannerKind>();
   readonly heading = input<string | null>(null);
+  /** Replaces the kind's icon, e.g. refresh on the 'changed elsewhere' warning. */
+  readonly icon = input<IconName | null>(null);
+  /** Announces the banner at once, for a warning that blocks what the user just tried. */
+  readonly alert = input(false, { transform: booleanAttribute });
 
   protected readonly style = computed(() => STYLES[this.kind()]);
   protected readonly iconColour = computed(() =>
