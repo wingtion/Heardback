@@ -9,7 +9,7 @@ import {
   provideRouter,
 } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
-import { adminGuard, authGuard } from './auth.guards';
+import { adminGuard, authGuard, guestGuard } from './auth.guards';
 import { AUTH_API } from './auth-paths';
 import { AuthService } from './auth.service';
 import { authResponse } from './auth.testing';
@@ -55,6 +55,18 @@ describe('auth guards', () => {
     await signIn({ isAdmin: true });
 
     expect(TestBed.runInInjectionContext(() => adminGuard(route, state))).toBe(true);
+  });
+
+  it('guestGuard lets signed-out users open sign in', () => {
+    expect(TestBed.runInInjectionContext(() => guestGuard(route, state))).toBe(true);
+  });
+
+  it('guestGuard sends signed-in users home', async () => {
+    await signIn({ isAdmin: false });
+
+    const result = TestBed.runInInjectionContext(() => guestGuard(route, state));
+
+    expect(serialize(result)).toBe('/');
   });
 
   async function signIn(options: { isAdmin: boolean }): Promise<void> {

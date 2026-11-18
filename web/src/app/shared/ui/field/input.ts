@@ -1,4 +1,4 @@
-import { Directive, computed, inject, input } from '@angular/core';
+import { Directive, booleanAttribute, computed, inject, input } from '@angular/core';
 import { Field } from './field';
 
 export type InputSize = 'md' | 'lg' | 'xl';
@@ -8,13 +8,16 @@ const BASE =
   'focus-visible:outline-offset-2 focus-visible:outline-focus disabled:border-rule disabled:bg-surface ' +
   'disabled:text-disabled';
 
-const SIZES: Record<InputSize, string> = {
-  md: 'h-9 px-2.5 text-cell',
-  lg: 'h-10.5 px-3 text-body',
-  xl: 'h-11 px-3 text-ui-lg',
+const SIZES: Record<InputSize, { readonly box: string; readonly text: string }> = {
+  md: { box: 'h-9 px-2.5', text: 'text-cell' },
+  lg: { box: 'h-10.5 px-3', text: 'text-body' },
+  xl: { box: 'h-11 px-3', text: 'text-ui-lg' },
 };
 
 const DEFAULT_SIZE: InputSize = 'md';
+
+// Invite codes: DM Mono, wide tracking, upper case (docs/design.md §8).
+const CODE_TEXT = 'font-mono text-ui-lg tracking-code-input uppercase';
 
 /**
  * Input styles from docs/design.md §8. Inside an <app-field> it takes the field's id and links its
@@ -38,8 +41,13 @@ export class Input {
     transform: (value) => value || DEFAULT_SIZE,
   });
 
+  /** Monospaced code entry, e.g. an invite code. Replaces the size's text style. */
+  readonly code = input(false, { transform: booleanAttribute });
+
   protected readonly classes = computed(() => {
+    const size = SIZES[this.size()];
+    const typography = this.code() ? CODE_TEXT : size.text;
     const border = this.field?.invalid() ? 'border-invalid' : 'border-field-border';
-    return `${BASE} ${SIZES[this.size()]} ${border}`;
+    return `${BASE} ${size.box} ${typography} ${border}`;
   });
 }

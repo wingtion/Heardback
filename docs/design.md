@@ -325,14 +325,14 @@ Code in DM Mono 500, 30 px (mobile 26), +0.06em, centred in a 72 px box: 1 px `a
   | < 1024 px (below `lg`) | Mobile layout: header + menu, lists, full-screen detail sheet, sticky bottom action |
   | 1024–1279 px (`lg`) | Sidebar shows; the detail still opens as the full-screen sheet |
   | ≥ 1280 px (`xl`) | Full desktop: sidebar + table + detail panel beside it |
-- **Auth pages:** desktop: the card (400/420 px, `base`, 1 px `rule-strong`, radius 6, padding 32) centred on `surface`. Mobile: no card; content on `base` with padding 48/32 24 24, form full width.
+- **Auth pages:** from `sm` (640 px) the card (400/420 px, `base`, 1 px `rule-strong`, radius 6, padding 32) centred on `surface`. Below 640 px: no card; content on `base` with padding 48 24 24, form full width. (The card appears earlier than the app breakpoints because a full-width form on a tablet would be too wide.)
 - **No-access page:** inside the normal shell, left-aligned block at max 520 px with 96 × 80 px padding on desktop (56 × 24 on mobile).
 
 ---
 
 ## 10. Screens and their states
 
-### Sign in (`/sign-in`, anonymous)
+### Sign in (`/login`, signed-out users only)
 Logo + wordmark with the postage stamp at the right; heading "Sign in"; Email (`autocomplete="email"`), Password (`current-password`); primary "Sign in" (44 px, full width); dashed divider; "Have an invite? **Create account**".
 
 | State | Shown as |
@@ -343,7 +343,7 @@ Logo + wordmark with the postage stamp at the right; heading "Sign in"; Email (`
 | Server/network error | Error banner "Couldn't reach Heardback" + "Check your connection and try again. Your details are still filled in." |
 | Session expired (redirected here) | Info banner "Your session has expired. Please sign in again."; email pre-filled when known |
 
-### Create account (`/register`, anonymous)
+### Create account (`/register`, signed-out users only)
 Heading "Create account", line "Heardback is invite only. You need a code to join." Fields: Invite code (hint "12 characters from your invite. Dashes are added for you."), Display name (`autocomplete="name"`), Email, Password (`new-password`, 12–128, counter). Primary "Create account"; footer "Already have an account? **Sign in**".
 
 | State | Shown as |
@@ -399,6 +399,7 @@ Decisions the author made where the handoff was silent or showed only a sample.
 | Sidebar | Only existing pages; items are added in the phase that builds them | §8 |
 | Detail panel header | ✕ and Edit in a plain header bar above the envelope; no flap line behind a button | §8 |
 | List toolbar Delete | Not built; delete lives in the detail panel/sheet | §10 |
+| Auth card breakpoint | Card from 640 px; full-width form only on phones | §9 |
 
 ## 13. Still to design (before the phase that needs it)
 

@@ -1,0 +1,107 @@
+<app-auth-card width="wide">
+  <div class="flex flex-col gap-1">
+    <h1 class="font-serif text-page-title-sm font-semibold text-ink">Create account</h1>
+    <p class="text-cell text-ink-2">Heardback is invite only. You need a code to join.</p>
+  </div>
+
+  @if (invalidCount() > 0) {
+    <!-- Phones skip the summary; the highlighted fields are enough on a short screen. -->
+    <app-banner kind="error" heading="Check the highlighted fields" class="max-sm:hidden">
+      {{ invalidCount() }} {{ invalidCount() === 1 ? 'field needs' : 'fields need' }} attention
+      before you can continue.
+    </app-banner>
+  } @else {
+    @switch (submission.failure()?.kind) {
+      @case ('rate-limited') {
+        <app-banner kind="warning" heading="Too many attempts.">
+          Try again in
+          <span class="font-mono font-medium">{{ submission.countdown.seconds() }}</span>
+          seconds.
+        </app-banner>
+      }
+      @case ('unavailable') {
+        <app-banner kind="error" heading="Couldn’t create your account">
+          The server didn’t respond. Your details are still filled in. Try again.
+        </app-banner>
+      }
+    }
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="flex flex-col gap-3.5">
+    <app-field
+      label="Invite code"
+      hint="12 characters from your invite. Dashes are added for you."
+      [error]="errors().inviteCode ?? null"
+    >
+      <input
+        appInput="lg"
+        type="text"
+        formControlName="inviteCode"
+        (input)="formatInviteCode()"
+        autocomplete="off"
+        autocapitalize="characters"
+        spellcheck="false"
+        placeholder="ABCD-EFGH-JKLM"
+        [maxlength]="inviteCodeMaxLength"
+        code
+      />
+    </app-field>
+
+    <app-field label="Display name" [error]="errors().displayName ?? null">
+      <input
+        appInput="lg"
+        type="text"
+        formControlName="displayName"
+        autocomplete="name"
+        [maxlength]="limits.displayNameMax"
+      />
+    </app-field>
+
+    <app-field label="Email" [error]="errors().email ?? null">
+      <input
+        appInput="lg"
+        type="email"
+        formControlName="email"
+        autocomplete="email"
+        placeholder="you@example.com"
+        [maxlength]="limits.emailMax"
+      />
+    </app-field>
+
+    <app-field
+      label="Password"
+      [hint]="limits.passwordMin + '–' + limits.passwordMax + ' characters'"
+      [hintEnd]="passwordCount()"
+      [error]="errors().password ?? null"
+    >
+      <input
+        appInput="lg"
+        type="password"
+        formControlName="password"
+        autocomplete="new-password"
+        [maxlength]="limits.passwordMax"
+      />
+    </app-field>
+
+    <button
+      appButton="primary"
+      size="lg"
+      type="submit"
+      class="mt-1 w-full"
+      [disabled]="submission.submitting() || submission.locked()"
+      [attr.aria-busy]="submission.submitting() || null"
+    >
+      @if (submission.submitting()) {
+        <app-spinner tone="current" />
+        Creating account…
+      } @else {
+        Create account
+      }
+    </button>
+  </form>
+
+  <p class="border-t border-dashed border-rule-strong pt-3.5 text-cell text-ink-2">
+    Already have an account?
+    <a appLink [routerLink]="routes.login" class="font-semibold">Sign in</a>
+  </p>
+</app-auth-card>
