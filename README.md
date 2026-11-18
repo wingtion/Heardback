@@ -101,6 +101,9 @@ docs/design.md                   design system: tokens, type, components, screen
   across users by its normalized link or a hash of its content, safely under concurrent submissions.
   Postings are never edited and hold no user id; each application keeps the user's own copy of the
   details. The server never fetches posting pages.
+- **Applications:** each application has a timeline of dated events; its status is the latest status
+  event, and "No response · N days" is derived from dates on every read. Edits carry the row version and
+  fail with 409 when the application changed elsewhere. Writes are rate limited per user.
 - **Errors and validation** ([ADR-0003](docs/adr/0003-request-validation.md)): RFC 9457 ProblemDetails
   everywhere, 400 with field-level errors for invalid requests, and configuration validated at startup.
 

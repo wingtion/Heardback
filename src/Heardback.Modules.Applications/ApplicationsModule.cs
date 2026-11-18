@@ -32,6 +32,7 @@ public static class ApplicationsModule
             .ValidateOnStart();
 
         services.AddModuleDbContext<ApplicationsDbContext>(ApplicationsDbContext.Schema);
+        services.AddApplicationsRateLimiting();
 
         services.AddScoped<NoResponseClock>();
         services.AddScoped<PostingLinks>();

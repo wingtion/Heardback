@@ -43,10 +43,13 @@ app.UseClientIpResolution();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 
-app.UseRateLimiter();
-
 app.UseAuthentication();
 app.UseAuthorization();
+
+// After authentication, so per-user limits know the user; after authorization, so anonymous calls to
+// protected endpoints are turned away without using up anyone's limit. Auth endpoints are anonymous and
+// limited per IP, which works at either position.
+app.UseRateLimiter();
 
 if (app.Environment.IsDevelopment())
 {

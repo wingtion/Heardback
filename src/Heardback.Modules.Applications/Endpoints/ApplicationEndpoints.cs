@@ -46,12 +46,14 @@ internal static class ApplicationEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         applications.MapPost(string.Empty, CreateAsync)
+            .RequireRateLimiting(ApplicationsRateLimiting.WritePolicy)
             .WithSummary("Add an application.")
             .Produces<ApplicationResponse>(StatusCodes.Status201Created)
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status409Conflict);
 
         applications.MapPut("/{id:guid}", UpdateAsync)
+            .RequireRateLimiting(ApplicationsRateLimiting.WritePolicy)
             .WithSummary("Edit an application. Send the version it was read with; 409 when it changed since.")
             .Produces<ApplicationResponse>()
             .ProducesValidationProblem()
@@ -59,11 +61,13 @@ internal static class ApplicationEndpoints
             .ProducesProblem(StatusCodes.Status409Conflict);
 
         applications.MapDelete("/{id:guid}", DeleteAsync)
+            .RequireRateLimiting(ApplicationsRateLimiting.WritePolicy)
             .WithSummary("Delete an application and its timeline.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         applications.MapPost("/{id:guid}/events", AddEventAsync)
+            .RequireRateLimiting(ApplicationsRateLimiting.WritePolicy)
             .WithSummary("Add a status change, a note, or both to the timeline (Add update, board moves).")
             .Produces<ApplicationResponse>()
             .ProducesValidationProblem()
