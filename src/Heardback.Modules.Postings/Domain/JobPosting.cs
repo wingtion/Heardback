@@ -12,7 +12,10 @@ internal sealed class JobPosting
 
     public Guid Id { get; private set; }
 
-    /// <summary>The link as first submitted (trimmed), or null when the posting was added without one.</summary>
+    /// <summary>
+    /// The first submitted link without credentials, tracking parameters or fragment, or null when the posting was
+    /// added without one. The raw link can carry details about the person who copied it.
+    /// </summary>
     public string? Url { get; private set; }
 
     /// <summary>Comparison key from <see cref="PostingUrl"/>; unique.</summary>
@@ -36,8 +39,7 @@ internal sealed class JobPosting
     public int TimesAdded { get; private set; }
 
     public static JobPosting Create(
-        string? url,
-        string? normalizedUrl,
+        PostingUrlParts? link,
         string company,
         string title,
         string? text,
@@ -46,8 +48,8 @@ internal sealed class JobPosting
         new()
         {
             Id = Guid.CreateVersion7(now),
-            Url = normalizedUrl is null ? null : url?.Trim(),
-            NormalizedUrl = normalizedUrl,
+            Url = link?.CleanUrl,
+            NormalizedUrl = link?.Key,
             Company = company.Trim(),
             Title = title.Trim(),
             Text = string.IsNullOrWhiteSpace(text) ? null : text.Trim(),

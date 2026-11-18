@@ -20,16 +20,17 @@ internal sealed partial class JobPostings(
     {
         ArgumentNullException.ThrowIfNull(submission);
 
-        string? normalizedUrl = null;
-        if (!string.IsNullOrWhiteSpace(submission.Url) && !PostingUrl.TryNormalize(submission.Url, out normalizedUrl))
+        PostingUrlParts? link = null;
+        if (!string.IsNullOrWhiteSpace(submission.Url) && !PostingUrl.TryParse(submission.Url, out link))
         {
             return PostingErrors.InvalidUrl;
         }
 
+        var normalizedUrl = link?.Key;
         var contentHash = PostingContentHash.ComputeOrNull(submission.Company, submission.Title, submission.Text);
         var now = timeProvider.GetUtcNow();
         var posting = JobPosting.Create(
-            submission.Url, normalizedUrl, submission.Company, submission.Title, submission.Text, contentHash, now);
+            link, submission.Company, submission.Title, submission.Text, contentHash, now);
 
         // Nothing to recognise it by, so it can only ever be a new posting.
         if (normalizedUrl is null && contentHash is null)

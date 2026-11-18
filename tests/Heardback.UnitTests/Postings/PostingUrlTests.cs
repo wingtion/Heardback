@@ -103,6 +103,37 @@ public sealed class PostingUrlTests
     }
 
     [Theory]
+    [InlineData('€')]
+    [InlineData(' ')]
+    public void TryNormalize_ShortInputThatEncodesPastTheLimit_ReturnsFalse(char character)
+    {
+        // 1500 characters of input, but each becomes up to 9 characters once percent-encoded.
+        // The trailing "x" keeps the input from being trimmed.
+        var url = "https://jobs.example.com/" + new string(character, 1500) + "x";
+
+        Assert.False(PostingUrl.TryNormalize(url, out _));
+    }
+
+    [Fact]
+    public void TryParse_LinkWithCredentialsAndTracking_CleansTheStoredLink()
+    {
+        var parsed = PostingUrl.TryParse(
+            "https://user:secret@Jobs.Example.com:443/77?mc_eid=abc123&b=2&utm_source=x&a=1#apply", out var parts);
+
+        Assert.True(parsed);
+        Assert.Equal("https://jobs.example.com/77?b=2&a=1", parts!.CleanUrl);
+        Assert.Equal("jobs.example.com/77?a=1&b=2", parts.Key);
+    }
+
+    [Fact]
+    public void TryParse_PlainLink_KeepsItAsTyped()
+    {
+        Assert.True(PostingUrl.TryParse("http://www.jobs.example.com:8080/view/4471", out var parts));
+
+        Assert.Equal("http://www.jobs.example.com:8080/view/4471", parts!.CleanUrl);
+    }
+
+    [Theory]
     [InlineData(null, true)]
     [InlineData("", true)]
     [InlineData("   ", true)]

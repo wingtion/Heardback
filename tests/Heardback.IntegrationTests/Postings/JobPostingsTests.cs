@@ -116,6 +116,28 @@ public sealed class JobPostingsTests(PostgresFixture postgres) : IAsyncLifetime
     }
 
     [Fact]
+    public async Task ResolveAsync_LinkWithCredentialsAndTracking_StoresTheCleanedLink()
+    {
+        var created = await ResolveAsync(new PostingSubmission(
+            "https://user:secret@jobs.example.com/77?mc_eid=abc123&utm_source=x#apply", Company, Title, null));
+
+        await using var connection = await OpenAsync();
+        await using var command = new NpgsqlCommand("SELECT url FROM postings.job_postings WHERE id = @id", connection);
+        command.Parameters.AddWithValue("id", created.Value);
+        Assert.Equal("https://jobs.example.com/77", await command.ExecuteScalarAsync(CancellationToken));
+    }
+
+    [Fact]
+    public async Task ResolveAsync_LinkThatEncodesPastTheLimit_ReturnsValidationError()
+    {
+        var result = await ResolveAsync(
+            new PostingSubmission("https://jobs.example.com/" + new string('€', 1500), Company, Title, Text));
+
+        Assert.Equal("postings.invalid_url", result.Error!.Code);
+        Assert.Equal(0, await CountPostingsAsync());
+    }
+
+    [Fact]
     public async Task ResolveAsync_ExistingPosting_IsNeverChanged()
     {
         var first = await ResolveAsync(new PostingSubmission(Url, Company, Title, Text));

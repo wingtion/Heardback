@@ -35,8 +35,14 @@ internal static class PostingUrl
 
     public static bool TryNormalize(string input, [NotNullWhen(true)] out string? key)
     {
+        key = TryParse(input, out var parts) ? parts.Key : null;
+        return key is not null;
+    }
+
+    public static bool TryParse(string input, [NotNullWhen(true)] out PostingUrlParts? parts)
+    {
         ArgumentNullException.ThrowIfNull(input);
-        key = null;
+        parts = null;
 
         var trimmed = input.Trim();
         if (trimmed.Length > PostingLimits.UrlMaxLength
@@ -52,10 +58,38 @@ internal static class PostingUrl
             return false;
         }
 
-        key = host == LinkedInHost && TryGetLinkedInJobId(uri, out var jobId)
+        var key = host == LinkedInHost && TryGetLinkedInJobId(uri, out var jobId)
             ? LinkedInHost + LinkedInJobPath + jobId
             : host + Port(uri) + Path(uri) + Query(uri);
+        var cleanUrl = Clean(uri);
+
+        // Both are stored and indexed, and percent-encoding can make them much longer than the input.
+        if (key.Length > PostingLimits.UrlMaxLength || cleanUrl.Length > PostingLimits.UrlMaxLength)
+        {
+            return false;
+        }
+
+        parts = new PostingUrlParts(key, cleanUrl);
         return true;
+    }
+
+    // Keeps the link as typed but drops what can identify the person who copied it.
+    private static string Clean(Uri uri)
+    {
+        var kept = Parameters(uri).Where(parameter => !IsTracking(parameter.Name)).Select(parameter => parameter.Text);
+        var builder = new UriBuilder(uri)
+        {
+            UserName = string.Empty,
+            Password = string.Empty,
+            Fragment = string.Empty,
+            Query = string.Join(ParameterSeparator, kept),
+        };
+        if (uri.IsDefaultPort)
+        {
+            builder.Port = -1;
+        }
+
+        return builder.Uri.AbsoluteUri;
     }
 
     private static string NormalizeHost(string host)

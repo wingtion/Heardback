@@ -39,6 +39,17 @@ public sealed class ApplicationCrudTests(PostgresFixture postgres) : Application
     }
 
     [Fact]
+    public async Task Create_LinkThatEncodesPastTheLimit_Returns400OnUrl()
+    {
+        using var response = await Client.CreateApplicationAsync(
+            Alice, NewApplication(url: "https://jobs.example.com/" + new string('€', 1500)));
+
+        var problem = await response.ReadAsync<ProblemDto>();
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Contains("url", problem.Errors!.Keys);
+    }
+
+    [Fact]
     public async Task Create_MissingChannelAndDate_Returns400()
     {
         using var response = await Client.CreateApplicationAsync(Alice, new { company = "Northwind", role = "Dev" });
