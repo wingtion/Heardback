@@ -29,6 +29,11 @@ export const routes: Routes = [
           import('./features/applications/applications-page').then((page) => page.ApplicationsPage),
       },
       {
+        path: 'cv',
+        title: 'CV · Heardback',
+        loadComponent: () => import('./features/cv/cv-page').then((page) => page.CvPage),
+      },
+      {
         path: 'admin/invite-codes',
         title: 'Invite codes · Heardback',
         canActivate: [adminGuard],

@@ -1,0 +1,174 @@
+<div class="flex flex-col gap-1 lg:flex-row lg:items-baseline lg:gap-3.5">
+  <h1 class="font-serif text-page-title-sm font-semibold text-ink lg:text-page-title">CV</h1>
+  @if (cv(); as cv) {
+    <span class="text-small text-ink-2 tabular-nums">
+      Uploaded <span class="font-mono">{{ cv.uploadedAt | date: dateFormat }}</span> ·
+      {{ cv.pageCount }} {{ cv.pageCount === 1 ? 'page' : 'pages' }}
+    </span>
+  }
+</div>
+<p class="-mt-2 text-small text-ink-2 lg:-mt-2.5">
+  Heardback compares the skills in your CV with the posting of each application.
+</p>
+
+<app-banner kind="info" heading="Only the text of your CV is kept">
+  Email addresses, phone numbers, links and address lines are replaced before it is stored, and the
+  PDF itself is never saved. You can delete it at any time.
+</app-banner>
+
+@switch (view().kind) {
+  @case ('loading') {
+    <div role="status" class="flex items-center gap-2 text-small text-ink-2">
+      <app-spinner />
+      Loading your CV…
+    </div>
+  }
+  @case ('error') {
+    <app-banner kind="error" heading="Couldn’t load your CV">
+      <p>The server didn’t respond. Try again.</p>
+      <button appButton size="sm" type="button" class="mt-1.5" (click)="retry()">Try again</button>
+    </app-banner>
+  }
+  @case ('ready') {
+    <!-- Upload: a button everywhere, and a drop area from the lg breakpoint. -->
+    <div
+      class="flex flex-col items-start gap-2.5 rounded-md border-thick border-dashed p-4 lg:p-5"
+      [class]="dropping() ? 'border-accent bg-row-selected' : 'border-rule-strong bg-base'"
+      (dragover)="onDragOver($event)"
+      (dragleave)="dropping.set(false)"
+      (drop)="onDrop($event)"
+    >
+      @if (cv()) {
+        <h2 class="text-body font-semibold text-ink">Replace your CV</h2>
+        <p class="-mt-1.5 text-small text-ink-2">The new file replaces the current one.</p>
+      } @else {
+        <app-envelope-illustration />
+        <h2 class="font-serif text-empty-title font-semibold text-ink">No CV yet</h2>
+        <p class="-mt-1 text-small text-ink-2">
+          Upload your CV to see, for each application, which skills the posting asks for that your
+          CV shows and which are missing.
+        </p>
+      }
+
+      @if (uploading()) {
+        <div role="status" class="flex min-h-9 items-center gap-2 text-small text-ink-2">
+          <app-spinner />
+          Reading your CV…
+        </div>
+      } @else {
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+          <button
+            [appButton]="cv() ? 'secondary' : 'primary'"
+            type="button"
+            class="max-lg:h-11"
+            (click)="fileInput.click()"
+          >
+            Choose PDF
+          </button>
+          <span class="text-label text-ink-muted">
+            {{ limitsText }}<span class="max-lg:hidden"> · or drop it here</span>
+          </span>
+        </div>
+      }
+      <input
+        #fileInput
+        type="file"
+        class="hidden"
+        tabindex="-1"
+        aria-hidden="true"
+        [accept]="accept"
+        (change)="onFileChosen(fileInput)"
+      />
+    </div>
+
+    <!-- Kept on screen so "CV uploaded" is announced when it appears. -->
+    <div role="status" class="empty:hidden">
+      @if (uploaded()) {
+        <app-inline-success>CV uploaded</app-inline-success>
+      }
+    </div>
+
+    @if (problem(); as problem) {
+      @switch (problem.kind) {
+        @case ('file') {
+          <app-banner kind="error" [heading]="problem.message" />
+        }
+        @case ('limit') {
+          <app-banner kind="warning" alert [heading]="problem.message" />
+        }
+        @case ('unavailable') {
+          <app-banner kind="error" heading="Couldn’t upload your CV">
+            The server didn’t respond. Try again.
+          </app-banner>
+        }
+      }
+    }
+
+    @if (cv(); as cv) {
+      <section
+        aria-labelledby="cv-skills-title"
+        class="flex flex-col rounded-md border border-rule bg-base"
+      >
+        <div class="flex flex-col gap-2.5 p-4">
+          <h2
+            id="cv-skills-title"
+            class="flex items-baseline gap-2 text-label font-semibold text-ink-2"
+          >
+            Skills found
+            <span class="font-mono font-normal text-ink-muted">{{ cv.skills.length }}</span>
+          </h2>
+          @if (cv.skills.length > 0) {
+            <ul class="flex flex-wrap gap-1.5">
+              @for (skill of cv.skills; track skill) {
+                <li><app-skill-chip [name]="skill" /></li>
+              }
+            </ul>
+          } @else {
+            <p class="text-small text-ink-2">
+              None of the skills Heardback knows were found. Check the stored text below.
+            </p>
+          }
+        </div>
+
+        <div class="flex flex-col items-start gap-2.5 border-t border-rule p-4">
+          <button
+            appButton="ghost"
+            size="sm"
+            type="button"
+            class="-ml-2 max-lg:h-11"
+            [attr.aria-expanded]="showText()"
+            [attr.aria-controls]="showText() ? 'cv-stored-text' : null"
+            (click)="toggleText()"
+          >
+            <app-icon
+              name="chevron-down"
+              [size]="10"
+              class="text-ink-2"
+              [class.rotate-180]="showText()"
+            />
+            {{ showText() ? 'Hide stored text' : 'Show stored text' }}
+          </button>
+          @if (showText()) {
+            <pre
+              id="cv-stored-text"
+              class="max-h-96 w-full overflow-auto rounded-md border border-rule bg-surface p-3 font-mono text-label break-words whitespace-pre-wrap text-ink"
+            >@for (part of storedText(); track $index) {@if (part.marker) {<mark class="rounded-xs bg-nav-active px-0.5 text-ink-2">{{ part.text }}</mark>} @else {{{ part.text }}}}</pre>
+          }
+        </div>
+
+        <div class="flex border-t border-rule px-4 py-3">
+          <button
+            appButton="danger"
+            size="sm"
+            type="button"
+            class="max-lg:h-12 max-lg:flex-1 max-lg:text-ui-lg"
+            (click)="confirmDelete()"
+          >
+            <app-icon name="trash" [size]="14" />
+            Delete CV
+          </button>
+        </div>
+      </section>
+    }
+  }
+}
