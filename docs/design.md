@@ -415,7 +415,7 @@ Decisions the author made where the handoff was silent or showed only a sample.
 | After adding | The new application opens in the detail (panel or sheet) and the list returns to page 1 | §10 |
 | Postmark date circle | **Removed** (2026-11-18): its 8 px month was hard to read and the date is already in the timeline. Only the cancellation waves stay, crossing the stamp's left edge | §6, §8 |
 
-**Proposed during the Phase 2 UI build (author to confirm).** States the design did not cover, built from existing components and copy patterns:
+**Decided during the Phase 2 UI build** (approved by the author after testing, 2026-11-18). States the design did not cover, built from existing components and copy patterns:
 
 | State | Shown as |
 |---|---|
