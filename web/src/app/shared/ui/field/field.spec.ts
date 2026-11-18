@@ -6,7 +6,7 @@ import { Input } from './input';
 @Component({
   imports: [Field, Input],
   template: `
-    <app-field label="Email" [hint]="hint()" [error]="error()">
+    <app-field label="Email" [hint]="hint()" [error]="error()" optional [suffix]="suffix()">
       <input appInput type="email" />
     </app-field>
   `,
@@ -14,6 +14,7 @@ import { Input } from './input';
 class FieldHost {
   readonly hint = signal<string | null>(null);
   readonly error = signal<string | null>(null);
+  readonly suffix = signal<string | null>(null);
 }
 
 describe('Field and Input', () => {
@@ -29,6 +30,16 @@ describe('Field and Input', () => {
       label: root.querySelector('label') as HTMLLabelElement,
     };
   }
+
+  it('render_Suffix_ReplacesTheOptionalNote', () => {
+    expect(render().label.textContent?.replace(/\s+/g, ' ').trim()).toBe('Email · optional');
+
+    const { label } = render((host) => host.suffix.set('optional, only you see these'));
+
+    expect(label.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+      'Email · optional, only you see these',
+    );
+  });
 
   it('render_Label_IsLinkedToTheControl', () => {
     const { input, label } = render();

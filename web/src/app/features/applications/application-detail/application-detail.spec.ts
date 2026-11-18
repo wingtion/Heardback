@@ -231,4 +231,26 @@ describe('ApplicationDetail', () => {
     await respond(application({ status: 'Offer' }));
     expect(detail().textContent).toContain('Offer');
   });
+
+  it('edit_Saved_ShowsTheChangesAndEmitsChanged', async () => {
+    await respond();
+    button('Edit').click();
+    await render();
+    const role = Array.from(
+      document.querySelectorAll<HTMLInputElement>('app-edit-application-dialog input'),
+    ).find((input) => input.value === 'Backend Engineer (.NET)');
+    if (!role) throw new Error('No role');
+    role.value = 'Senior Backend Engineer';
+    role.dispatchEvent(new Event('input'));
+    document.querySelector('app-edit-application-dialog form')?.dispatchEvent(new Event('submit'));
+    await render();
+
+    http
+      .expectOne((request) => request.url === DETAIL_URL && request.method === 'PUT')
+      .flush(application({ role: 'Senior Backend Engineer', version: 8 }));
+    await render();
+
+    expect(host.changed).toBe(1);
+    expect(detail().textContent).toContain('Senior Backend Engineer');
+  });
 });

@@ -65,7 +65,7 @@ export class AppDialog {
     const mobile = this.fullScreenOnMobile()
       ? 'max-lg:h-full'
       : 'max-lg:rounded-t-sheet max-lg:border-t';
-    return `flex flex-col border-rule-strong bg-base lg:rounded-lg lg:border lg:shadow-dialog ${mobile} ${WIDTHS[this.width()]}`;
+    return `flex flex-col border-rule-strong bg-base lg:max-h-svh lg:rounded-lg lg:border lg:shadow-dialog ${mobile} ${WIDTHS[this.width()]}`;
   });
 
   protected readonly headerClass = computed(() =>

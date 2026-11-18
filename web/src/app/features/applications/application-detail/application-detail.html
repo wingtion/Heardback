@@ -25,6 +25,16 @@
     >
       Application
     </span>
+    @if (application(); as application) {
+      <button
+        appButton
+        type="button"
+        [size]="sheet() ? 'md' : 'sm'"
+        (click)="openEdit(application)"
+      >
+        Edit
+      </button>
+    }
   </div>
 
   <div class="min-h-0 flex-1 overflow-y-auto" [class]="sheet() ? 'p-4' : 'px-5 pt-4 pb-5'">

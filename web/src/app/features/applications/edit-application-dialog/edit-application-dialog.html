@@ -1,0 +1,158 @@
+<app-dialog heading="Edit application" width="form" fullScreenOnMobile [closeDisabled]="busy()">
+  <p appDialogSubtitle class="text-label text-ink-muted">
+    Status changes through the board or Add update.
+  </p>
+
+  <form class="flex min-h-0 flex-1 flex-col" [formGroup]="form" novalidate (ngSubmit)="submit()">
+    <div class="flex min-h-0 flex-1 flex-col gap-3.5 overflow-y-auto p-4 lg:px-5 lg:pt-4 lg:pb-4.5">
+      @switch (problem()) {
+        @case ('unavailable') {
+          <app-banner kind="error" heading="Couldn’t save your changes">
+            The server didn’t respond. Your edits are still here. Try again.
+          </app-banner>
+        }
+        @case ('already-tracked') {
+          <app-banner kind="error" heading="You already track this posting">
+            Another of your applications uses this link. Open that one instead, or change the link.
+          </app-banner>
+        }
+        @case ('not-found') {
+          <app-banner kind="error" heading="Couldn’t find this application">
+            It may have been deleted in another tab or on another device.
+          </app-banner>
+        }
+        @case ('changed-elsewhere') {
+          <app-banner
+            kind="warning"
+            icon="refresh"
+            alert
+            heading="This application changed since you opened it."
+          >
+            <p>
+              It was edited in another tab or on another device. Reload to see the latest version.
+              Your edits here will be lost when you reload.
+            </p>
+            <button
+              appButton
+              size="sm"
+              type="button"
+              class="mt-1 max-lg:h-11"
+              [disabled]="reloading()"
+              [attr.aria-busy]="reloading() || null"
+              (click)="reload()"
+            >
+              @if (reloading()) {
+                <app-spinner tone="current" />
+              }
+              Reload latest version
+            </button>
+          </app-banner>
+        }
+      }
+
+      <app-field label="Job posting link" optional [error]="errors().url ?? null">
+        <input
+          appInput
+          type="url"
+          inputmode="url"
+          autocomplete="off"
+          formControlName="url"
+          class="max-lg:h-11"
+          [maxlength]="limits.url"
+        />
+      </app-field>
+      <div class="grid grid-cols-2 gap-3">
+        <app-field label="Company" required [error]="errors().company ?? null">
+          <input
+            appInput
+            cdkFocusInitial
+            type="text"
+            autocomplete="organization"
+            formControlName="company"
+            class="max-lg:h-11"
+            [maxlength]="limits.company"
+          />
+        </app-field>
+        <app-field label="Role" required [error]="errors().role ?? null">
+          <input
+            appInput
+            type="text"
+            autocomplete="off"
+            formControlName="role"
+            class="max-lg:h-11"
+            [maxlength]="limits.role"
+          />
+        </app-field>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <app-field label="Channel" [error]="errors().channel ?? null">
+          <app-select>
+            <select appInput formControlName="channel" class="max-lg:h-11">
+              @for (channel of channels; track channel) {
+                <option [value]="channel">{{ channelLabels[channel] }}</option>
+              }
+            </select>
+          </app-select>
+        </app-field>
+        <app-field label="Applied date" [error]="errors().appliedOn ?? null">
+          <input
+            appInput
+            date
+            type="date"
+            formControlName="appliedOn"
+            class="max-lg:h-11"
+            [min]="earliestDate"
+            [max]="today"
+          />
+        </app-field>
+      </div>
+      <app-field
+        label="Job posting text"
+        optional
+        hint="Paste the job description only. Don’t add personal notes here; use Notes for those."
+        [error]="errors().postingText ?? null"
+      >
+        <textarea
+          appInput
+          rows="3"
+          placeholder="Paste the job description"
+          formControlName="postingText"
+          [maxlength]="limits.postingText"
+        ></textarea>
+      </app-field>
+      <app-field
+        label="Notes"
+        suffix="optional, only you see these"
+        [error]="errors().notes ?? null"
+      >
+        <textarea appInput rows="3" formControlName="notes" [maxlength]="limits.notes"></textarea>
+      </app-field>
+    </div>
+
+    <app-dialog-footer sticky>
+      <button
+        appButton
+        type="button"
+        class="max-lg:h-12 max-lg:flex-1 max-lg:text-ui-lg"
+        [disabled]="busy()"
+        (click)="close()"
+      >
+        Cancel
+      </button>
+      <button
+        appButton="primary"
+        type="submit"
+        class="max-lg:h-12 max-lg:flex-1 max-lg:text-ui-lg"
+        [disabled]="busy() || problem() === 'changed-elsewhere'"
+        [attr.aria-busy]="submitting() || null"
+      >
+        @if (submitting()) {
+          <app-spinner tone="current" />
+          Saving…
+        } @else {
+          Save
+        }
+      </button>
+    </app-dialog-footer>
+  </form>
+</app-dialog>

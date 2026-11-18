@@ -35,6 +35,10 @@ import { AddUpdateData, AddUpdateDialog } from '../add-update-dialog/add-update-
 import { ApplicationsApi } from '../applications-api';
 import { Application } from '../applications.models';
 import {
+  EditApplicationData,
+  EditApplicationDialog,
+} from '../edit-application-dialog/edit-application-dialog';
+import {
   DeleteApplicationData,
   DeleteApplicationDialog,
 } from '../delete-application-dialog/delete-application-dialog';
@@ -60,8 +64,8 @@ type DetailView =
 
 /**
  * One application as an envelope (docs/design.md §8): a header bar with Close, the envelope with stamp,
- * postmark, addressee, status, notes and timeline, and a bar with Delete at the bottom (decided
- * 2026-11-18; Edit and Add update arrive with their forms). The sheet layout is a modal dialog.
+ * postmark, addressee, status, notes and timeline with Add update, and a bar with Delete at the bottom
+ * (decided 2026-11-18). Edit sits in the header. The sheet layout is a modal dialog.
  */
 @Component({
   selector: 'app-application-detail',
@@ -187,6 +191,14 @@ export class ApplicationDetail {
     ref.componentInstance?.saved.subscribe((saved) => this.showUpdate(application, saved));
   }
 
+  protected openEdit(application: Application): void {
+    const data: EditApplicationData = { application };
+    const ref = this.dialogs.open(EditApplicationDialog, { mobile: 'full-screen', data });
+    const dialog = ref.componentInstance;
+    dialog?.saved.subscribe((saved) => this.showChange(saved));
+    dialog?.reloaded.subscribe((latest) => this.showChange(latest));
+  }
+
   protected confirmDelete(application: Application): void {
     const data: DeleteApplicationData = { id: application.id, company: application.company };
     const ref = this.dialogs.open(DeleteApplicationDialog, { role: 'alertdialog', data });
@@ -196,8 +208,12 @@ export class ApplicationDetail {
   private showUpdate(before: Application, saved: Application): void {
     const known = new Set(before.events.map((event) => event.id));
     const added = saved.events.find((event) => !known.has(event.id));
-    this.resource.set(saved);
+    this.showChange(saved);
     this.added.set(added ? { applicationId: saved.id, eventId: added.id } : null);
+  }
+
+  private showChange(application: Application): void {
+    this.resource.set(application);
     this.changed.emit();
   }
 }
