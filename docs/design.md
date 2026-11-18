@@ -447,7 +447,7 @@ Decisions the author made where the handoff was silent or showed only a sample.
 These go back to Claude Design with a brief written from the API that exists at that point. Nothing here is improvised.
 
 - **Phase 2:** nothing left. The board, Edit application, Add update and Add application on mobile came in the "B refined · Board and forms" handoff (§14).
-- **Phase 3 (brief given 2026-11-18, waiting for the handoff):** the **CV page** (upload, replace, delete, the stored text with its personal-detail markers, the skills found, every upload error) and the **match panel** on the application detail (score, matched and missing skills, no CV / no posting text / no skills states).
+- **Phase 3:** nothing left. The CV page and the match panel were composed from the existing system instead of a Claude Design handoff (§15).
 
 ---
 
@@ -553,4 +553,36 @@ Footer: Cancel + primary **"Save update"** ("Saving…").
 
 ### Dates
 Applied and update dates are calendar dates in the user's own day. "Today or earlier" is checked in the browser against the local date. The server accepts dates up to one day after the UTC date, so users in time zones ahead of UTC are not rejected.
-- **Settings page** (including the theme setting), Dashboard, CV, Companies: in their phases.
+- **Settings page** (including the theme setting), Dashboard, Companies: in their phases.
+
+## 15. CV page and match panel (Phase 3, composed from the existing system)
+
+**How this was designed (decided by the author, 2026-11-18):** no Claude Design handoff, to save its cost. Both screens use only tokens and components already in this document, with no new colours, sizes or patterns. The author approves them from desktop and phone screenshots (light and dark) instead of a canvas.
+
+### CV page (`/cv`, sidebar item "CV" under Applications)
+- **Header:** "CV" (`page-title`) and, when a CV exists, "Uploaded 18 Nov 2026 · 2 pages" (`small`, `ink-2`, date in DM Mono), then one line on what the page is for. Content is at most 800 px wide.
+- **Privacy note:** info banner (§8), always shown: "Only the text of your CV is kept" / emails, phone numbers, links and address lines are replaced before it is stored; the PDF is never saved; it can be deleted at any time.
+- **Upload area:** a dashed box like the board's empty column (1.5 px dashed `rule-strong`, radius 4, `base`, padding 16, 20 from lg). While a file is dragged over it: dashed `accent` on `row-selected`, like a board drop target. Without a CV it holds the envelope empty state ("No CV yet") and a primary **Choose PDF**; with a CV, "Replace your CV" / "The new file replaces the current one." and a secondary **Choose PDF**. Beside the button: "PDF, up to 5 MB and 10 pages · or drop it here" (`label`, `ink-muted`; "or drop it here" only from lg). Buttons are 44 px below lg.
+- **Uploading:** the buttons give way to a spinner and "Reading your CV…" (`role="status"`).
+- **After an upload:** inline success "CV uploaded" in a persistent status region (§8).
+- **Upload problems:** a problem with the file is an error banner with the server's sentence as its title; the hourly limit is a warning banner ("You've uploaded 5 CVs in the last hour. Try again in about N minutes."); no answer is the usual error banner "Couldn't upload your CV" / "The server didn't respond. Try again."
+- **The CV** (bordered section, `rule`, radius 4, `base`): "Skills found" heading (`label`, 600, `ink-2`) with the count in DM Mono, then found **skill chips**; a "Show stored text" ghost button (the chevron turns when open) that reveals the text exactly as stored in DM Mono 12.5 on `surface` (at most 384 px high, scrolls), with the markers `[email]` `[phone]` `[link]` `[address]` on `nav-active` in `ink-2`; a bar with the danger outline **Delete CV** (trash icon; full width, 48 px on phones).
+- **Delete:** the same confirm as deleting an application (§8): "Delete your CV?" / "The stored text is removed for good. Matches show “No CV” until you upload one again." + Cancel / **Delete CV**; failure banner "Couldn't delete your CV".
+- **Loading / error:** spinner "Loading your CV…"; error banner "Couldn't load your CV" + Try again.
+
+### Skill chip
+24 px high, radius 3, padding 0 8, `label` 500, no wrapping (the status label's measurements, §8).
+- **Found** (CV page): `rule-strong` border on `surface`, `ink` text.
+- **Matched:** `status-offer` border and text, with a check icon.
+- **Missing:** dashed `field-border` border, transparent, `ink-2` text.
+
+Matched and missing differ by the check and the border style, never by colour alone.
+
+### Match panel ("CV match", in the envelope between Notes and Timeline)
+- Heading like Notes and Timeline (`label`, 600, `ink-2`); when ready, "3 of 5 skills · 60%" at the right in DM Mono (`label`, `ink`). **No gauge or ring:** the share is plain text.
+- **Ready:** "Your CV shows" + matched chips, "Missing from your CV" + missing chips (captions in `caption`, `ink-muted`), then "Skills named in the role and posting text, compared with your CV."
+- **No CV:** "This posting asks for" + missing chips, then "Upload your CV to see which of these it shows." with a link to the CV page.
+- **No posting text:** "Add the job posting text to see how your CV matches." + link-button "Edit application" (opens Edit).
+- **No known skills:** "No skills Heardback knows were found in this posting." (neutral, not an error).
+- **Loading:** spinner "Checking your CV…". **Error:** warning icon and "Couldn't check your CV." in `danger` with a 28 px Try again; the rest of the detail stays usable.
+- The panel checks again whenever the application changes (Edit, Add update, a board move).
