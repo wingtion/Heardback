@@ -482,3 +482,6 @@ $RECYCLE.BIN/
 .env
 .env.*
 !.env.example
+
+# Playwright MCP screenshots, logs and scratch scripts (local visual checks)
+.playwright-mcp/
