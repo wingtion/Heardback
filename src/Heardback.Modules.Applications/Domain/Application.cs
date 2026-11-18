@@ -58,9 +58,9 @@ internal sealed class Application : IUserOwned
     {
         ArgumentNullException.ThrowIfNull(details);
 
-        if (!ApplicationDates.IsTodayOrEarlier(details.AppliedOn, now))
+        if (ValidateAppliedOn(details.AppliedOn, now) is { } invalidDate)
         {
-            return ApplicationsErrors.AppliedOnInFuture;
+            return invalidDate;
         }
 
         var application = new Application
@@ -80,9 +80,17 @@ internal sealed class Application : IUserOwned
     {
         ArgumentNullException.ThrowIfNull(details);
 
-        if (!ApplicationDates.IsTodayOrEarlier(details.AppliedOn, now))
+        if (ValidateAppliedOn(details.AppliedOn, now) is { } invalidDate)
         {
-            return ApplicationsErrors.AppliedOnInFuture;
+            return invalidDate;
+        }
+
+        var firstUpdate = _events.Where(timelineEvent => !timelineEvent.IsSubmission)
+            .Select(timelineEvent => (DateOnly?)timelineEvent.OccurredOn)
+            .Min();
+        if (details.AppliedOn > firstUpdate)
+        {
+            return ApplicationsErrors.AppliedAfterFirstUpdate(firstUpdate.Value);
         }
 
         ApplyDetails(details, postingId, now);
@@ -118,6 +126,12 @@ internal sealed class Application : IUserOwned
             return ApplicationsErrors.EventDateInFuture;
         }
 
+        // An update dated before the submission would sit under it in the timeline and could not change the status.
+        if (occurredOn < AppliedOn)
+        {
+            return ApplicationsErrors.UpdateBeforeApplied(AppliedOn);
+        }
+
         var timelineEvent = ApplicationEvent.Update(Id, status, occurredOn, note, now);
         _events.Add(timelineEvent);
         UpdatedAt = now;
@@ -125,6 +139,11 @@ internal sealed class Application : IUserOwned
 
         return timelineEvent;
     }
+
+    private static Error? ValidateAppliedOn(DateOnly appliedOn, DateTimeOffset now) =>
+        !ApplicationDates.IsTodayOrEarlier(appliedOn, now) ? ApplicationsErrors.AppliedOnInFuture
+        : ApplicationDates.IsTooEarly(appliedOn) ? ApplicationsErrors.AppliedOnTooEarly
+        : null;
 
     private void ApplyDetails(ApplicationDetails details, Guid postingId, DateTimeOffset now)
     {

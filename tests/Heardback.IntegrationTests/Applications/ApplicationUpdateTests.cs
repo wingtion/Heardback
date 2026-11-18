@@ -127,6 +127,24 @@ public sealed class ApplicationUpdateTests(PostgresFixture postgres) : Applicati
     }
 
     [Fact]
+    public async Task Update_AppliedDateMovedPastALaterStatusUpdate_Returns400AndKeepsTheStatus()
+    {
+        var created = await Client.CreateApplicationOkAsync(Alice, NewApplication(appliedOn: Today.AddDays(-10)));
+        using var moved = await Client.AddEventAsync(
+            Alice, created.Id, new { status = "Interview", occurredOn = Today.AddDays(-5) });
+        var current = await moved.ReadAsync<ApplicationDto>();
+
+        using var response = await Client.UpdateApplicationAsync(
+            Alice, created.Id, Edit(current, appliedOn: Today.AddDays(-2)));
+
+        var problem = await response.ReadAsync<ProblemDto>();
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("applications.applied_after_first_update", problem.Code);
+        using var after = await Client.GetApplicationAsync(Alice, created.Id);
+        Assert.Equal("Interview", (await after.ReadAsync<ApplicationDto>()).Status);
+    }
+
+    [Fact]
     public async Task Update_AppliedTwoDaysAhead_Returns400OnAppliedOn()
     {
         var created = await Client.CreateApplicationOkAsync(Alice, NewApplication());

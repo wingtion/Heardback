@@ -494,7 +494,7 @@ Not built: the "· optional, fastest" label suffix and the "Company, role and po
 ### Edit application
 Opens from Edit in the detail panel or sheet header. Title "Edit application" with the line "Status changes through the board or Add update." under it (12.5, `ink-muted`).
 Fields: **Job posting link · optional** (full width); **Company · required** | **Role · required**; **Channel** | **Applied date**; **Job posting text · optional** (same hint as Add); **Notes · optional, only you see these** (textarea, 3 rows).
-Errors: "Enter a full link that starts with https://", "Enter the company name", "Enter the role", "Pick today or an earlier date".
+Errors: "Enter a full link that starts with https://", "Enter the company name", "Enter the role", "Pick today or an earlier date", "Pick a date after 1 January 2000", and **(decided)** "Pick a date on or before your first update (12 Nov 2026)" when the applied date would move past a later timeline event (that would silently change the status).
 Footer: Cancel + primary **"Save"** ("Saving…").
 Saving re-links the application to the matching shared posting (§12); the user sees nothing special unless it hits the "already tracked" case below.
 
@@ -507,7 +507,7 @@ Saving re-links the application to the matching shared posting (§12); the user 
 ### Add update
 Opens from "Add update" on the timeline (desktop) or the sheet footer (mobile). Desktop dialog 410 px; mobile **bottom sheet** over the detail sheet with `scrim-sheet`. Title "Add update" with "Northwind Logistics · Backend Engineer (.NET)" under it (12.5, `ink-2`).
 1. **New status · optional** (`<fieldset>` + `<legend>`): radio chips (34 px; 44 on mobile), each a `<label>` with a radio, glyph and name: **No change** (default), Applied, Interview, Offer, Rejected. The current status is disabled and labelled "Interview · current" (`ink-muted`). Chip: 1 px `field-border`, radius 4, `base`; selected: 1.5 px `ink` border, `row-selected`, 600. Focus ring on the chip (`:focus-within`). Hint: "Leave “No change” to add a note only."
-2. **Date**: date field 180 px, defaults to today, hint "Today or an earlier date.", error "The date can't be in the future. Pick today or earlier."
+2. **Date**: date field 180 px, defaults to today, hint "Today or an earlier date.", error "The date can't be in the future. Pick today or earlier."; **(proposed)** "Pick a date on or after the applied date (12 Nov 2026)" for a date before the applied date.
 3. **Note · optional**: textarea (2 rows, max 280 characters, placeholder "e.g. Recruiter called, interview next week"), live counter "0 / 280" (DM Mono 12, `ink-muted`, right-aligned).
 
 Footer: Cancel + primary **"Save update"** ("Saving…").

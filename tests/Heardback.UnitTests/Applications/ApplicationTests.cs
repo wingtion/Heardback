@@ -158,12 +158,64 @@ public sealed class ApplicationTests
         Assert.Equal("Northwind Logistics", application.Company);
     }
 
+    [Fact]
+    public void Edit_AppliedDateAfterALaterStatusUpdate_ReturnsErrorAndKeepsTheStatus()
+    {
+        var application = Create(new DateOnly(2026, 11, 8));
+        application.AddEvent(ApplicationStatus.Interview, new DateOnly(2026, 11, 12), null, Now);
+
+        var result = application.Edit(Details(new DateOnly(2026, 11, 16)), null, PostingId, Now);
+
+        Assert.Equal("applications.applied_after_first_update", result.Error!.Code);
+        Assert.Equal(["Pick a date on or before your first update (12 Nov 2026)"], result.Error.FieldErrors["appliedOn"]);
+        Assert.Equal(ApplicationStatus.Interview, application.Status);
+        Assert.Equal(new DateOnly(2026, 11, 8), application.AppliedOn);
+    }
+
+    [Fact]
+    public void Edit_AppliedDateOnTheFirstUpdateDate_IsAllowed()
+    {
+        var application = Create(Today.AddDays(-10));
+        application.AddEvent(null, Today.AddDays(-4), "Followed up", Now);
+
+        var result = application.Edit(Details(Today.AddDays(-4)), null, PostingId, Now);
+
+        Assert.True(result.IsSuccess);
+    }
+
+    [Fact]
+    public void AddEvent_DateBeforeTheAppliedDate_ReturnsErrorOnOccurredOn()
+    {
+        var application = Create(new DateOnly(2026, 11, 12));
+
+        var result = application.AddEvent(ApplicationStatus.Interview, new DateOnly(2026, 11, 10), null, Now);
+
+        Assert.Equal("applications.update_before_applied", result.Error!.Code);
+        Assert.Equal(["Pick a date on or after the applied date (12 Nov 2026)"], result.Error.FieldErrors["occurredOn"]);
+        Assert.Equal(ApplicationStatus.Applied, application.Status);
+    }
+
+    [Fact]
+    public void Create_AppliedBefore2000_ReturnsDateTooEarlyError()
+    {
+        var result = Application.Create(Details(new DateOnly(1999, 12, 31)), PostingId, Now);
+
+        Assert.Equal("applications.date_too_early", result.Error!.Code);
+        Assert.Equal(["Pick a date after 1 January 2000"], result.Error.FieldErrors["appliedOn"]);
+    }
+
+    [Fact]
+    public void Create_AppliedOnFirstJanuary2000_IsAllowed()
+    {
+        Assert.True(Application.Create(Details(new DateOnly(2000, 1, 1)), PostingId, Now).IsSuccess);
+    }
+
     [Theory]
     [InlineData(nameof(ApplicationStatus.Applied), 14, 14)]
     [InlineData(nameof(ApplicationStatus.Applied), 20, 20)]
     [InlineData(nameof(ApplicationStatus.Applied), 13, null)]
     [InlineData(nameof(ApplicationStatus.Interview), 30, null)]
-    public void DaysWithoutResponse_DependsOnStatusAndThreshold(string statusName, int daysAgo, int? expected)
+    public void DaysWithoutResponse_StatusAndAge_ReturnDaysOnlyForOldAppliedOnes(string statusName, int daysAgo, int? expected)
     {
         var status = Enum.Parse<ApplicationStatus>(statusName);
 
@@ -176,7 +228,7 @@ public sealed class ApplicationTests
     [InlineData(nameof(ApplicationStatus.Applied), 14, true)]
     [InlineData(nameof(ApplicationStatus.Applied), 13, false)]
     [InlineData(nameof(ApplicationStatus.Offer), 30, false)]
-    public void Matches_AgreesWithDaysWithoutResponse(string statusName, int daysAgo, bool expected)
+    public void Matches_SameApplication_AgreesWithDaysWithoutResponse(string statusName, int daysAgo, bool expected)
     {
         var status = Enum.Parse<ApplicationStatus>(statusName);
         var application = Create(Today.AddDays(-daysAgo));
