@@ -32,9 +32,9 @@ const TONES: Record<TimelineStampTone, string> = {
       class="flex h-full flex-col items-center justify-center border font-mono leading-none"
       [class]="dashed() ? 'border-dashed' : 'border-solid'"
     >
-      <span class="text-stamp tracking-stamp uppercase">{{ date() | date: 'MMM' : 'UTC' }}</span>
+      <span class="text-stamp tracking-stamp uppercase">{{ date() | date: 'MMM' }}</span>
       <span class="mt-0.75 text-ui-lg font-medium max-lg:text-body">
-        {{ date() | date: 'dd' : 'UTC' }}
+        {{ date() | date: 'dd' }}
       </span>
     </span>
   `,

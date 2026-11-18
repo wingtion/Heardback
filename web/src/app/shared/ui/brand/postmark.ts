@@ -29,10 +29,10 @@ import { Component, booleanAttribute, input } from '@angular/core';
       [class]="compact() ? 'size-10.5' : 'size-11.5'"
     >
       <span class="tracking-stamp uppercase" [class]="compact() ? 'text-stamp-sm' : 'text-stamp'">
-        {{ date() | date: 'MMM' : 'UTC' }}
+        {{ date() | date: 'MMM' }}
       </span>
       <span class="mt-0.5 font-medium" [class]="compact() ? 'text-caption' : 'text-small'">
-        {{ date() | date: 'dd' : 'UTC' }}
+        {{ date() | date: 'dd' }}
       </span>
     </span>
   `,
