@@ -40,6 +40,11 @@ internal sealed partial class AddEventHandler(
                 return added.Error;
             }
 
+            // A note can leave every application column as it was (UpdatedAt too, when "now" matches the stored
+            // microseconds). The row must still be written, or its version would not change and a form opened
+            // before this update could save over it.
+            dbContext.Entry(application).Property(candidate => candidate.UpdatedAt).IsModified = true;
+
             var saved = await dbContext.SaveApplicationAsync(cancellationToken);
             if (saved.IsSuccess)
             {

@@ -139,6 +139,21 @@ public sealed class ApplicationTimelineTests(PostgresFixture postgres) : Applica
     }
 
     [Fact]
+    public async Task AddEvent_NoteThatChangesNoApplicationValue_StillChangesTheVersion()
+    {
+        // Postgres stores microseconds: at a whole microsecond the stored UpdatedAt equals "now", so a note dated
+        // on the applied date leaves every application column as it was.
+        var ticksPastMicrosecond = Clock.GetUtcNow().Ticks % TimeSpan.TicksPerMicrosecond;
+        Clock.Advance(TimeSpan.FromTicks((TimeSpan.TicksPerMicrosecond - ticksPastMicrosecond) % TimeSpan.TicksPerMicrosecond));
+        var created = await Client.CreateApplicationOkAsync(Alice, NewApplication());
+
+        using var noted = await Client.AddEventAsync(Alice, created.Id, new { occurredOn = Today, note = "A note" });
+
+        Assert.Equal(HttpStatusCode.OK, noted.StatusCode);
+        Assert.NotEqual(created.Version, (await noted.ReadAsync<ApplicationDto>()).Version);
+    }
+
+    [Fact]
     public async Task AddEvent_SeveralAtTheSameTime_AllAreRecordedAndStatusMatchesTheTimeline()
     {
         var created = await Client.CreateApplicationOkAsync(Alice, NewApplication(appliedOn: Today.AddDays(-10)));
