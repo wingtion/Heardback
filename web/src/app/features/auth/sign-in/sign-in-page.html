@@ -18,7 +18,12 @@
       </app-banner>
     }
     @default {
-      @if (sessionExpired) {
+      @if (restoreFailed()) {
+        <!-- The reload could not reach the server, so the session may still be valid. -->
+        <app-banner kind="error" heading="Couldn’t reach Heardback">
+          Check your connection and try again.
+        </app-banner>
+      } @else if (sessionExpired) {
         <app-banner kind="info">Your session has expired. Please sign in again.</app-banner>
       }
     }

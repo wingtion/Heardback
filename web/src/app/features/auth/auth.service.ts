@@ -1,17 +1,21 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { HttpErrorResponse, HttpStatusCode } from '@angular/common/http';
 import {
   Observable,
   catchError,
+  defer,
   finalize,
   firstValueFrom,
   map,
   of,
+  retry,
   shareReplay,
   tap,
   throwError,
+  timer,
 } from 'rxjs';
 import { AuthApi } from './auth-api';
-import { isRefreshSuperseded, isUnauthorized } from './auth-errors';
+import { isRefreshSuperseded, isUnauthorized, retryAfterSeconds } from './auth-errors';
 import { AuthResponse, CurrentUser, LoginRequest, RegisterRequest } from './auth.models';
 
 /**
@@ -23,6 +27,27 @@ export interface ExpiredSession {
   readonly email: string;
 }
 
+// A reload's refresh is retried when the server is briefly unreachable or rate limited: waits of
+// 1, 2 and 4 seconds, or the server's Retry-After if it is short enough to wait on the loading screen.
+const RESTORE_RETRIES = 3;
+const RESTORE_FIRST_RETRY_SECONDS = 1;
+const RESTORE_MAX_WAIT_SECONDS = 10;
+const MS_PER_SECOND = 1000;
+
+function restoreRetryDelay(error: unknown, retryNumber: number): Observable<number> {
+  if (isUnauthorized(error)) {
+    return throwError(() => error);
+  }
+  const rateLimited =
+    error instanceof HttpErrorResponse && error.status === HttpStatusCode.TooManyRequests;
+  const seconds = rateLimited
+    ? retryAfterSeconds(error)
+    : RESTORE_FIRST_RETRY_SECONDS * 2 ** (retryNumber - 1);
+  return seconds > RESTORE_MAX_WAIT_SECONDS
+    ? throwError(() => error)
+    : timer(seconds * MS_PER_SECOND);
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly api = inject(AuthApi);
@@ -30,6 +55,7 @@ export class AuthService {
   private readonly session = signal<AuthResponse | null>(null);
   private readonly expiredSession = signal<ExpiredSession | null>(null);
   private readonly restoringSession = signal(false);
+  private readonly restoreFailedFlag = signal(false);
   private restoration: Promise<void> = Promise.resolve();
   private refreshInFlight: Observable<void> | null = null;
 
@@ -39,6 +65,8 @@ export class AuthService {
   readonly isAdmin = computed(() => this.session()?.user.isAdmin ?? false);
   /** True while the session is being restored from the refresh cookie at startup. */
   readonly restoring = this.restoringSession.asReadonly();
+  /** The startup restore gave up because the server could not be reached (not because of a 401). */
+  readonly restoreFailed = this.restoreFailedFlag.asReadonly();
   /** Set when a signed-in session ended because the server no longer accepts it (not on sign out). */
   readonly expired = this.expiredSession.asReadonly();
 
@@ -86,12 +114,20 @@ export class AuthService {
   /**
    * Called once at startup without blocking it: the app shows its session loading screen while
    * restoring() is true. Resolves either way; without a valid cookie the app starts signed out.
+   * A brief outage or rate limit is retried, because the cookie session is still valid then; if the
+   * server stays unreachable the app starts signed out and restoreFailed() is set for sign in.
    */
   restoreSession(): Promise<void> {
     this.restoringSession.set(true);
-    this.restoration = firstValueFrom(this.refresh().pipe(catchError(() => of(undefined)))).finally(
-      () => this.restoringSession.set(false),
+    this.restoreFailedFlag.set(false);
+    const restore = defer(() => this.refresh()).pipe(
+      retry({ count: RESTORE_RETRIES, delay: restoreRetryDelay }),
+      catchError((error: unknown) => {
+        this.restoreFailedFlag.set(!isUnauthorized(error));
+        return of(undefined);
+      }),
     );
+    this.restoration = firstValueFrom(restore).finally(() => this.restoringSession.set(false));
     return this.restoration;
   }
 
@@ -102,6 +138,7 @@ export class AuthService {
 
   private start(response: AuthResponse): CurrentUser {
     this.expiredSession.set(null);
+    this.restoreFailedFlag.set(false);
     this.session.set(response);
     return response.user;
   }

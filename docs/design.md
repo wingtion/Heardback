@@ -342,6 +342,7 @@ Logo + wordmark with the postage stamp at the right; heading "Sign in"; Email (`
 | Too many attempts (429 + `Retry-After`) | Warning banner with live countdown; submit disabled |
 | Server/network error | Error banner "Couldn't reach Heardback" + "Check your connection and try again. Your details are still filled in." |
 | Session expired (redirected here) | Info banner "Your session has expired. Please sign in again."; email pre-filled when known |
+| Session restore gave up (server unreachable on reload, after retries) | Error banner "Couldn't reach Heardback" + "Check your connection and try again." (decided 2026-11-18; reuses the server-error banner) |
 
 ### Create account (`/register`, signed-out users only)
 Heading "Create account", line "Heardback is invite only. You need a code to join." Fields: Invite code (hint "12 characters from your invite. Dashes are added for you."), Display name (`autocomplete="name"`), Email, Password (`new-password`, 12–128, counter). Primary "Create account"; footer "Already have an account? **Sign in**".

@@ -4,6 +4,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { AUTH_API } from '../auth-paths';
+import { AuthService } from '../auth.service';
 import { authResponse } from '../auth.testing';
 import { SignInPage } from './sign-in-page';
 
@@ -141,6 +142,22 @@ describe('SignInPage', () => {
     harness.detectChanges();
 
     expect(root().textContent).toContain('Couldn’t reach Heardback');
+  });
+
+  it('open_AfterSessionRestoreGaveUp_ShowsConnectionError', async () => {
+    const restore = TestBed.inject(AuthService).restoreSession();
+    http.expectOne(AUTH_API.refresh).flush(null, {
+      status: 429,
+      statusText: 'Too Many Requests',
+      headers: { 'Retry-After': '600' },
+    });
+    await restore;
+
+    await open();
+
+    expect(root().textContent).toContain('Couldn’t reach Heardback');
+    expect(root().textContent).toContain('Check your connection and try again.');
+    expect(root().textContent).not.toContain('Your details are still filled in');
   });
 
   it('open_AfterSessionExpired_ShowsTheNotice', async () => {

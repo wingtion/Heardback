@@ -81,7 +81,8 @@ function errorCode(error: HttpErrorResponse): string | null {
     : null;
 }
 
-function retryAfterSeconds(error: HttpErrorResponse): number {
+/** Seconds from a 429's Retry-After header, or the default when it is missing or unreadable. */
+export function retryAfterSeconds(error: HttpErrorResponse): number {
   const seconds = Number.parseInt(error.headers.get('Retry-After') ?? '', 10);
   return Number.isFinite(seconds) && seconds > 0 ? seconds : DEFAULT_RETRY_AFTER_SECONDS;
 }

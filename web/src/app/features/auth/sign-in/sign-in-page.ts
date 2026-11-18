@@ -59,6 +59,8 @@ export class SignInPage {
   private readonly submitted = signal(false);
   private readonly formValue = toSignal(this.form.valueChanges, { initialValue: this.form.value });
 
+  protected readonly restoreFailed = this.auth.restoreFailed;
+
   protected readonly sessionExpired =
     this.route.snapshot.queryParamMap.get(LOGIN_REASON_PARAM) === LOGIN_REASONS.sessionExpired;
 
