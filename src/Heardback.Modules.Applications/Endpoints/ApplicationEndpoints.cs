@@ -1,7 +1,9 @@
+using Heardback.Modules.Applications.Board;
 using Heardback.Modules.Applications.Create;
 using Heardback.Modules.Applications.Delete;
 using Heardback.Modules.Applications.Read;
 using Heardback.Modules.Applications.Responses;
+using Heardback.Modules.Applications.Timeline;
 using Heardback.Modules.Applications.Update;
 using Heardback.Shared.Http;
 using Heardback.Shared.Paging;
@@ -60,7 +62,35 @@ internal static class ApplicationEndpoints
             .WithSummary("Delete an application and its timeline.")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
+
+        applications.MapPost("/{id:guid}/events", AddEventAsync)
+            .WithSummary("Add a status change, a note, or both to the timeline (Add update, board moves).")
+            .Produces<ApplicationResponse>()
+            .ProducesValidationProblem()
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict);
+
+        applications.MapGet("/board", GetBoardAsync)
+            .WithSummary("The board: one column per status with the newest cards and the real totals.")
+            .Produces<BoardResponse>()
+            .ProducesValidationProblem();
     }
+
+    private static async Task<IResult> AddEventAsync(
+        Guid id,
+        [FromBody] AddEventRequest request,
+        AddEventHandler handler,
+        CancellationToken cancellationToken)
+    {
+        var result = await handler.HandleAsync(id, request, cancellationToken);
+        return result.IsSuccess ? TypedResults.Ok(result.Value) : result.Error.ToProblem();
+    }
+
+    private static async Task<IResult> GetBoardAsync(
+        [AsParameters] BoardFilter filter,
+        GetBoardHandler handler,
+        CancellationToken cancellationToken) =>
+        TypedResults.Ok(await handler.HandleAsync(filter, cancellationToken));
 
     private static async Task<IResult> ListAsync(
         [AsParameters] PageRequest page,

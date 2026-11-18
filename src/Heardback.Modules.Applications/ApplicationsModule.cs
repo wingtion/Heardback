@@ -1,9 +1,11 @@
+using Heardback.Modules.Applications.Board;
 using Heardback.Modules.Applications.Create;
 using Heardback.Modules.Applications.Delete;
 using Heardback.Modules.Applications.Domain;
 using Heardback.Modules.Applications.Endpoints;
 using Heardback.Modules.Applications.Persistence;
 using Heardback.Modules.Applications.Read;
+using Heardback.Modules.Applications.Timeline;
 using Heardback.Modules.Applications.Update;
 using Heardback.Shared.Persistence;
 using Microsoft.AspNetCore.Routing;
@@ -40,6 +42,8 @@ public static class ApplicationsModule
         services.AddScoped<FindTrackedApplicationHandler>();
         services.AddScoped<UpdateApplicationHandler>();
         services.AddScoped<DeleteApplicationHandler>();
+        services.AddScoped<AddEventHandler>();
+        services.AddScoped<GetBoardHandler>();
 
         return services;
     }
