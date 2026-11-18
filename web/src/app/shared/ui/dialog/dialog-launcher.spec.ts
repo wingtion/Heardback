@@ -25,7 +25,7 @@ describe('DialogLauncher', () => {
     document.querySelectorAll('.cdk-overlay-container').forEach((element) => element.remove());
   });
 
-  it('open_UsesTheTitleIdAndScrimBackdrop', () => {
+  it('open_Default_UsesATitleIdAndTheScrimBackdrop', () => {
     const ref = TestBed.inject(DialogLauncher).open(StubDialog);
 
     expect(ref.config.ariaLabelledBy).toMatch(/^dialog-title-\d+$/);

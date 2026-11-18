@@ -19,21 +19,21 @@ describe('Button', () => {
     return Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('button'));
   }
 
-  it('uses the secondary style for a bare appButton and keeps classes set in the template', () => {
+  it('render_BareAppButton_UsesSecondaryAndKeepsTemplateClasses', () => {
     const [cancel] = buttons();
 
     expect(cancel.classList).toContain('border-field-border');
     expect(cancel.classList).toContain('w-full');
   });
 
-  it('applies the requested variant and size', () => {
+  it('render_VariantAndSize_AppliesBoth', () => {
     const [, signIn] = buttons();
 
     expect(signIn.classList).toContain('bg-accent');
     expect(signIn.classList).toContain('h-11');
   });
 
-  it('makes icon-only buttons square without padding', () => {
+  it('render_IconOnly_IsSquareWithoutPadding', () => {
     const [, , menu] = buttons();
 
     expect(menu.classList).toContain('size-12');

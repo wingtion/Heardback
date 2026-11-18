@@ -37,17 +37,17 @@ describe('auth guards', () => {
     return Promise.resolve(TestBed.runInInjectionContext(() => guard(route, state)));
   }
 
-  it('authGuard sends signed-out users to login with a return URL', async () => {
+  it('authGuard_SignedOut_RedirectsToLoginWithReturnUrl', async () => {
     expect(serialize(await run(authGuard))).toBe('/login?returnUrl=%2Fapplications%2F42');
   });
 
-  it('authGuard lets signed-in users through', async () => {
+  it('authGuard_SignedIn_AllowsNavigation', async () => {
     await signIn({ isAdmin: false });
 
     expect(await run(authGuard)).toBe(true);
   });
 
-  it('authGuard waits for the startup restore before deciding', async () => {
+  it('authGuard_RestoreInProgress_WaitsBeforeDeciding', async () => {
     const auth = TestBed.inject(AuthService);
     void auth.restoreSession();
     let settled = false;
@@ -64,21 +64,21 @@ describe('auth guards', () => {
     expect(await result).toBe(true);
   });
 
-  it('guestGuard lets signed-out users open sign in', async () => {
+  it('guestGuard_SignedOut_AllowsNavigation', async () => {
     expect(await run(guestGuard)).toBe(true);
   });
 
-  it('guestGuard sends signed-in users home', async () => {
+  it('guestGuard_SignedIn_RedirectsHome', async () => {
     await signIn({ isAdmin: false });
 
     expect(serialize(await run(guestGuard))).toBe('/');
   });
 
-  it('adminGuard sends signed-out users to login', async () => {
+  it('adminGuard_SignedOut_RedirectsToLogin', async () => {
     expect(serialize(await run(adminGuard))).toBe('/login?returnUrl=%2Fapplications%2F42');
   });
 
-  it('adminGuard shows members the no-access page without changing the address', async () => {
+  it('adminGuard_Member_ShowsNoAccessWithoutChangingTheUrl', async () => {
     await signIn({ isAdmin: false });
 
     const result = await run(adminGuard);
@@ -89,7 +89,7 @@ describe('auth guards', () => {
     expect(command.navigationBehaviorOptions?.skipLocationChange).toBe(true);
   });
 
-  it('adminGuard lets admins through', async () => {
+  it('adminGuard_Admin_AllowsNavigation', async () => {
     await signIn({ isAdmin: true });
 
     expect(await run(adminGuard)).toBe(true);

@@ -14,7 +14,7 @@ describe('App', () => {
     });
   });
 
-  it('shows the session loading screen only while the session is restored', async () => {
+  it('startup_WhileSessionRestores_ShowsTheLoadingScreenOnly', async () => {
     const http = TestBed.inject(HttpTestingController);
     const restore = TestBed.inject(AuthService).restoreSession();
     const fixture = TestBed.createComponent(App);

@@ -30,14 +30,14 @@ describe('Field and Input', () => {
     };
   }
 
-  it('links the label to the control', () => {
+  it('render_Label_IsLinkedToTheControl', () => {
     const { input, label } = render();
 
     expect(input.id).not.toBe('');
     expect(label.htmlFor).toBe(input.id);
   });
 
-  it('marks a valid control without aria-invalid or aria-describedby', () => {
+  it('render_ValidControl_HasNoInvalidOrDescribedBy', () => {
     const { input } = render();
 
     expect(input.getAttribute('aria-invalid')).toBeNull();
@@ -45,14 +45,14 @@ describe('Field and Input', () => {
     expect(input.classList).toContain('border-field-border');
   });
 
-  it('describes the control by its hint', () => {
+  it('render_Hint_DescribesTheControl', () => {
     const { root, input } = render((host) => host.hint.set('Dashes are added for you.'));
 
     const hint = root.querySelector(`#${input.getAttribute('aria-describedby')}`);
     expect(hint?.textContent).toContain('Dashes are added for you.');
   });
 
-  it('marks an invalid control and links the error before the hint', () => {
+  it('render_Error_MarksInvalidAndLinksErrorBeforeHint', () => {
     const { root, input } = render((host) => {
       host.hint.set('12–128 characters');
       host.error.set('Use at least 12 characters');
@@ -65,7 +65,7 @@ describe('Field and Input', () => {
     expect(root.querySelector(`#${hintId}`)?.textContent).toContain('12–128 characters');
   });
 
-  it('clears the error state when the error is removed', () => {
+  it('render_ErrorRemoved_ClearsTheInvalidState', () => {
     const { fixture, input } = render((host) => host.error.set('Enter a valid email address'));
 
     fixture.componentInstance.error.set(null);

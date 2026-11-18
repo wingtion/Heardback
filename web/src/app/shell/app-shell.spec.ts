@@ -50,34 +50,34 @@ describe('AppShell', () => {
     return harness.fixture.nativeElement as HTMLElement;
   }
 
-  it('shows the signed-in user and the member role', async () => {
+  it('render_Member_ShowsTheUserAndMemberRole', async () => {
     const root = await openAs({ isAdmin: false });
 
     expect(root.textContent).toContain('Ada');
     expect(root.textContent).toContain('Member');
   });
 
-  it('hides the admin section from members', async () => {
+  it('render_Member_HidesTheAdminSection', async () => {
     const root = await openAs({ isAdmin: false });
 
     expect(root.textContent).not.toContain('Invite codes');
   });
 
-  it('shows the admin section to admins', async () => {
+  it('render_Admin_ShowsTheAdminSection', async () => {
     const root = await openAs({ isAdmin: true });
 
     expect(root.textContent).toContain('Invite codes');
     expect(root.textContent).toContain('Admin');
   });
 
-  it('marks the current page in the navigation', async () => {
+  it('render_CurrentPage_IsMarkedInTheNavigation', async () => {
     const root = await openAs({ isAdmin: false });
 
     const current = root.querySelector('a[aria-current=page]');
     expect(current?.textContent).toContain('Applications');
   });
 
-  it('signs out and goes to sign in', async () => {
+  it('signOut_Clicked_EndsTheSessionAndGoesToSignIn', async () => {
     const root = await openAs({ isAdmin: false });
     const signOut = Array.from(root.querySelectorAll('button')).find((button) =>
       button.textContent?.includes('Sign out'),
@@ -91,7 +91,7 @@ describe('AppShell', () => {
     expect(TestBed.inject(Router).url).toBe('/login');
   });
 
-  it('sends the user to sign in with the reason and return URL when the session expires', async () => {
+  it('sessionExpired_ServerRejectsRefresh_GoesToSignInWithReasonAndReturnUrl', async () => {
     await openAs({ isAdmin: false });
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate');
 
@@ -106,7 +106,7 @@ describe('AppShell', () => {
     });
   });
 
-  it('opens the mobile menu and closes it with Escape', async () => {
+  it('mobileMenu_OpenedThenEscape_Closes', async () => {
     const root = await openAs({ isAdmin: false });
     const menuButton = root.querySelector<HTMLButtonElement>('button[aria-label="Open menu"]');
 

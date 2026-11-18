@@ -20,12 +20,12 @@ describe('AuthService', () => {
 
   afterEach(() => http.verify());
 
-  it('starts signed out', () => {
+  it('initialState_NoSession_IsSignedOut', () => {
     expect(auth.isAuthenticated()).toBe(false);
     expect(auth.accessToken()).toBeNull();
   });
 
-  it('login stores the user and access token in memory', async () => {
+  it('login_ValidResponse_StoresUserAndTokenInMemory', async () => {
     const login = firstValueFrom(auth.login({ email: 'ada@example.com', password: 'pw' }));
     http.expectOne(AUTH_API.login).flush(authResponse({ token: 'fresh', isAdmin: true }));
 
@@ -36,7 +36,7 @@ describe('AuthService', () => {
     expect(auth.isAdmin()).toBe(true);
   });
 
-  it('shares one refresh request between concurrent callers', async () => {
+  it('refresh_ConcurrentCallers_ShareOneRequest', async () => {
     const first = firstValueFrom(auth.refresh());
     const second = firstValueFrom(auth.refresh());
 
@@ -46,7 +46,7 @@ describe('AuthService', () => {
     expect(auth.accessToken()).toBe('rotated');
   });
 
-  it('a failed refresh signs the user out', async () => {
+  it('refresh_Unauthorized_SignsTheUserOut', async () => {
     await signIn();
 
     const refresh = firstValueFrom(auth.refresh());
@@ -56,7 +56,7 @@ describe('AuthService', () => {
     expect(auth.isAuthenticated()).toBe(false);
   });
 
-  it('retries once when another tab refreshed first (superseded)', async () => {
+  it('refresh_SupersededByAnotherTab_RetriesOnce', async () => {
     const refresh = firstValueFrom(auth.refresh());
 
     http
@@ -68,7 +68,7 @@ describe('AuthService', () => {
     expect(auth.accessToken()).toBe('from-other-tab');
   });
 
-  it('keeps the session when the refresh fails for a reason other than 401', async () => {
+  it('refresh_FailsWithoutUnauthorized_KeepsTheSession', async () => {
     await signIn();
 
     for (const status of [429, 500, 0]) {
@@ -80,7 +80,7 @@ describe('AuthService', () => {
     expect(auth.isAuthenticated()).toBe(true);
   });
 
-  it('restoreSession resolves signed out when there is no valid cookie', async () => {
+  it('restoreSession_NoValidCookie_ResolvesSignedOut', async () => {
     const restore = auth.restoreSession();
     http.expectOne(AUTH_API.refresh).flush(null, { status: 401, statusText: 'Unauthorized' });
 
@@ -160,7 +160,7 @@ describe('AuthService', () => {
     });
   });
 
-  it('restoreSession signs the user back in from the cookie', async () => {
+  it('restoreSession_ValidCookie_SignsTheUserBackIn', async () => {
     const restore = auth.restoreSession();
     http.expectOne(AUTH_API.refresh).flush(authResponse());
 
@@ -169,7 +169,7 @@ describe('AuthService', () => {
     expect(auth.user()?.displayName).toBe('Ada');
   });
 
-  it('logout clears the session even when the server call fails', async () => {
+  it('logout_ServerCallFails_StillClearsTheSession', async () => {
     await signIn();
 
     const logout = firstValueFrom(auth.logout(), { defaultValue: undefined });
@@ -179,7 +179,7 @@ describe('AuthService', () => {
     expect(auth.isAuthenticated()).toBe(false);
   });
 
-  it('restoreSession reports restoring until the refresh answers', async () => {
+  it('restoreSession_InFlight_ReportsRestoring', async () => {
     const restore = auth.restoreSession();
     expect(auth.restoring()).toBe(true);
 
@@ -189,7 +189,7 @@ describe('AuthService', () => {
     expect(auth.restoring()).toBe(false);
   });
 
-  it('a startup restore without a cookie is not reported as an expired session', async () => {
+  it('restoreSession_NoCookie_IsNotReportedAsExpired', async () => {
     const restore = auth.restoreSession();
     http.expectOne(AUTH_API.refresh).flush(null, { status: 401, statusText: 'Unauthorized' });
     await restore;
@@ -197,7 +197,7 @@ describe('AuthService', () => {
     expect(auth.expired()).toBeNull();
   });
 
-  it('a signed-in session rejected by the server is reported as expired with its email', async () => {
+  it('refresh_SignedInSessionRejected_IsReportedAsExpiredWithEmail', async () => {
     await signIn();
 
     const refresh = firstValueFrom(auth.refresh());
@@ -207,7 +207,7 @@ describe('AuthService', () => {
     expect(auth.expired()).toEqual({ email: 'ada@example.com' });
   });
 
-  it('signing out is not reported as an expired session', async () => {
+  it('logout_SignedIn_IsNotReportedAsExpired', async () => {
     await signIn();
 
     const logout = firstValueFrom(auth.logout(), { defaultValue: undefined });
