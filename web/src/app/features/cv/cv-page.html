@@ -110,23 +110,76 @@
         class="flex flex-col rounded-md border border-rule bg-base"
       >
         <div class="flex flex-col gap-2.5 p-4">
-          <h2
-            id="cv-skills-title"
-            class="flex items-baseline gap-2 text-label font-semibold text-ink-2"
-          >
-            Skills found
-            <span class="font-mono font-normal text-ink-muted">{{ cv.skills.length }}</span>
-          </h2>
+          <div class="flex items-center gap-2">
+            <h2
+              id="cv-skills-title"
+              class="flex items-baseline gap-2 text-label font-semibold text-ink-2"
+            >
+              Skills found
+              <span class="font-mono font-normal text-ink-muted">{{ cv.skills.length }}</span>
+            </h2>
+            @if (cv.skills.length > 0) {
+              <button
+                appButton
+                size="xs"
+                type="button"
+                class="ml-auto max-lg:h-11"
+                [attr.aria-pressed]="editingSkills()"
+                (click)="toggleEditingSkills()"
+              >
+                {{ editingSkills() ? 'Done' : 'Remove skills' }}
+              </button>
+            }
+          </div>
+          @if (editingSkills()) {
+            <p class="text-caption text-ink-muted">
+              Remove skills your CV only mentions, such as a language one of your projects checks.
+              They won’t count in any match, also after you upload a new CV.
+            </p>
+          }
           @if (cv.skills.length > 0) {
             <ul class="flex flex-wrap gap-1.5">
               @for (skill of cv.skills; track skill) {
-                <li><app-skill-chip [name]="skill" /></li>
+                <li>
+                  <app-skill-chip
+                    [name]="skill"
+                    [action]="editingSkills() ? 'remove' : null"
+                    [disabled]="savingSkills()"
+                    (actioned)="exclude(skill)"
+                  />
+                </li>
               }
             </ul>
           } @else {
             <p class="text-small text-ink-2">
               None of the skills Heardback knows were found. Check the stored text below.
             </p>
+          }
+
+          @if (cv.excludedSkills.length > 0) {
+            <h3 class="mt-1 text-label font-semibold text-ink-2">
+              Not counted
+              <span class="font-normal text-ink-muted">· removed by you</span>
+            </h3>
+            <ul class="flex flex-wrap gap-1.5">
+              @for (skill of cv.excludedSkills; track skill) {
+                <li>
+                  <app-skill-chip
+                    kind="excluded"
+                    action="restore"
+                    [name]="skill"
+                    [disabled]="savingSkills()"
+                    (actioned)="restore(skill)"
+                  />
+                </li>
+              }
+            </ul>
+          }
+
+          @if (skillsFailed()) {
+            <app-banner kind="error" heading="Couldn’t save your skills">
+              The server didn’t respond. Try again.
+            </app-banner>
           }
         </div>
 

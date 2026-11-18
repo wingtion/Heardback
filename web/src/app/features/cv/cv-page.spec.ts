@@ -15,6 +15,7 @@ const STORED: Cv = {
   pageCount: 2,
   text: 'Ada Lovelace\n[email]\nSkills: C#, .NET',
   skills: ['C#', '.NET'],
+  excludedSkills: [],
 };
 
 describe('CvPage', () => {
@@ -230,5 +231,53 @@ describe('CvPage', () => {
 
     expect(dialog.textContent).toContain('Couldn’t delete your CV');
     expect(page.textContent).toContain('Skills found');
+  });
+
+  function excludeRequest(): TestRequest {
+    return http.expectOne(`${CV_API}/excluded-skills`);
+  }
+
+  it('removeSkills_ChipClicked_SendsTheWholeListAndMovesItToNotCounted', async () => {
+    const page = await create({ ...STORED, skills: ['C#', '.NET', 'Rust'] });
+    expect(page.querySelector('app-skill-chip button')).toBeNull();
+
+    button(page, 'Remove skills').click();
+    await render();
+    page
+      .querySelector<HTMLButtonElement>('button[aria-label="Remove Rust: not my skill"]')
+      ?.click();
+    await render();
+
+    const request = excludeRequest();
+    expect(request.request.method).toBe('PUT');
+    expect(request.request.body).toEqual({ skills: ['Rust'] });
+    request.flush({ ...STORED, excludedSkills: ['Rust'] });
+    await render();
+
+    expect(page.textContent).toContain('Not counted');
+    expect(page.querySelector('button[aria-label="Count Rust again"]')).not.toBeNull();
+  });
+
+  it('restoreSkill_Clicked_RemovesItFromTheList', async () => {
+    const page = await create({ ...STORED, excludedSkills: ['Go', 'Rust'] });
+
+    page.querySelector<HTMLButtonElement>('button[aria-label="Count Rust again"]')?.click();
+    await render();
+
+    expect(excludeRequest().request.body).toEqual({ skills: ['Go'] });
+  });
+
+  it('removeSkills_ServerDown_SaysSoAndKeepsTheSkill', async () => {
+    const page = await create();
+    button(page, 'Remove skills').click();
+    await render();
+    page.querySelector<HTMLButtonElement>('button[aria-label="Remove C#: not my skill"]')?.click();
+    await render();
+
+    excludeRequest().flush(null, { status: 500, statusText: 'Server Error' });
+    await render();
+
+    expect(page.textContent).toContain('Couldn’t save your skills');
+    expect(page.querySelector('button[aria-label="Remove C#: not my skill"]')).not.toBeNull();
   });
 });

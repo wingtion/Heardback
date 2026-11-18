@@ -567,6 +567,7 @@ Applied and update dates are calendar dates in the user's own day. "Today or ear
 - **After an upload:** inline success "CV uploaded" in a persistent status region (§8).
 - **Upload problems:** a problem with the file is an error banner with the server's sentence as its title; the hourly limit is a warning banner ("You've uploaded 5 CVs in the last hour. Try again in about N minutes."); no answer is the usual error banner "Couldn't upload your CV" / "The server didn't respond. Try again."
 - **The CV** (bordered section, `rule`, radius 4, `base`): "Skills found" heading (`label`, 600, `ink-2`) with the count in DM Mono, then found **skill chips**; a "Show stored text" ghost button (the chevron turns when open) that reveals the text exactly as stored in DM Mono 12.5 on `surface` (at most 384 px high, scrolls), with the markers `[email]` `[phone]` `[link]` `[address]` on `nav-active` in `ink-2`; a bar with the danger outline **Delete CV** (trash icon; full width, 48 px on phones).
+- **Skills that are not the user's (decided 2026-11-18, after testing a real CV):** a 28 px secondary **Remove skills** button at the right of "Skills found" (44 px on phones, `aria-pressed`) turns the found chips into buttons with a ✕ ("Remove Rust: not my skill"); its label becomes **Done**, and a caption explains that removed skills count in no match, also after a new upload. Removed skills appear under **Not counted · removed by you** as dashed chips with a + ("Count Rust again"), always shown when there are any. Chip buttons are 28 px tall, 44 px below lg. Failure: error banner "Couldn't save your skills" / "The server didn't respond. Try again."
 - **Delete:** the same confirm as deleting an application (§8): "Delete your CV?" / "The stored text is removed for good. Matches show “No CV” until you upload one again." + Cancel / **Delete CV**; failure banner "Couldn't delete your CV".
 - **Loading / error:** spinner "Loading your CV…"; error banner "Couldn't load your CV" + Try again.
 
@@ -575,6 +576,8 @@ Applied and update dates are calendar dates in the user's own day. "Today or ear
 - **Found** (CV page): `rule-strong` border on `surface`, `ink` text.
 - **Matched:** `status-offer` border and text, with a check icon.
 - **Missing:** dashed `field-border` border, transparent, `ink-2` text.
+- **Excluded** (removed by the user): like missing, in `ink-muted`.
+- As a **button** (remove or restore): the whole chip is the target, with a 12 px ✕ or + at the end, hover `secondary-hover`, the standard focus ring.
 
 Matched and missing differ by the check and the border style, never by colour alone.
 

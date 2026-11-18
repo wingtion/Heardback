@@ -78,6 +78,30 @@ export class CvPage {
   /** A file is being dragged over the drop area. */
   protected readonly dropping = signal(false);
 
+  /** "Remove skills" is on: found skills are buttons that remove them. */
+  protected readonly editingSkills = signal(false);
+  protected readonly savingSkills = signal(false);
+  protected readonly skillsFailed = signal(false);
+
+  protected toggleEditingSkills(): void {
+    this.editingSkills.update((editing) => !editing);
+  }
+
+  /** "Not my skill": it counts in no match, also after a new upload. */
+  protected exclude(skill: string): void {
+    const cv = this.cv();
+    if (cv) {
+      this.saveExcluded([...cv.excludedSkills, skill]);
+    }
+  }
+
+  protected restore(skill: string): void {
+    const cv = this.cv();
+    if (cv) {
+      this.saveExcluded(cv.excludedSkills.filter((excluded) => excluded !== skill));
+    }
+  }
+
   protected retry(): void {
     this.resource.reload();
   }
@@ -119,6 +143,25 @@ export class CvPage {
       this.uploaded.set(false);
       this.showText.set(false);
     });
+  }
+
+  // The whole list goes each time, so a repeated or late request still leaves a list the user chose.
+  private saveExcluded(skills: readonly string[]): void {
+    this.savingSkills.set(true);
+    this.skillsFailed.set(false);
+    this.api
+      .setExcludedSkills(skills)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (cv) => {
+          this.savingSkills.set(false);
+          this.resource.set(cv);
+        },
+        error: () => {
+          this.savingSkills.set(false);
+          this.skillsFailed.set(true);
+        },
+      });
   }
 
   private upload(file: File): void {

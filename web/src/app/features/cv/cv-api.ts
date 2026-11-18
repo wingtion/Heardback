@@ -31,6 +31,11 @@ export class CvApi {
     return this.http.post<Cv>(`${this.baseUrl}${CV_API}`, form);
   }
 
+  /** The whole list of skills the user says are not theirs; it replaces the earlier list. */
+  setExcludedSkills(skills: readonly string[]): Observable<Cv> {
+    return this.http.put<Cv>(`${this.baseUrl}${CV_API}/excluded-skills`, { skills });
+  }
+
   delete(): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}${CV_API}`);
   }

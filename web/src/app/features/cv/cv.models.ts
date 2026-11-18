@@ -5,8 +5,10 @@ export interface Cv {
   readonly pageCount: number;
   /** The stored text, with personal details replaced by markers such as "[email]". */
   readonly text: string;
-  /** Dictionary skills the CV names, e.g. "C#", ".NET". */
+  /** Dictionary skills the CV names and the user has not removed, e.g. "C#", ".NET". */
   readonly skills: readonly string[];
+  /** Skills the user marked as not theirs; they count in no match. */
+  readonly excludedSkills: readonly string[];
 }
 
 export type SkillCategory =
