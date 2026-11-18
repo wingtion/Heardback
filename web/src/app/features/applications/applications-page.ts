@@ -269,6 +269,11 @@ export class ApplicationsPage {
     dialog?.viewTracked.subscribe((id) => this.select(id));
   }
 
+  /** Add update or Edit in the detail: the row or card and the counts may have changed. */
+  protected onDetailChanged(): void {
+    this.refresh();
+  }
+
   protected onDeleted(): void {
     this.refresh();
     this.closeDetail();

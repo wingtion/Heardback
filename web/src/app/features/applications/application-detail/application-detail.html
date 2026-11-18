@@ -125,11 +125,30 @@
           </section>
         }
 
+        <!-- Kept on screen so "Update added" is announced when it appears. -->
+        <div role="status" class="empty:hidden">
+          @if (addedEventId()) {
+            <app-inline-success>Update added</app-inline-success>
+          }
+        </div>
+
         <section class="flex flex-col gap-2.5">
-          <h3 class="text-label font-semibold text-ink-2">Timeline</h3>
+          <div class="flex items-center justify-between gap-2">
+            <h3 class="text-label font-semibold text-ink-2">Timeline</h3>
+            @if (!sheet()) {
+              <button appButton size="xs" type="button" (click)="openAddUpdate(application)">
+                Add update
+              </button>
+            }
+          </div>
           <ol class="flex flex-col gap-2.5">
             @for (row of timeline(); track row.key) {
-              <li class="flex items-center gap-3.5">
+              <li
+                class="flex items-center gap-3.5"
+                [class]="
+                  row.key === addedEventId() ? '-m-1.5 rounded-md bg-row-selected p-1.5' : ''
+                "
+              >
                 <app-timeline-stamp [date]="row.date" [tone]="row.tone" />
                 <div class="min-w-0">
                   <div
@@ -169,6 +188,17 @@
         <app-icon name="trash" [size]="sheet() ? 16 : 14" />
         Delete
       </button>
+      @if (sheet()) {
+        <button
+          appButton="primary"
+          size="xl"
+          type="button"
+          class="flex-1"
+          (click)="openAddUpdate(application)"
+        >
+          Add update
+        </button>
+      }
     </div>
   }
 </div>

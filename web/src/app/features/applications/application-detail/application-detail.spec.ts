@@ -14,13 +14,17 @@ import { ApplicationDetail, DetailLayout } from './application-detail';
     [layout]="layout()"
     (closed)="closed = true"
     (deleted)="deleted = true"
+    (changed)="changed = changed + 1"
+    [revision]="revision()"
   />`,
 })
 class Host {
   readonly id = signal('app-1');
   readonly layout = signal<DetailLayout>('panel');
+  readonly revision = signal(0);
   closed = false;
   deleted = false;
+  changed = 0;
 }
 
 const DETAIL_URL = `${APPLICATIONS_API}/app-1`;
@@ -155,5 +159,76 @@ describe('ApplicationDetail', () => {
     await render();
 
     expect(host.deleted).toBe(true);
+  });
+
+  it('addUpdate_Panel_SitsBesideTheTimelineHeading', async () => {
+    await respond();
+
+    const heading = Array.from(detail().querySelectorAll('h3')).find(
+      (candidate) => candidate.textContent?.trim() === 'Timeline',
+    );
+    expect(heading?.parentElement?.textContent).toContain('Add update');
+  });
+
+  it('addUpdate_Sheet_SitsInTheFooterBesideDelete', async () => {
+    host.layout.set('sheet');
+    await render();
+    await respond();
+
+    const footerButtons = Array.from(detail().querySelectorAll<HTMLButtonElement>('button')).slice(
+      -2,
+    );
+    expect(footerButtons.map((candidate) => candidate.textContent?.trim())).toEqual([
+      'Delete',
+      'Add update',
+    ]);
+  });
+
+  it('addUpdate_Saved_ShowsTheNewStatusHighlightsTheEventAndEmitsChanged', async () => {
+    await respond();
+    button('Add update').click();
+    await render();
+    const note = document.querySelector<HTMLTextAreaElement>('app-add-update-dialog textarea');
+    if (!note) throw new Error('No note');
+    note.value = 'Recruiter called';
+    note.dispatchEvent(new Event('input'));
+    document.querySelector('app-add-update-dialog form')?.dispatchEvent(new Event('submit'));
+    await render();
+
+    const before = application();
+    http.expectOne(`${DETAIL_URL}/events`).flush(
+      application({
+        version: 8,
+        events: [
+          {
+            id: 'e3',
+            status: null,
+            occurredOn: '2026-11-24',
+            note: 'Recruiter called',
+            isSubmission: false,
+          },
+          ...before.events,
+        ],
+      }),
+    );
+    await render();
+
+    expect(host.changed).toBe(1);
+    expect(detail().querySelector('[role="status"]')?.textContent).toContain('Update added');
+    const rows = detail().querySelectorAll('ol li');
+    expect(rows[0].textContent).toContain('Recruiter called');
+    expect(rows[0].classList).toContain('bg-row-selected');
+    expect(rows[1].classList).not.toContain('bg-row-selected');
+  });
+
+  it('revision_Bumped_ReloadsAndKeepsTheEnvelopeOnScreen', async () => {
+    await respond();
+
+    host.revision.set(1);
+    await render();
+
+    expect(detail().textContent).not.toContain('Loading application…');
+    await respond(application({ status: 'Offer' }));
+    expect(detail().textContent).toContain('Offer');
   });
 });

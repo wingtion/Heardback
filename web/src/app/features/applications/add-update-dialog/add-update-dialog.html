@@ -1,0 +1,98 @@
+<app-dialog heading="Add update" width="update" [closeDisabled]="submitting()">
+  <p appDialogSubtitle class="text-label text-ink-2">
+    {{ application.company }} · {{ application.role }}
+  </p>
+
+  <form class="flex flex-col" [formGroup]="form" novalidate (ngSubmit)="submit()">
+    <div class="flex flex-col gap-3.5 p-4 lg:px-5 lg:pt-4 lg:pb-4.5">
+      @if (nothingChosen()) {
+        <app-banner kind="error" [heading]="messages.nothingChosen" />
+      }
+      @if (statusError(); as message) {
+        <app-banner kind="error" [heading]="message" />
+      }
+      @if (unavailable()) {
+        <app-banner kind="error" heading="Couldn’t save the update">
+          The server didn’t respond. Nothing was added to the timeline. Try again.
+        </app-banner>
+      }
+
+      <fieldset class="flex flex-col gap-1.5" [disabled]="submitting()">
+        <legend class="mb-1.5 text-label font-semibold text-ink-2">
+          New status <span class="font-normal text-ink-muted">· optional</span>
+        </legend>
+        <div class="flex flex-wrap gap-1.5">
+          @for (chip of chips; track chip.value) {
+            <label [class]="chipClass(chip)">
+              <input
+                type="radio"
+                name="status"
+                class="m-0 accent-accent"
+                [value]="chip.value"
+                [checked]="form.controls.status.value === chip.value"
+                [disabled]="chip.current || submitting()"
+                [attr.cdkFocusInitial]="chip.value === 'none' ? '' : null"
+                (change)="form.controls.status.setValue(chip.value)"
+              />
+              <app-status-glyph [glyph]="chip.glyph" [class]="chip.glyphClass" />
+              {{ chip.label }}
+            </label>
+          }
+        </div>
+        <p class="text-caption text-ink-muted">Leave “No change” to add a note only.</p>
+      </fieldset>
+
+      <app-field
+        label="Date"
+        hint="Today or an earlier date."
+        [error]="errors().occurredOn ?? null"
+      >
+        <input
+          appInput
+          date
+          type="date"
+          formControlName="occurredOn"
+          class="max-w-45 max-lg:h-11"
+          [min]="application.appliedOn"
+          [max]="today"
+        />
+      </app-field>
+
+      <app-field label="Note" optional [hintEnd]="noteCount()" [error]="errors().note ?? null">
+        <textarea
+          appInput
+          rows="2"
+          placeholder="e.g. Recruiter called, interview next week"
+          formControlName="note"
+          [maxlength]="noteMaxLength"
+        ></textarea>
+      </app-field>
+    </div>
+
+    <app-dialog-footer>
+      <button
+        appButton
+        type="button"
+        class="max-lg:h-12 max-lg:flex-1 max-lg:text-ui-lg"
+        [disabled]="submitting()"
+        (click)="close()"
+      >
+        Cancel
+      </button>
+      <button
+        appButton="primary"
+        type="submit"
+        class="max-lg:h-12 max-lg:flex-1 max-lg:text-ui-lg"
+        [disabled]="submitting()"
+        [attr.aria-busy]="submitting() || null"
+      >
+        @if (submitting()) {
+          <app-spinner tone="current" />
+          Saving…
+        } @else {
+          Save update
+        }
+      </button>
+    </app-dialog-footer>
+  </form>
+</app-dialog>
