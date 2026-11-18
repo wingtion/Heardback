@@ -2,6 +2,9 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { of } from 'rxjs';
+import { CvApi } from '../../cv/cv-api';
+import { ApplicationMatch } from '../../cv/cv.models';
 import { provideRouter } from '@angular/router';
 import { APPLICATIONS_API } from '../applications-api';
 import { application } from '../applications.testing';
@@ -29,6 +32,13 @@ class Host {
 
 const DETAIL_URL = `${APPLICATIONS_API}/app-1`;
 
+const NO_MATCH: ApplicationMatch = {
+  state: 'NoSkillsInPosting',
+  score: null,
+  matched: [],
+  missing: [],
+};
+
 describe('ApplicationDetail', () => {
   let http: HttpTestingController;
   let host: Host;
@@ -36,7 +46,13 @@ describe('ApplicationDetail', () => {
 
   beforeEach(async () => {
     TestBed.configureTestingModule({
-      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        // The match panel has its own tests; here it only needs an answer.
+        { provide: CvApi, useValue: { match: () => of(NO_MATCH) } },
+      ],
     });
     http = TestBed.inject(HttpTestingController);
     const fixture = TestBed.createComponent(Host);
