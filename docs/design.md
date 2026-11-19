@@ -624,7 +624,7 @@ The AI and match sections were hard to tell apart, so the detail groups them und
 - Request failed: error banner "Couldn’t start the analysis" / "Couldn’t start the suggestions" + "The server didn’t respond. Try again."; consent save failed: "Couldn’t save your choice".
 - Load failed: "Couldn’t load the analysis." / "Couldn’t load the suggestions." + Try again, the rest of the detail stays usable.
 
-### Proposed (needs the author's OK from the screenshots)
+### Decided (approved by the author from the screenshots and their own test, 2026-11-19)
 | Item | Proposal |
 |---|---|
 | Section names | Decided 2026-11-19: "About this job" › "Job summary"; "Your CV for this job" › "Skills match", "How to improve your CV"; "AI suggestions" (CV page) |
