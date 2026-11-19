@@ -142,11 +142,18 @@
           </section>
         }
 
+        <app-posting-analysis-panel
+          [applicationId]="application.id"
+          [version]="application.version"
+        />
+
         <app-match-panel
           [applicationId]="application.id"
           [version]="application.version"
           (edit)="openEdit(application)"
         />
+
+        <app-tailoring-panel [applicationId]="application.id" [version]="application.version" />
 
         <!-- Kept on screen so "Update added" is announced when it appears. -->
         <div role="status" class="empty:hidden">

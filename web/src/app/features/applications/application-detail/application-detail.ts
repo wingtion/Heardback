@@ -22,6 +22,8 @@ import { DialogLauncher } from '../../../shared/ui/dialog/dialog-launcher';
 import { Icon } from '../../../shared/ui/icon/icon';
 import { InlineSuccess } from '../../../shared/ui/inline-success/inline-success';
 import { Spinner } from '../../../shared/ui/spinner/spinner';
+import { PostingAnalysisPanel } from '../../ai/posting-analysis-panel';
+import { TailoringPanel } from '../../ai/tailoring-panel';
 import { MatchPanel } from '../../cv/match-panel';
 import { StatusGlyphIcon } from '../../../shared/ui/status-label/status-glyph';
 import { StatusLabel } from '../../../shared/ui/status-label/status-label';
@@ -79,6 +81,8 @@ type DetailView =
     Icon,
     InlineSuccess,
     MatchPanel,
+    PostingAnalysisPanel,
+    TailoringPanel,
     PostageStamp,
     Postmark,
     Spinner,

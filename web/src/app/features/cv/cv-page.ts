@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { AiConsentSection } from '../ai/ai-consent-section';
 import { Banner } from '../../shared/ui/banner/banner';
 import { EnvelopeIllustration } from '../../shared/ui/brand/envelope-illustration';
 import { Button } from '../../shared/ui/button/button';
@@ -30,6 +31,7 @@ type PageView =
   selector: 'app-cv-page',
   imports: [
     DatePipe,
+    AiConsentSection,
     Banner,
     Button,
     EnvelopeIllustration,
