@@ -31,6 +31,7 @@ import {
 } from './application-display';
 import { ApplicationsApi } from './applications-api';
 import { ApplicationsSummaryStore } from './applications-summary';
+import { SampleDataButton } from './sample-data/sample-data-button';
 import {
   APPLICATION_LIMITS,
   ApplicationChannel,
@@ -75,6 +76,7 @@ type ListView =
     ApplicationsBoard,
     ApplicationsEmptyState,
     ApplicationsViewToggle,
+    SampleDataButton,
     Banner,
     Button,
     Icon,
@@ -291,6 +293,10 @@ export class ApplicationsPage {
     return toSignal(this.breakpoints.observe(query).pipe(map((state) => state.matches)), {
       initialValue: this.breakpoints.isMatched(query),
     });
+  }
+
+  protected samplesAdded(): void {
+    this.refresh();
   }
 
   // New and changed applications sort first, so the first page is where they show up.

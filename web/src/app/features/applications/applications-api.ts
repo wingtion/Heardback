@@ -12,6 +12,8 @@ import {
   Board,
   BoardFilter,
   CreateApplicationRequest,
+  SampleApplicationsResult,
+  SampleDataStatus,
   TrackedApplication,
   UpdateApplicationRequest,
 } from './applications.models';
@@ -87,5 +89,15 @@ export class ApplicationsApi {
       params = params.set('channel', filter.channel);
     }
     return this.http.get<Board>(`${this.url}/board`, { params });
+  }
+
+  /** Admins only: whether sample applications can be added on this server. */
+  sampleDataStatus(): Observable<SampleDataStatus> {
+    return this.http.get<SampleDataStatus>(`${this.url}/samples`);
+  }
+
+  /** Admins only: adds the sample applications to the admin's own list. */
+  addSampleApplications(): Observable<SampleApplicationsResult> {
+    return this.http.post<SampleApplicationsResult>(`${this.url}/samples`, null);
   }
 }

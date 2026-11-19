@@ -27,6 +27,7 @@
         {{ text }}
       </span>
     }
+    <app-sample-data-button (added)="samplesAdded()" />
     <app-applications-view-toggle
       class="self-center lg:ml-auto"
       [value]="view()"

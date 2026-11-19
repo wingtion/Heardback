@@ -151,3 +151,15 @@ export const APPLICATION_ERROR_CODES = {
   changedElsewhere: 'applications.changed_elsewhere',
   sameStatus: 'applications.same_status',
 } as const;
+
+/** Whether the server offers sample applications to admins (on in development only). */
+export interface SampleDataStatus {
+  readonly enabled: boolean;
+}
+
+export interface SampleApplicationsResult {
+  /** Samples added now. */
+  readonly added: number;
+  /** Samples the user already tracked. */
+  readonly skipped: number;
+}
