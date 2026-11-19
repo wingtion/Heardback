@@ -1,7 +1,7 @@
 using Heardback.Modules.Matching.Cvs.Domain;
 using Heardback.Modules.Matching.Cvs.Extraction;
-using Heardback.Modules.Matching.Cvs.Privacy;
 using Heardback.Modules.Matching.Persistence;
+using Heardback.Shared.Privacy;
 using Heardback.Shared.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
