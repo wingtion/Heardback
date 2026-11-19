@@ -61,6 +61,120 @@ namespace Heardback.Modules.Matching.Persistence.Migrations
 
                     b.ToTable("cvs", "matching");
                 });
+
+            modelBuilder.Entity("Heardback.Modules.Matching.Tailoring.AiConsent", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<DateTimeOffset>("GrantedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("granted_at");
+
+                    b.HasKey("UserId")
+                        .HasName("pk_ai_consents");
+
+                    b.ToTable("ai_consents", "matching");
+                });
+
+            modelBuilder.Entity("Heardback.Modules.Matching.Tailoring.TailoringResult", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ApplicationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("application_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CvFingerprint")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character(64)")
+                        .HasColumnName("cv_fingerprint")
+                        .IsFixedLength();
+
+                    b.Property<string>("Model")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("model");
+
+                    b.Property<string>("PostingFingerprint")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character(64)")
+                        .HasColumnName("posting_fingerprint")
+                        .IsFixedLength();
+
+                    b.Property<int>("PromptVersion")
+                        .HasColumnType("integer")
+                        .HasColumnName("prompt_version");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("provider");
+
+                    b.Property<string>("Summary")
+                        .IsRequired()
+                        .HasMaxLength(600)
+                        .HasColumnType("character varying(600)")
+                        .HasColumnName("summary");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_tailoring_results");
+
+                    b.HasIndex("UserId", "ApplicationId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_tailoring_results_user_id_application_id");
+
+                    b.ToTable("tailoring_results", "matching");
+                });
+
+            modelBuilder.Entity("Heardback.Modules.Matching.Tailoring.TailoringResult", b =>
+                {
+                    b.OwnsMany("Heardback.Modules.Matching.Tailoring.TailoringSuggestion", "Suggestions", b1 =>
+                        {
+                            b1.Property<Guid>("TailoringResultId");
+
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAdd();
+
+                            b1.Property<string>("Advice")
+                                .IsRequired();
+
+                            b1.Property<string>("CvQuote")
+                                .IsRequired();
+
+                            b1.Property<string>("CvSection")
+                                .IsRequired();
+
+                            b1.HasKey("TailoringResultId", "__synthesizedOrdinal");
+
+                            b1.ToTable("tailoring_results", "matching");
+
+                            b1
+                                .ToJson("suggestions")
+                                .HasColumnType("jsonb");
+
+                            b1.WithOwner()
+                                .HasForeignKey("TailoringResultId")
+                                .HasConstraintName("fk_tailoring_results_tailoring_results_tailoring_result_id");
+                        });
+
+                    b.Navigation("Suggestions");
+                });
 #pragma warning restore 612, 618
         }
     }

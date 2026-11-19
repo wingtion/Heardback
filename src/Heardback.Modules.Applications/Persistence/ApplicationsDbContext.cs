@@ -1,3 +1,4 @@
+using Heardback.Modules.Applications.Analysis;
 using Heardback.Modules.Applications.Domain;
 using Heardback.Shared.Persistence;
 using Heardback.Shared.Users;
@@ -13,6 +14,8 @@ internal sealed class ApplicationsDbContext(DbContextOptions<ApplicationsDbConte
     public DbSet<Application> Applications => Set<Application>();
 
     public DbSet<ApplicationEvent> ApplicationEvents => Set<ApplicationEvent>();
+
+    public DbSet<PostingAnalysis> PostingAnalyses => Set<PostingAnalysis>();
 
     protected override void ConfigureModel(ModelBuilder modelBuilder)
     {

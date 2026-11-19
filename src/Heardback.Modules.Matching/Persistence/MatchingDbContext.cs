@@ -1,4 +1,5 @@
 using Heardback.Modules.Matching.Cvs.Domain;
+using Heardback.Modules.Matching.Tailoring;
 using Heardback.Shared.Persistence;
 using Heardback.Shared.Users;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,10 @@ internal sealed class MatchingDbContext(DbContextOptions<MatchingDbContext> opti
     public const string Schema = "matching";
 
     public DbSet<Cv> Cvs => Set<Cv>();
+
+    public DbSet<AiConsent> AiConsents => Set<AiConsent>();
+
+    public DbSet<TailoringResult> TailoringResults => Set<TailoringResult>();
 
     protected override void ConfigureModel(ModelBuilder modelBuilder)
     {

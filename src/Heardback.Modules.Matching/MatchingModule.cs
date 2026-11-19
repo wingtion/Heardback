@@ -1,8 +1,11 @@
+using Heardback.Infrastructure.Llm.Jobs;
+using Heardback.Modules.Applications.Contracts;
 using Heardback.Modules.Matching.Cvs;
 using Heardback.Modules.Matching.Cvs.Extraction;
 using Heardback.Modules.Matching.Endpoints;
 using Heardback.Modules.Matching.MatchResults;
 using Heardback.Modules.Matching.Persistence;
+using Heardback.Modules.Matching.Tailoring;
 using Heardback.Shared.Persistence;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,6 +40,14 @@ public static class MatchingModule
         services.AddScoped<ExcludeSkillsHandler>();
         services.AddScoped<GetMatchHandler>();
 
+        services.AddSingleton<TailoringPrompt>();
+        services.AddScoped<TailoringSources>();
+        services.AddScoped<IAnalysisJobHandler, TailoringJobHandler>();
+        services.AddScoped<GetTailoringHandler>();
+        services.AddScoped<RequestTailoringHandler>();
+        services.AddScoped<AiConsentHandler>();
+        services.AddScoped<IApplicationDeletedHandler, DeleteTailoringOnApplicationDeleted>();
+
         return services;
     }
 
@@ -49,6 +60,7 @@ public static class MatchingModule
 
         routes.MapCvEndpoints();
         routes.MapMatchEndpoints();
+        routes.MapTailoringEndpoints();
 
         return routes;
     }

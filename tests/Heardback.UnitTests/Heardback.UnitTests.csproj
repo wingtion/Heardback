@@ -6,11 +6,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <PackageReference Include="xunit.v3" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Heardback.Infrastructure.Llm\Heardback.Infrastructure.Llm.csproj" />
   </ItemGroup>
 
   <!-- Every module is referenced so the architecture tests can inspect all module assemblies. -->

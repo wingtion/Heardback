@@ -1,14 +1,15 @@
 using System.Text.RegularExpressions;
 
-namespace Heardback.Modules.Matching.Cvs.Privacy;
+namespace Heardback.Shared.Privacy;
 
 /// <summary>
-/// Removes personal details from CV text before it is stored (PLAN.md §5, §7): email addresses, phone numbers
-/// (and other long digit runs such as national ID numbers), links, and lines that look like a postal address.
+/// Removes personal details from CV and posting text before it is stored or sent to an LLM (PLAN.md §5, §7):
+/// email addresses, phone numbers (and other long digit runs such as national ID numbers), links, and lines that
+/// look like a postal address.
 /// Each is replaced by a short marker so the user can see what was taken out. Names are kept: they carry no
 /// matching value but are not listed as PII to strip, and guessing them would remove skills too.
 /// </summary>
-internal static partial class PersonalDetails
+public static partial class PersonalDetails
 {
     public const string EmailMarker = "[email]";
     public const string PhoneMarker = "[phone]";

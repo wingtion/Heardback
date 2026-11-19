@@ -33,4 +33,8 @@ internal sealed class MatchingSettings
     /// <summary>Other CV changes (skills marked as not yours, deletes) one user may make per minute.</summary>
     [Range(1, 10_000)]
     public int CvWritesPerMinute { get; set; } = 60;
+
+    /// <summary>Tailoring suggestion requests one user may make per UTC day; a failed one gives its use back.</summary>
+    [Range(1, 1000)]
+    public int TailoringPerDay { get; set; } = 10;
 }

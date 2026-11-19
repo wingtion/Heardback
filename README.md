@@ -32,8 +32,15 @@ dotnet user-secrets set "Database:ConnectionString" \
 dotnet user-secrets set "Identity:Tokens:SigningKey" "$(openssl rand -base64 48)"
 # 12 characters, the same shape as an invite code (hex digits are all valid invite characters)
 dotnet user-secrets set "Identity:Invites:BootstrapAdminCode" "$(openssl rand -hex 6)"
+# Optional: AI features. Without any key they are off and everything else works.
+dotnet user-secrets set "Llm:Groq:ApiKey" "<key from console.groq.com>"
+dotnet user-secrets set "Llm:Gemini:ApiKey" "<key from aistudio.google.com>"   # fallback
 cd ../..
 ```
+
+In production the same settings come from environment variables (`Llm__Groq__ApiKey`,
+`Llm__Gemini__ApiKey`). Models, timeouts and which provider may receive CV text are in the `Llm` settings
+section ([ADR-0008](docs/adr/0008-llm-features.md)).
 
 ### Run
 
@@ -57,7 +64,7 @@ The bootstrap code must look like an invite code: 12 characters from 0-9 and A-Z
 ### Adding a database migration
 
 ```powershell
-./scripts/Add-Migration.ps1 -Module Identity -Name DescriptiveName
+./scripts/Add-Migration.ps1 -Module Identity -Name DescriptiveName   # -Module Llm for the job table
 ```
 
 The script runs `dotnet ef` and makes the generated classes `internal`, so modules keep exposing only
@@ -114,6 +121,25 @@ docs/design.md                   design system: tokens, type, components, screen
   an application's role and posting text name and those the CV shows, and lists matched and missing
   skills with a score. Deterministic, no LLM, worked out on every read. A text dictionary cannot tell "I know
   Rust" from "my project checks Rust code", so users can mark a found skill as not theirs.
+- **LLM client** ([ADR-0008](docs/adr/0008-llm-features.md)): one `ILlmClient` tries Groq, then
+  Gemini on rate limits, server errors and timeouts, with plain HTTP calls and JSON schema output.
+  Requests containing CV text never go to a provider whose terms allow using them (Gemini's unpaid tier).
+  Each call logs provider, model, prompt id, latency and token counts, never prompt or answer text.
+  Prompts are versioned classes with a typed answer; the JSON schema is generated from the answer type,
+  answers are parsed strictly and checked, and an unusable answer is retried once before it counts as failed.
+- **Posting analysis:** on the user's request, an LLM reads the application's own posting text (personal
+  details removed) into company, title, seniority, work mode, skills and location. Results are shared by
+  content hash, so identical text is analysed once; adding a posting never calls the LLM. Daily limits per
+  user (30 analyses, 10 tailoring suggestions) and an app-wide cap on LLM calls protect the free tiers;
+  a failed job gives its use back.
+- **CV tailoring:** with the user's opt-in, an LLM suggests 3-6 concrete changes that rework what the CV
+  already says for one application. Each suggestion quotes the CV line it is about; suggestions whose quote
+  is not in the CV, or that name a skill the CV lacks, are dropped. Missing keywords come from the
+  deterministic match. Withdrawing the opt-in, deleting the CV or deleting the application deletes the
+  suggestions; a job runs as the user who asked, under the same per-user filters.
+- **Background jobs:** LLM work runs from a Postgres job table (`llm` schema) processed by an in-process
+  worker. Jobs hold only ids and hashes, never user text. Claims use row locks and leases, so jobs run
+  once even with several instances and survive a crash; failures retry with backoff and then fail.
 - **Errors and validation** ([ADR-0003](docs/adr/0003-request-validation.md)): RFC 9457 ProblemDetails
   everywhere, 400 with field-level errors for invalid requests, and configuration validated at startup.
 

@@ -17,4 +17,11 @@ internal sealed class ApplicationsSettings
     /// <summary>Adds, edits, deletes and timeline updates one user may make per minute.</summary>
     [Range(1, 10_000)]
     public int WritesPerMinute { get; set; } = 60;
+
+    /// <summary>
+    /// Posting analyses one user may ask for per UTC day (ADR-0008). Text someone already had analysed is free;
+    /// a failed analysis gives its use back.
+    /// </summary>
+    [Range(1, 1000)]
+    public int PostingAnalysesPerDay { get; set; } = 30;
 }

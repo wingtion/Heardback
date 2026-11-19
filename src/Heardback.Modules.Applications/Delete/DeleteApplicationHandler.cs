@@ -1,3 +1,4 @@
+using Heardback.Modules.Applications.Contracts;
 using Heardback.Modules.Applications.Persistence;
 using Heardback.Shared.Results;
 using Microsoft.EntityFrameworkCore;
@@ -7,9 +8,13 @@ namespace Heardback.Modules.Applications.Delete;
 
 internal sealed partial class DeleteApplicationHandler(
     ApplicationsDbContext dbContext,
+    IEnumerable<IApplicationDeletedHandler> deletedHandlers,
     ILogger<DeleteApplicationHandler> logger)
 {
-    /// <summary>Removes the application and its timeline for good. The shared posting stays.</summary>
+    /// <summary>
+    /// Removes the application and its timeline for good, and lets other modules remove what they keep about it.
+    /// The shared posting stays.
+    /// </summary>
     public async Task<Result> HandleAsync(Guid id, CancellationToken cancellationToken)
     {
         // One DELETE by id, so a double click or a delete racing a board move cannot hit a row version
@@ -21,6 +26,11 @@ internal sealed partial class DeleteApplicationHandler(
         if (deleted == 0)
         {
             return ApplicationsErrors.NotFound;
+        }
+
+        foreach (var handler in deletedHandlers)
+        {
+            await handler.OnDeletedAsync(id, cancellationToken);
         }
 
         LogDeleted(id);

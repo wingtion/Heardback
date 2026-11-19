@@ -1,6 +1,6 @@
-using Heardback.Modules.Matching.Cvs.Privacy;
+using Heardback.Shared.Privacy;
 
-namespace Heardback.UnitTests.Matching;
+namespace Heardback.UnitTests.Shared;
 
 public sealed class PersonalDetailsTests
 {
