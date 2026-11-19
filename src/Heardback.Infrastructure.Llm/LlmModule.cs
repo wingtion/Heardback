@@ -3,6 +3,7 @@ using Heardback.Infrastructure.Llm.Persistence;
 using Heardback.Infrastructure.Llm.Providers;
 using Heardback.Infrastructure.Llm.Providers.Gemini;
 using Heardback.Infrastructure.Llm.Providers.Groq;
+using Heardback.Infrastructure.Llm.Quotas;
 using Heardback.Infrastructure.Llm.Settings;
 using Heardback.Infrastructure.Llm.Structured;
 using Heardback.Shared.Persistence;
@@ -35,7 +36,8 @@ public static class LlmModule
         AddProvider<GeminiProvider>(services, settings => settings.Gemini);
 
         services.AddTransient<ILlmClient, FallbackLlmClient>();
-        services.AddTransient<IStructuredLlm, StructuredLlm>();
+        services.AddScoped<ILlmCallBudget, DailyCallBudget>();
+        services.AddScoped<IStructuredLlm, StructuredLlm>();
 
         services.AddOptions<AnalysisJobSettings>()
             .BindConfiguration(AnalysisJobSettings.SectionName)

@@ -140,6 +140,66 @@ public sealed class StructuredLlmTests
         Assert.Equal(expected, StructuredLlm.SchemaName(promptId, version));
     }
 
-    private Task<LlmStructuredResult<TestAnswer>> Run(ScriptedLlmClient client, string input = "posting text") =>
-        new StructuredLlm(client, _logger).RunAsync(new TestPrompt(), input, TestContext.Current.CancellationToken);
+    [Fact]
+    public async Task RunAsync_DailyCapUsedUp_SendsNothingAndSaysWhenItResets()
+    {
+        var client = new ScriptedLlmClient(ScriptedLlmClient.Answer(ValidAnswer));
+
+        var result = await Run(client, budget: new FakeCallBudget(callsLeft: 0));
+
+        Assert.Equal(LlmOutcome.DailyCapReached, result.Outcome);
+        Assert.Equal(FakeCallBudget.ResetsAt, result.ResumeAt);
+        Assert.Empty(client.Requests);
+    }
+
+    [Fact]
+    public async Task RunAsync_RetryOfInvalidAnswer_CountsAgainstTheCapToo()
+    {
+        var budget = new FakeCallBudget(callsLeft: 1);
+        var client = new ScriptedLlmClient(ScriptedLlmClient.Answer("not json"), ScriptedLlmClient.Answer(ValidAnswer));
+
+        var result = await Run(client, budget: budget);
+
+        Assert.Equal(LlmOutcome.DailyCapReached, result.Outcome);
+        Assert.Single(client.Requests);
+        Assert.Equal(1, budget.Used);
+    }
+
+    [Fact]
+    public async Task RunAsync_EveryCall_IsCounted()
+    {
+        var budget = new FakeCallBudget();
+        var client = new ScriptedLlmClient(ScriptedLlmClient.Answer("not json"), ScriptedLlmClient.Answer(ValidAnswer));
+
+        await Run(client, budget: budget);
+
+        Assert.Equal(2, budget.Used);
+    }
+
+    [Fact]
+    public async Task RunAsync_LlmDisabled_IsDisabledWithoutUsingTheCap()
+    {
+        var budget = new FakeCallBudget();
+
+        var result = await new StructuredLlm(new DisabledLlmClient(), budget, _logger)
+            .RunAsync(new TestPrompt(), "posting text", TestContext.Current.CancellationToken);
+
+        Assert.Equal(LlmOutcome.Disabled, result.Outcome);
+        Assert.Equal(0, budget.Used);
+    }
+
+    private Task<LlmStructuredResult<TestAnswer>> Run(
+        ScriptedLlmClient client,
+        string input = "posting text",
+        FakeCallBudget? budget = null) =>
+        new StructuredLlm(client, budget ?? new FakeCallBudget(), _logger)
+            .RunAsync(new TestPrompt(), input, TestContext.Current.CancellationToken);
+
+    private sealed class DisabledLlmClient : ILlmClient
+    {
+        public bool IsEnabled => false;
+
+        public Task<LlmResult> CompleteAsync(LlmRequest request, CancellationToken cancellationToken) =>
+            throw new InvalidOperationException("Must not be called.");
+    }
 }

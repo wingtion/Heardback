@@ -1,9 +1,11 @@
 using System.Text.RegularExpressions;
+using Heardback.Infrastructure.Llm.Quotas;
 using Microsoft.Extensions.Logging;
 
 namespace Heardback.Infrastructure.Llm.Structured;
 
-internal sealed partial class StructuredLlm(ILlmClient client, ILogger<StructuredLlm> logger) : IStructuredLlm
+internal sealed partial class StructuredLlm(ILlmClient client, ILlmCallBudget callBudget, ILogger<StructuredLlm> logger)
+    : IStructuredLlm
 {
     /// <summary>The first answer plus one retry (PLAN.md section 5).</summary>
     private const int MaxAttempts = 2;
@@ -20,6 +22,11 @@ internal sealed partial class StructuredLlm(ILlmClient client, ILogger<Structure
     {
         ArgumentNullException.ThrowIfNull(prompt);
 
+        if (!client.IsEnabled)
+        {
+            return LlmStructuredResult<TOutput>.Failure(LlmOutcome.Disabled);
+        }
+
         var request = new LlmRequest(
             prompt.Id,
             prompt.Version,
@@ -32,6 +39,13 @@ internal sealed partial class StructuredLlm(ILlmClient client, ILogger<Structure
 
         for (var attempt = 1; attempt <= MaxAttempts; attempt++)
         {
+            // Every call counts, the retry of an unusable answer too.
+            if (await callBudget.TryUseAsync(cancellationToken) is { } resumeAt)
+            {
+                LogDailyCapReached(prompt.Id, prompt.Version);
+                return LlmStructuredResult<TOutput>.CapReached(resumeAt);
+            }
+
             var result = await client.CompleteAsync(request, cancellationToken);
             if (!result.IsSuccess)
             {
@@ -67,4 +81,9 @@ internal sealed partial class StructuredLlm(ILlmClient client, ILogger<Structure
             + "{Attempt}: {Problems}")]
     private partial void LogInvalidAnswer(
         string promptId, int promptVersion, string provider, string model, int attempt, string problems);
+
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "App-wide daily LLM call cap reached; {PromptId} v{PromptVersion} waits until midnight UTC")]
+    private partial void LogDailyCapReached(string promptId, int promptVersion);
 }

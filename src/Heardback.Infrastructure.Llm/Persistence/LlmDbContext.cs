@@ -1,4 +1,5 @@
 using Heardback.Infrastructure.Llm.Jobs;
+using Heardback.Infrastructure.Llm.Quotas;
 using Heardback.Shared.Persistence;
 using Heardback.Shared.Users;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,10 @@ internal sealed class LlmDbContext(DbContextOptions<LlmDbContext> options, ICurr
     public const string Schema = "llm";
 
     public DbSet<AnalysisJob> AnalysisJobs => Set<AnalysisJob>();
+
+    public DbSet<DailyUsage> DailyUsage => Set<DailyUsage>();
+
+    public DbSet<DailyCallCount> DailyCallCounts => Set<DailyCallCount>();
 
     protected override void ConfigureModel(ModelBuilder modelBuilder)
     {

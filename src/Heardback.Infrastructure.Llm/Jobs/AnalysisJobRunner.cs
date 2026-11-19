@@ -63,7 +63,8 @@ internal sealed partial class AnalysisJobRunner(
                 ORDER BY candidate.next_run_at, candidate.id
                 LIMIT 1
                 FOR UPDATE SKIP LOCKED)
-            RETURNING job.id, job.kind, job.subject_key, job.requested_by_user_id, job.attempts, job.lease_token
+            RETURNING job.id, job.kind, job.subject_key, job.requested_by_user_id, job.attempts, job.lease_token,
+                job.quota_day
             """)
             .ToListAsync(cancellationToken);
 
@@ -124,6 +125,12 @@ internal sealed partial class AnalysisJobRunner(
             ? AnalysisJobOutcomeKind.Failed
             : outcome.Kind;
 
+        // A job that finally fails gives its use back, in the same transaction as the status change.
+        var refund = kind == AnalysisJobOutcomeKind.Failed && job.QuotaDay is not null;
+        await using var transaction = refund
+            ? await dbContext.Database.BeginTransactionAsync(cancellationToken)
+            : null;
+
         var updated = kind switch
         {
             AnalysisJobOutcomeKind.Succeeded => await current.ExecuteUpdateAsync(
@@ -170,6 +177,17 @@ internal sealed partial class AnalysisJobRunner(
             return;
         }
 
+        if (transaction is not null)
+        {
+            await dbContext.Database.ExecuteSqlAsync(
+                $"""
+                UPDATE llm.daily_usage SET count = count - 1
+                WHERE user_id = {job.RequestedByUserId} AND day = {job.QuotaDay} AND kind = {job.Kind} AND count > 0
+                """,
+                cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+        }
+
         LogFinished(job.Id, job.Kind, job.Attempts, kind, reason);
     }
 
@@ -189,22 +207,31 @@ internal sealed partial class AnalysisJobRunner(
                 cancellationToken);
     }
 
-    /// <summary>A job that kept losing its worker would otherwise be claimed forever.</summary>
+    /// <summary>
+    /// A job that kept losing its worker would otherwise be claimed forever. Like any final failure, it gives its
+    /// quota use back; one statement, so the status change and the refund cannot come apart.
+    /// </summary>
     private Task<int> FailExhaustedLeasesAsync(CancellationToken cancellationToken)
     {
         var now = timeProvider.GetUtcNow();
-        return dbContext.AnalysisJobs
-            .Where(row => row.Status == AnalysisJobStatus.Running
-                && row.LeaseUntil < now
-                && row.Attempts >= _settings.MaxAttempts)
-            .ExecuteUpdateAsync(
-                setters => setters
-                    .SetProperty(row => row.Status, AnalysisJobStatus.Failed)
-                    .SetProperty(row => row.LastError, LeaseExpired)
-                    .SetProperty(row => row.LeaseToken, (Guid?)null)
-                    .SetProperty(row => row.LeaseUntil, (DateTimeOffset?)null)
-                    .SetProperty(row => row.UpdatedAt, now),
-                cancellationToken);
+        return dbContext.Database.ExecuteSqlAsync(
+            $"""
+            WITH failed AS (
+                UPDATE llm.analysis_jobs
+                SET status = 'Failed', last_error = {LeaseExpired}, lease_token = NULL, lease_until = NULL,
+                    updated_at = {now}
+                WHERE status = 'Running' AND lease_until < {now} AND attempts >= {_settings.MaxAttempts}
+                RETURNING requested_by_user_id, quota_day, kind),
+            refunds AS (
+                SELECT requested_by_user_id, quota_day, kind, count(*) AS uses
+                FROM failed WHERE quota_day IS NOT NULL
+                GROUP BY requested_by_user_id, quota_day, kind)
+            UPDATE llm.daily_usage AS usage SET count = GREATEST(usage.count - refunds.uses, 0)
+            FROM refunds
+            WHERE usage.user_id = refunds.requested_by_user_id AND usage.day = refunds.quota_day
+              AND usage.kind = refunds.kind
+            """,
+            cancellationToken);
     }
 
     private TimeSpan RetryDelay(int attempt, TimeSpan? retryAfter) =>

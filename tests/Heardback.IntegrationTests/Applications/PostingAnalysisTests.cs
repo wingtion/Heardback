@@ -22,9 +22,12 @@ public sealed class PostingAnalysisTests(PostgresFixture postgres) : Application
 
     private readonly CannedLlmClient _llm = new() { Respond = _ => CannedLlmClient.Answer(ValidAnswer) };
 
+    private const int DailyLimit = 3;
+
     protected override void ConfigureSettings(IDictionary<string, string?> settings)
     {
         settings["Llm:Jobs:RunWorker"] = "false";
+        settings["Applications:PostingAnalysesPerDay"] = DailyLimit.ToString(System.Globalization.CultureInfo.InvariantCulture);
     }
 
     protected override void ConfigureServices(IServiceCollection services)
@@ -247,6 +250,84 @@ public sealed class PostingAnalysisTests(PostgresFixture postgres) : Application
         Assert.Empty(_llm.Requests);
         Assert.Equal(0, await CountRowsAsync("applications.posting_analyses"));
         Assert.Equal(1, await CountRowsAsync("llm.analysis_jobs WHERE status = 'Succeeded'"));
+    }
+
+    [Fact]
+    public async Task Request_CountsOneUseAndShowsWhatIsLeft()
+    {
+        var application = await CreateAsync(Alice);
+        var before = await Client.GetPostingAnalysisOkAsync(Alice, application);
+
+        var requested = await Client.RequestPostingAnalysisOkAsync(Alice, application);
+
+        Assert.Equal(0, before.Usage.Used);
+        Assert.Equal(1, requested.Usage.Used);
+        Assert.Equal(DailyLimit, requested.Usage.Limit);
+        Assert.Equal(DailyLimit - 1, requested.Usage.Remaining);
+        Assert.Equal(DateOnly.FromDateTime(Clock.GetUtcNow().UtcDateTime).AddDays(1), DateOnly.FromDateTime(requested.Usage.ResetsAt.UtcDateTime));
+    }
+
+    [Fact]
+    public async Task Request_DailyLimitUsedUp_Is429WithResetTimeAndQueuesNothing()
+    {
+        for (var index = 0; index < DailyLimit; index++)
+        {
+            var queued = await CreateAsync(Alice, postingText: $"{PostingText}\nPosting {index}", url: null);
+            await Client.RequestPostingAnalysisOkAsync(Alice, queued);
+        }
+
+        var over = await CreateAsync(Alice, postingText: $"{PostingText}\nOne more", url: null);
+        using var response = await Client.RequestPostingAnalysisAsync(Alice, over);
+        var problem = await response.ReadAsync<QuotaProblemDto>();
+
+        Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
+        Assert.Equal("applications.analysis_quota_exceeded", problem.Code);
+        Assert.Equal(problem.ResetsAt, response.Headers.RetryAfter?.Date);
+        Assert.Equal(DailyLimit, await CountRowsAsync("llm.analysis_jobs"));
+    }
+
+    [Fact]
+    public async Task Request_SameTextAnalysedBefore_UsesNoQuota()
+    {
+        var alices = await CreateAsync(Alice);
+        await Client.RequestPostingAnalysisOkAsync(Alice, alices);
+        await RunJobsAsync();
+        var bobs = await CreateAsync(Bob, url: null);
+
+        var requested = await Client.RequestPostingAnalysisOkAsync(Bob, bobs);
+
+        Assert.Equal("Ready", requested.State);
+        Assert.Equal(0, requested.Usage.Used);
+    }
+
+    [Fact]
+    public async Task Request_AnalysisFails_GivesTheUseBack()
+    {
+        _llm.Respond = _ => CannedLlmClient.Answer("not json");
+        var application = await CreateAsync(Alice);
+        await Client.RequestPostingAnalysisOkAsync(Alice, application);
+
+        await RunJobsAsync();
+        var failed = await Client.GetPostingAnalysisOkAsync(Alice, application);
+
+        Assert.Equal("Failed", failed.State);
+        Assert.Equal(0, failed.Usage.Used);
+    }
+
+    [Fact]
+    public async Task Job_AppWideDailyCapUsedUp_WaitsForCapacityWithoutCallingTheLlm()
+    {
+        var application = await CreateAsync(Alice);
+        await ExecuteSqlAsync(
+            $"INSERT INTO llm.daily_call_counts (day, count) VALUES ('{Today:yyyy-MM-dd}', 800)");
+        await Client.RequestPostingAnalysisOkAsync(Alice, application);
+
+        await RunJobsAsync();
+        var waiting = await Client.GetPostingAnalysisOkAsync(Alice, application);
+
+        Assert.Equal("WaitingForCapacity", waiting.State);
+        Assert.Empty(_llm.Requests);
+        Assert.Equal(1, waiting.Usage.Used);
     }
 
     private async Task<Guid> CreateAsync(string accessToken, string? postingText = PostingText, string? url = Url) =>

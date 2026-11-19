@@ -15,4 +15,6 @@ internal sealed class ClaimedJob
     public int Attempts { get; init; }
 
     public Guid LeaseToken { get; init; }
+
+    public DateOnly? QuotaDay { get; init; }
 }

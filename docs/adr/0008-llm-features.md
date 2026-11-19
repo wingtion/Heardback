@@ -114,14 +114,21 @@ All numbers are options, so they change without a code change:
 
 | Limit | Default | When reached |
 |---|---|---|
-| Tailoring requests per user | 10 per day | 429 ProblemDetails with the reset time |
-| New posting analyses a user can trigger | 30 per day | The job waits until the next day; adding the posting still works |
-| All LLM calls, app-wide | Below the providers' free daily limits | Jobs wait until the next day; the UI says AI is busy today |
+| Tailoring requests per user (`Matching:TailoringPerDay`) | 10 per day | 429 ProblemDetails with `resetsAt` and `Retry-After` |
+| Posting analyses per user (`Applications:PostingAnalysesPerDay`) | 30 per day | The same 429; text someone already had analysed is free |
+| All LLM calls, app-wide (`Llm:MaxCallsPerDay`) | 800 per day (Groq allows about 1,000 per model) | Jobs wait until midnight UTC without using an attempt; the state is `WaitingForCapacity` |
 
-- Days reset at **midnight UTC**; the UI shows the reset in local time.
-- Counters live in `llm.usage` (user, day, kind). The check and the increment are one `INSERT ... ON
-  CONFLICT DO UPDATE ... WHERE count < limit`, so concurrent requests cannot pass the limit.
-- A use is counted when the job is queued and **given back when the job finally fails**.
+- Days reset at **midnight UTC**; the API returns the reset time and the UI shows it in local time. Every
+  analysis and tailoring response carries the user's usage (`used`, `limit`, `remaining`, `resetsAt`).
+- Per-user counters live in `llm.daily_usage` (user, day, kind). Counting and queuing happen in **one
+  transaction**: the increment is an `INSERT ... ON CONFLICT DO UPDATE ... WHERE count < limit`, so
+  concurrent requests cannot pass the limit (an integration test fires 12 at once); if a job for the same
+  subject is already queued, the transaction rolls back and nothing is counted.
+- A use is **given back when its job finally fails** (permanent failure, attempts used up, or a lease that
+  expired too often), in the same transaction as the status change. The job row records which day's quota it
+  used (`quota_day`).
+- The app-wide cap (`llm.daily_call_counts`) counts every real LLM call, the retry of an unusable answer too,
+  and is checked just before each call.
 - The admin has the same limits as everyone.
 
 ## Consequences

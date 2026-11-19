@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using Heardback.Infrastructure.Llm;
 using Heardback.Infrastructure.Llm.Jobs;
 using Heardback.Infrastructure.Llm.Persistence;
+using Heardback.Infrastructure.Llm.Quotas;
 using Heardback.IntegrationTests.Api;
 using Heardback.IntegrationTests.Postgres;
 using Heardback.Shared.Users;
@@ -17,6 +18,8 @@ public sealed class AnalysisJobsTests(PostgresFixture postgres) : IAsyncLifetime
 {
     private const string Subject = "sha256:posting-text-hash";
     private const int MaxAttempts = 3;
+    private const int DailyLimit = 3;
+    private const int CallCap = 5;
 
     private readonly FakeTimeProvider _clock = new(new DateTimeOffset(2026, 11, 19, 9, 0, 0, TimeSpan.Zero));
     private readonly ScriptedJobHandler _handler = new();
@@ -45,6 +48,7 @@ public sealed class AnalysisJobsTests(PostgresFixture postgres) : IAsyncLifetime
         _factory.Settings["Llm:Jobs:RunWorker"] = "false";
         _factory.Settings["Llm:Jobs:MaxAttempts"] = MaxAttempts.ToString(System.Globalization.CultureInfo.InvariantCulture);
         _factory.Settings["Llm:Jobs:FirstRetryDelay"] = "00:00:30";
+        _factory.Settings["Llm:MaxCallsPerDay"] = CallCap.ToString(System.Globalization.CultureInfo.InvariantCulture);
         _ = _factory.Services;
     }
 
@@ -392,6 +396,186 @@ public sealed class AnalysisJobsTests(PostgresFixture postgres) : IAsyncLifetime
             {
             }
         }
+    }
+
+    [Fact]
+    public async Task EnqueueForUserAsync_WithinLimit_QueuesAndCountsOneUse()
+    {
+        var userId = Guid.NewGuid();
+
+        var result = await EnqueueForUserAsync(Subject, userId);
+
+        Assert.Equal(EnqueueResult.Queued, result);
+        var usage = await GetUsageAsync(userId);
+        Assert.Equal(1, usage.Used);
+        Assert.Equal(DailyLimit - 1, usage.Remaining);
+        Assert.Equal(new DateTimeOffset(2026, 11, 20, 0, 0, 0, TimeSpan.Zero), usage.ResetsAt);
+        Assert.Equal(new DateOnly(2026, 11, 19), Assert.Single(await ReadJobsAsync()).QuotaDay);
+    }
+
+    [Fact]
+    public async Task EnqueueForUserAsync_LimitUsedUp_QueuesAndCountsNothing()
+    {
+        var userId = Guid.NewGuid();
+        for (var index = 0; index < DailyLimit; index++)
+        {
+            await EnqueueForUserAsync($"{Subject}-{index}", userId);
+        }
+
+        var result = await EnqueueForUserAsync($"{Subject}-over", userId);
+
+        Assert.Equal(EnqueueResult.QuotaExceeded, result);
+        Assert.Equal(DailyLimit, (await ReadJobsAsync()).Count);
+        Assert.Equal(DailyLimit, (await GetUsageAsync(userId)).Used);
+    }
+
+    [Fact]
+    public async Task EnqueueForUserAsync_AlreadyQueued_DoesNotCountAgain()
+    {
+        var userId = Guid.NewGuid();
+        await EnqueueForUserAsync(Subject, userId);
+
+        var second = await EnqueueForUserAsync(Subject, userId);
+
+        Assert.Equal(EnqueueResult.AlreadyQueued, second);
+        Assert.Equal(1, (await GetUsageAsync(userId)).Used);
+    }
+
+    [Fact]
+    public async Task EnqueueForUserAsync_ManyAtOnce_NeverPassesTheLimit()
+    {
+        var userId = Guid.NewGuid();
+
+        var results = await Task.WhenAll(Enumerable.Range(0, 12)
+            .Select(index => Task.Run(() => EnqueueForUserAsync($"{Subject}-{index}", userId), CancellationToken)));
+
+        Assert.Equal(DailyLimit, results.Count(result => result == EnqueueResult.Queued));
+        Assert.Equal(DailyLimit, (await ReadJobsAsync()).Count);
+        Assert.Equal(DailyLimit, (await GetUsageAsync(userId)).Used);
+    }
+
+    [Fact]
+    public async Task EnqueueForUserAsync_LimitsArePerUser()
+    {
+        var alice = Guid.NewGuid();
+        for (var index = 0; index < DailyLimit; index++)
+        {
+            await EnqueueForUserAsync($"{Subject}-{index}", alice);
+        }
+
+        var bobs = await EnqueueForUserAsync($"{Subject}-bob", Guid.NewGuid());
+
+        Assert.Equal(EnqueueResult.Queued, bobs);
+    }
+
+    [Fact]
+    public async Task EnqueueForUserAsync_NextUtcDay_StartsFromZero()
+    {
+        var userId = Guid.NewGuid();
+        for (var index = 0; index < DailyLimit; index++)
+        {
+            await EnqueueForUserAsync($"{Subject}-{index}", userId);
+        }
+
+        _clock.Advance(TimeSpan.FromDays(1));
+        var nextDay = await EnqueueForUserAsync($"{Subject}-next", userId);
+
+        Assert.Equal(EnqueueResult.Queued, nextDay);
+        Assert.Equal(1, (await GetUsageAsync(userId)).Used);
+    }
+
+    [Fact]
+    public async Task RunNextAsync_QuotaJobFails_GivesTheUseBack()
+    {
+        var userId = Guid.NewGuid();
+        _handler.Behaviour = (_, _) => Task.FromResult(AnalysisJobOutcome.Failed("invalid_output"));
+        await EnqueueForUserAsync(Subject, userId);
+
+        await RunNextAsync();
+
+        Assert.Equal(0, (await GetUsageAsync(userId)).Used);
+    }
+
+    [Fact]
+    public async Task RunNextAsync_QuotaJobRunsOutOfAttempts_GivesTheUseBack()
+    {
+        var userId = Guid.NewGuid();
+        _handler.Behaviour = (_, _) => Task.FromResult(AnalysisJobOutcome.RetryLater("llm_unavailable"));
+        await EnqueueForUserAsync(Subject, userId);
+
+        for (var attempt = 1; attempt <= MaxAttempts; attempt++)
+        {
+            await RunNextAsync();
+            Assert.Equal(attempt < MaxAttempts ? 1 : 0, (await GetUsageAsync(userId)).Used);
+            _clock.Advance(TimeSpan.FromHours(1));
+        }
+    }
+
+    [Fact]
+    public async Task RunNextAsync_QuotaJobSucceeds_KeepsTheUse()
+    {
+        var userId = Guid.NewGuid();
+        await EnqueueForUserAsync(Subject, userId);
+
+        await RunNextAsync();
+
+        Assert.Equal(1, (await GetUsageAsync(userId)).Used);
+    }
+
+    [Fact]
+    public async Task RunNextAsync_QuotaJobLostItsLeaseTooOften_GivesTheUseBack()
+    {
+        var userId = Guid.NewGuid();
+        await EnqueueForUserAsync(Subject, userId);
+        await EnqueueForUserAsync(Subject + "-2", userId);
+        await SimulateCrashedRunAsync(attempts: MaxAttempts);
+
+        await RunNextAsync();
+
+        Assert.All(await ReadJobsAsync(), job => Assert.Equal("lease_expired", job.LastError));
+        Assert.Equal(0, (await GetUsageAsync(userId)).Used);
+    }
+
+    [Fact]
+    public async Task TryUseAsync_CapReached_RefusesAndSaysWhenItResets()
+    {
+        for (var call = 0; call < CallCap; call++)
+        {
+            Assert.Null(await TryUseCallAsync());
+        }
+
+        Assert.Equal(new DateTimeOffset(2026, 11, 20, 0, 0, 0, TimeSpan.Zero), await TryUseCallAsync());
+        _clock.Advance(TimeSpan.FromDays(1));
+        Assert.Null(await TryUseCallAsync());
+    }
+
+    [Fact]
+    public async Task TryUseAsync_ManyAtOnce_NeverPassesTheCap()
+    {
+        var results = await Task.WhenAll(Enumerable.Range(0, 20)
+            .Select(_ => Task.Run(TryUseCallAsync, CancellationToken)));
+
+        Assert.Equal(CallCap, results.Count(resetsAt => resetsAt is null));
+    }
+
+    private async Task<EnqueueResult> EnqueueForUserAsync(string subjectKey, Guid userId)
+    {
+        await using var scope = _factory.Services.CreateAsyncScope();
+        return await scope.ServiceProvider.GetRequiredService<IAnalysisJobs>()
+            .EnqueueForUserAsync(ScriptedJobHandler.TestKind, subjectKey, userId, DailyLimit, CancellationToken);
+    }
+
+    private async Task<LlmUsage> GetUsageAsync(Guid userId)
+    {
+        await using var scope = _factory.Services.CreateAsyncScope();
+        return await scope.ServiceProvider.GetRequiredService<IAnalysisJobs>()
+            .GetUsageAsync(ScriptedJobHandler.TestKind, userId, DailyLimit, CancellationToken);
+    }
+
+    private async Task<DateTimeOffset?> TryUseCallAsync()
+    {
+        await using var scope = _factory.Services.CreateAsyncScope();
+        return await scope.ServiceProvider.GetRequiredService<ILlmCallBudget>().TryUseAsync(CancellationToken);
     }
 
     private async Task<EnqueueResult> EnqueueAsync(string subjectKey, Guid? userId = null)

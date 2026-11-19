@@ -11,4 +11,7 @@ public enum EnqueueResult
 
     /// <summary>No LLM provider is configured, so nothing is queued (ADR-0008).</summary>
     LlmDisabled,
+
+    /// <summary>The user's daily limit for this kind is used up; nothing was queued or counted.</summary>
+    QuotaExceeded,
 }

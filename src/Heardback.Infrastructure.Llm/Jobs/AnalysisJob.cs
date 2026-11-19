@@ -40,6 +40,9 @@ internal sealed class AnalysisJob
 
     public Guid? RequestedByUserId { get; private set; }
 
+    /// <summary>The UTC day whose quota this job used, if it counted against one; refunded when the job fails.</summary>
+    public DateOnly? QuotaDay { get; private set; }
+
     public DateTimeOffset CreatedAt { get; private set; }
 
     public DateTimeOffset UpdatedAt { get; private set; }

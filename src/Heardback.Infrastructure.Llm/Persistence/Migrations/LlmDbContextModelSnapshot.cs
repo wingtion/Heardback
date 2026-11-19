@@ -61,6 +61,10 @@ namespace Heardback.Infrastructure.Llm.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("next_run_at");
 
+                    b.Property<DateOnly?>("QuotaDay")
+                        .HasColumnType("date")
+                        .HasColumnName("quota_day");
+
                     b.Property<Guid?>("RequestedByUserId")
                         .HasColumnType("uuid")
                         .HasColumnName("requested_by_user_id");
@@ -96,6 +100,47 @@ namespace Heardback.Infrastructure.Llm.Persistence.Migrations
                         .HasDatabaseName("ix_analysis_jobs_kind_subject_key_created_at");
 
                     b.ToTable("analysis_jobs", "llm");
+                });
+
+            modelBuilder.Entity("Heardback.Infrastructure.Llm.Quotas.DailyCallCount", b =>
+                {
+                    b.Property<DateOnly>("Day")
+                        .HasColumnType("date")
+                        .HasColumnName("day");
+
+                    b.Property<int>("Count")
+                        .HasColumnType("integer")
+                        .HasColumnName("count");
+
+                    b.HasKey("Day")
+                        .HasName("pk_daily_call_counts");
+
+                    b.ToTable("daily_call_counts", "llm");
+                });
+
+            modelBuilder.Entity("Heardback.Infrastructure.Llm.Quotas.DailyUsage", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<DateOnly>("Day")
+                        .HasColumnType("date")
+                        .HasColumnName("day");
+
+                    b.Property<string>("Kind")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("kind");
+
+                    b.Property<int>("Count")
+                        .HasColumnType("integer")
+                        .HasColumnName("count");
+
+                    b.HasKey("UserId", "Day", "Kind")
+                        .HasName("pk_daily_usage");
+
+                    b.ToTable("daily_usage", "llm");
                 });
 #pragma warning restore 612, 618
         }

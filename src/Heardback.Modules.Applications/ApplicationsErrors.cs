@@ -41,6 +41,12 @@ internal static class ApplicationsErrors
     public static readonly Error AnalysisUnavailable =
         Error.Conflict("applications.analysis_unavailable", "AI analysis isn't available right now.");
 
+    public static Error AnalysisQuotaExceeded(int dailyLimit, DateTimeOffset resetsAt) =>
+        Error.QuotaExceeded(
+            "applications.analysis_quota_exceeded",
+            $"You've used today's {dailyLimit} posting analyses. You can ask again after the daily reset.",
+            resetsAt);
+
     // The timeline must stay in date order: the submission comes first, so moving it past a later status
     // event would silently change the status (decided 2026-11-18).
     public static Error AppliedAfterFirstUpdate(DateOnly firstUpdate) =>

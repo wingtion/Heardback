@@ -22,4 +22,7 @@ public enum LlmOutcome
     /// Only from <see cref="IStructuredLlm"/>: the answer failed parsing or validation, also on the one retry.
     /// </summary>
     InvalidOutput,
+
+    /// <summary>Only from <see cref="IStructuredLlm"/>: the app-wide daily cap is used up; nothing was sent.</summary>
+    DailyCapReached,
 }

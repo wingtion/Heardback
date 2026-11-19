@@ -7,12 +7,18 @@ namespace Heardback.Infrastructure.Llm;
 public sealed record LlmStructuredResult<T>
     where T : class
 {
-    private LlmStructuredResult(LlmOutcome outcome, T? value, LlmCompletion? completion, TimeSpan? retryAfter)
+    private LlmStructuredResult(
+        LlmOutcome outcome,
+        T? value,
+        LlmCompletion? completion,
+        TimeSpan? retryAfter,
+        DateTimeOffset? resumeAt)
     {
         Outcome = outcome;
         Value = value;
         Completion = completion;
         RetryAfter = retryAfter;
+        ResumeAt = resumeAt;
     }
 
     /// <summary>How the run ended.</summary>
@@ -27,13 +33,19 @@ public sealed record LlmStructuredResult<T>
     /// <summary>For <see cref="LlmOutcome.Unavailable"/>: the earliest wait a provider asked for, if any.</summary>
     public TimeSpan? RetryAfter { get; }
 
+    /// <summary>For <see cref="LlmOutcome.DailyCapReached"/>: when the cap resets.</summary>
+    public DateTimeOffset? ResumeAt { get; }
+
     /// <summary>True when <see cref="Value"/> holds a validated answer.</summary>
     [MemberNotNullWhen(true, nameof(Value), nameof(Completion))]
     public bool IsSuccess => Outcome == LlmOutcome.Succeeded;
 
     internal static LlmStructuredResult<T> Success(T value, LlmCompletion completion) =>
-        new(LlmOutcome.Succeeded, value, completion, null);
+        new(LlmOutcome.Succeeded, value, completion, null, null);
 
     internal static LlmStructuredResult<T> Failure(LlmOutcome outcome, TimeSpan? retryAfter = null) =>
-        new(outcome, null, null, retryAfter);
+        new(outcome, null, null, retryAfter, null);
+
+    internal static LlmStructuredResult<T> CapReached(DateTimeOffset resumeAt) =>
+        new(LlmOutcome.DailyCapReached, null, null, null, resumeAt);
 }

@@ -22,6 +22,9 @@ internal enum PostingAnalysisState
     /// <summary>A worker is analysing it now.</summary>
     Running,
 
+    /// <summary>Queued, but the app-wide daily AI limit is used up; it runs after midnight UTC.</summary>
+    WaitingForCapacity,
+
     /// <summary>The analysis is available.</summary>
     Ready,
 

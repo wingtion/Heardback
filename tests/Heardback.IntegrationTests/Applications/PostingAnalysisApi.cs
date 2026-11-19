@@ -50,7 +50,9 @@ internal static class PostingAnalysisApi
     }
 }
 
-internal sealed record PostingAnalysisDto(string State, PostingAnalysisFieldsDto? Analysis);
+internal sealed record PostingAnalysisDto(string State, PostingAnalysisFieldsDto? Analysis, UsageDto Usage);
+
+internal sealed record UsageDto(int Used, int Limit, int Remaining, DateTimeOffset ResetsAt);
 
 internal sealed record PostingAnalysisFieldsDto(
     string? Company,
@@ -60,3 +62,5 @@ internal sealed record PostingAnalysisFieldsDto(
     string[] Skills,
     string? Location,
     DateTimeOffset AnalyzedAt);
+
+internal sealed record QuotaProblemDto(int Status, string Code, string Detail, DateTimeOffset ResetsAt);

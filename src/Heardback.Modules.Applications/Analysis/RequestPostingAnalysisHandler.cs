@@ -1,54 +1,50 @@
 using Heardback.Infrastructure.Llm.Jobs;
-using Heardback.Modules.Applications.Persistence;
 using Heardback.Shared.Results;
 using Heardback.Shared.Users;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Heardback.Modules.Applications.Analysis;
 
 /// <summary>
 /// Queues an analysis of the application's posting text when the user asks for one (decided 2026-11-19: on
-/// request only, so test postings never use the LLM). Text someone already had analysed is ready at once.
+/// request only, so test postings never use the LLM). Text someone already had analysed is ready at once and
+/// uses none of the daily limit.
 /// </summary>
 internal sealed class RequestPostingAnalysisHandler(
-    ApplicationsDbContext dbContext,
     IAnalysisJobs jobs,
     ICurrentUser currentUser,
+    IOptions<ApplicationsSettings> settings,
     GetPostingAnalysisHandler getAnalysis)
 {
     public async Task<Result<PostingAnalysisResponse>> HandleAsync(Guid applicationId, CancellationToken cancellationToken)
     {
-        var application = await dbContext.Applications
-            .AsNoTracking()
-            .Where(candidate => candidate.Id == applicationId)
-            .Select(candidate => new { candidate.ContentHash, HasText = candidate.PostingText != null })
-            .FirstOrDefaultAsync(cancellationToken);
+        var application = await getAnalysis.FindAsync(applicationId, cancellationToken);
         if (application is null)
         {
             return ApplicationsErrors.NotFound;
         }
 
-        if (application.ContentHash is null || !application.HasText)
+        if (application.ContentHash is not { } contentHash)
         {
             return ApplicationsErrors.NoPostingText;
         }
 
-        var current = await getAnalysis.ForContentHashAsync(application.ContentHash, cancellationToken);
-        if (current.State is PostingAnalysisState.Ready or PostingAnalysisState.Queued or PostingAnalysisState.Running)
+        var current = await getAnalysis.ForContentHashAsync(contentHash, cancellationToken);
+        if (current.State is PostingAnalysisState.Ready or PostingAnalysisState.Queued
+            or PostingAnalysisState.Running or PostingAnalysisState.WaitingForCapacity)
         {
             return current;
         }
 
-        var queued = await jobs.EnqueueAsync(
-            PostingAnalysisJobHandler.JobKind,
-            application.ContentHash,
-            currentUser.GetRequiredUserId(),
-            cancellationToken);
-        if (queued == EnqueueResult.LlmDisabled)
-        {
-            return ApplicationsErrors.AnalysisUnavailable;
-        }
+        var limit = settings.Value.PostingAnalysesPerDay;
+        var queued = await jobs.EnqueueForUserAsync(
+            PostingAnalysisJobHandler.JobKind, contentHash, currentUser.GetRequiredUserId(), limit, cancellationToken);
 
-        return await getAnalysis.ForContentHashAsync(application.ContentHash, cancellationToken);
+        return queued switch
+        {
+            EnqueueResult.LlmDisabled => ApplicationsErrors.AnalysisUnavailable,
+            EnqueueResult.QuotaExceeded => ApplicationsErrors.AnalysisQuotaExceeded(limit, current.Usage.ResetsAt),
+            _ => await getAnalysis.ForContentHashAsync(contentHash, cancellationToken),
+        };
     }
 }

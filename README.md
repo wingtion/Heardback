@@ -129,7 +129,9 @@ docs/design.md                   design system: tokens, type, components, screen
   answers are parsed strictly and checked, and an unusable answer is retried once before it counts as failed.
 - **Posting analysis:** on the user's request, an LLM reads the application's own posting text (personal
   details removed) into company, title, seniority, work mode, skills and location. Results are shared by
-  content hash, so identical text is analysed once; adding a posting never calls the LLM.
+  content hash, so identical text is analysed once; adding a posting never calls the LLM. Daily limits per
+  user (30 analyses, 10 tailoring suggestions) and an app-wide cap on LLM calls protect the free tiers;
+  a failed job gives its use back.
 - **Background jobs:** LLM work runs from a Postgres job table (`llm` schema) processed by an in-process
   worker. Jobs hold only ids and hashes, never user text. Claims use row locks and leases, so jobs run
   once even with several instances and survive a crash; failures retry with backoff and then fail.
