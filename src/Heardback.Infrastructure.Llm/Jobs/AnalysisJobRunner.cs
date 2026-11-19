@@ -1,5 +1,6 @@
 using Heardback.Infrastructure.Llm.Persistence;
 using Heardback.Infrastructure.Llm.Settings;
+using Heardback.Shared.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -72,6 +73,13 @@ internal sealed partial class AnalysisJobRunner(
     private async Task<AnalysisJobOutcome> RunHandlerAsync(ClaimedJob job, CancellationToken cancellationToken)
     {
         await using var scope = scopeFactory.CreateAsyncScope();
+
+        // The handler sees the requesting user as the current user, so per-user filters apply as in the request.
+        if (job.RequestedByUserId is { } userId)
+        {
+            scope.ServiceProvider.GetRequiredService<BackgroundUser>().Set(userId);
+        }
+
         var handlers = scope.ServiceProvider.GetServices<IAnalysisJobHandler>()
             .Where(handler => handler.Kind == job.Kind)
             .ToList();

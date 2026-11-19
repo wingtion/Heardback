@@ -4,6 +4,7 @@ using Heardback.Infrastructure.Llm.Jobs;
 using Heardback.Infrastructure.Llm.Persistence;
 using Heardback.IntegrationTests.Api;
 using Heardback.IntegrationTests.Postgres;
+using Heardback.Shared.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
@@ -34,7 +35,11 @@ public sealed class AnalysisJobsTests(PostgresFixture postgres) : IAsyncLifetime
             TestServices = services =>
             {
                 services.AddSingleton<ILlmClient, EnabledLlmClient>();
-                services.AddSingleton<IAnalysisJobHandler>(_handler);
+                services.AddScoped<IAnalysisJobHandler>(scope =>
+                {
+                    _handler.Services = scope;
+                    return _handler;
+                });
             },
         };
         _factory.Settings["Llm:Jobs:RunWorker"] = "false";
@@ -145,6 +150,31 @@ public sealed class AnalysisJobsTests(PostgresFixture postgres) : IAsyncLifetime
         Assert.Null(job.LeaseToken);
         var run = Assert.Single(_handler.Runs);
         Assert.Equal(new AnalysisJobContext(job.Id, ScriptedJobHandler.TestKind, Subject, userId, 1), run);
+    }
+
+    [Fact]
+    public async Task RunNextAsync_JobWithRequestingUser_HandlerSeesThatUserAsCurrentUser()
+    {
+        var userId = Guid.NewGuid();
+        Guid? seen = Guid.Empty;
+        bool? seenAdmin = null;
+        _handler.Behaviour = (_, _) =>
+        {
+            var currentUser = _handler.Services!.GetRequiredService<ICurrentUser>();
+            seen = currentUser.UserId;
+            seenAdmin = currentUser.IsAdmin;
+            return Task.FromResult(AnalysisJobOutcome.Succeeded());
+        };
+        await EnqueueAsync(Subject, userId);
+        await EnqueueAsync(Subject + "-shared");
+
+        await RunNextAsync();
+        var forUser = seen;
+        await RunNextAsync();
+
+        Assert.Equal(userId, forUser);
+        Assert.Null(seen);
+        Assert.False(seenAdmin);
     }
 
     [Fact]

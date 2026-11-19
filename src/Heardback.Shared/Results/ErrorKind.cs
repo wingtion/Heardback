@@ -8,4 +8,7 @@ public enum ErrorKind
     Forbidden,
     NotFound,
     Conflict,
+
+    /// <summary>A daily or other usage limit is used up; maps to 429.</summary>
+    QuotaExceeded,
 }

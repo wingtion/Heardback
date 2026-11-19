@@ -6,7 +6,9 @@ using Heardback.Infrastructure.Llm.Providers.Groq;
 using Heardback.Infrastructure.Llm.Settings;
 using Heardback.Infrastructure.Llm.Structured;
 using Heardback.Shared.Persistence;
+using Heardback.Shared.Users;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace Heardback.Infrastructure.Llm;
@@ -42,6 +44,7 @@ public static class LlmModule
         services.AddModuleDbContext<LlmDbContext>(LlmDbContext.Schema);
         services.AddScoped<IAnalysisJobs, AnalysisJobs>();
         services.AddScoped<AnalysisJobRunner>();
+        services.TryAddScoped<BackgroundUser>();
         services.AddHostedService<AnalysisJobWorker>();
 
         return services;

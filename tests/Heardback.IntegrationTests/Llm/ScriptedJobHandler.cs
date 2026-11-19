@@ -13,6 +13,9 @@ internal sealed class ScriptedJobHandler : IAnalysisJobHandler
 
     public ConcurrentQueue<AnalysisJobContext> Runs { get; } = new();
 
+    /// <summary>The job scope's services, when registered per scope (see AnalysisJobsTests).</summary>
+    public IServiceProvider? Services { get; set; }
+
     public string Kind => TestKind;
 
     public Task<AnalysisJobOutcome> RunAsync(AnalysisJobContext job, CancellationToken cancellationToken)
