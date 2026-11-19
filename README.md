@@ -143,7 +143,7 @@ docs/design.md                   design system: tokens, type, components, screen
   suggestions; a job runs as the user who asked, under the same per-user filters.
 - **Personal insights** ([ADR-0011](docs/adr/0011-personal-insights.md)): `/api/insights/dashboard` gives
   applications per week, response rate per channel, time to first response and a funnel; `/api/insights/follow-ups`
-  lists applications with no response, longest silence first. Worked out on every read from the user's own
+  lists applications with no response, longest silence first. The Insights page shows both with hand-drawn SVG charts. Worked out on every read from the user's own
   applications through a read-only Applications contract; nothing is stored and no LLM is used.
 - **Background jobs:** LLM work runs from a Postgres job table (`llm` schema) processed by an in-process
   worker. Jobs hold only ids and hashes, never user text. Claims use row locks and leases, so jobs run

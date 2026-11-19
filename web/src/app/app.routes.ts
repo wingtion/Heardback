@@ -34,6 +34,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/cv/cv-page').then((page) => page.CvPage),
       },
       {
+        path: 'insights',
+        title: 'Insights · Heardback',
+        loadComponent: () =>
+          import('./features/insights/insights-page').then((page) => page.InsightsPage),
+      },
+      {
         path: 'admin/invite-codes',
         title: 'Invite codes · Heardback',
         canActivate: [adminGuard],
