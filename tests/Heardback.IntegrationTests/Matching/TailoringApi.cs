@@ -71,4 +71,4 @@ internal sealed record TailoringDetailsDto(
 
 internal sealed record TailoringAdviceDto(string CvSection, string CvQuote, string Advice);
 
-internal sealed record AiConsentDto(bool Allowed, DateTimeOffset? AllowedAt);
+internal sealed record AiConsentDto(bool Allowed, DateTimeOffset? AllowedAt, bool Available);

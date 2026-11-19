@@ -46,6 +46,7 @@ public sealed class TailoringTests(PostgresFixture postgres) : ApplicationsTestB
 
         Assert.False(consent.Allowed);
         Assert.Null(consent.AllowedAt);
+        Assert.True(consent.Available);
     }
 
     [Fact]
