@@ -83,21 +83,21 @@ describe('PostingAnalysisPanel', () => {
     const element = await create(state('NotRequested'));
 
     expect(element.textContent).toContain('Job summary');
-    expect(button(element, 'Analyze posting')).toBeTruthy();
+    expect(button(element, 'Summarize job')).toBeTruthy();
     expect(element.textContent).toContain('28 of 30 left today');
   });
 
   it('request_Clicked_PostsAndShowsAnalyzing', async () => {
     const element = await create(state('NotRequested'));
 
-    button(element, 'Analyze posting').click();
+    button(element, 'Summarize job').click();
     await render();
     const request = http.expectOne(URL);
     expect(request.request.method).toBe('POST');
     request.flush(state('Queued'));
     await render();
 
-    expect(element.textContent).toContain('Analyzing the posting…');
+    expect(element.textContent).toContain('Summarizing the job…');
   });
 
   it('queued_AfterAFewSeconds_ChecksAgainUntilReady', async () => {
@@ -109,7 +109,7 @@ describe('PostingAnalysisPanel', () => {
     await vi.advanceTimersByTimeAsync(0);
     TestBed.tick();
     const element = fixture.nativeElement as HTMLElement;
-    expect(element.textContent).toContain('Analyzing the posting…');
+    expect(element.textContent).toContain('Summarizing the job…');
 
     await vi.advanceTimersByTimeAsync(2900);
     TestBed.tick();
@@ -134,20 +134,20 @@ describe('PostingAnalysisPanel', () => {
       (chip) => chip.textContent?.trim(),
     );
     expect(chips).toEqual(['.NET', 'PostgreSQL']);
-    expect(element.textContent).toContain('Read from the posting text by AI');
+    expect(element.textContent).toContain('Summarized by AI from the posting text');
   });
 
   it('load_WaitingForCapacity_SaysWhenItRuns', async () => {
     const element = await create(state('WaitingForCapacity'));
 
-    expect(element.textContent).toContain('AI is busy for today');
+    expect(element.textContent).toContain('AI has reached its daily limit');
   });
 
   it('load_Failed_OffersTryAgain', async () => {
     const element = await create(state('Failed'));
 
     expect(element.querySelector('[role="alert"]')?.textContent).toContain(
-      'Couldn’t analyze this posting.',
+      'Couldn’t summarize this job.',
     );
     button(element, 'Try again').click();
     await render();
@@ -157,7 +157,7 @@ describe('PostingAnalysisPanel', () => {
   it('request_DailyLimitUsed_ShowsTheLimitBanner', async () => {
     const element = await create(state('NotRequested'));
 
-    button(element, 'Analyze posting').click();
+    button(element, 'Summarize job').click();
     await render();
     http
       .expectOne(URL)
@@ -167,18 +167,18 @@ describe('PostingAnalysisPanel', () => {
       );
     await render();
 
-    expect(element.textContent).toContain('You’ve used today’s posting analyses');
+    expect(element.textContent).toContain('You’ve used all 30 job summaries for today');
   });
 
   it('request_ServerDown_SaysSo', async () => {
     const element = await create(state('NotRequested'));
 
-    button(element, 'Analyze posting').click();
+    button(element, 'Summarize job').click();
     await render();
     http.expectOne(URL).flush(null, { status: 500, statusText: 'Server Error' });
     await render();
 
-    expect(element.textContent).toContain('Couldn’t start the analysis');
+    expect(element.textContent).toContain('Couldn’t start the summary');
   });
 
   it('load_ServerDown_OffersTryAgain', async () => {

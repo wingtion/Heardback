@@ -64,7 +64,7 @@ export function matchSummary(matched: number, total: number, score: number): str
             </ul>
           }
           <p class="text-caption text-ink-muted">
-            Skills named in the role and posting text, compared with your CV.
+            Skills found in the role and posting, checked against your CV.
           </p>
         }
       }

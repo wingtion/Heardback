@@ -162,6 +162,6 @@ describe('TailoringPanel', () => {
     http.expectOne(URL).flush(state('NotRequested'));
     await render();
 
-    expect(element.textContent).toContain('You’ve used today’s suggestions');
+    expect(element.textContent).toContain('You’ve used all 30 suggestion requests for today');
   });
 });

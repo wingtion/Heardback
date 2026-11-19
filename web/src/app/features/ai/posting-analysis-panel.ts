@@ -67,7 +67,8 @@ type RequestProblem =
         }
         @case ('NotRequested') {
           <p class="text-small text-ink-2">
-            AI can read this posting for its title, seniority, work mode and skills.
+            AI can summarize this job for you: title, seniority, work mode, location and the skills
+            it asks for.
           </p>
           <div class="flex flex-wrap items-center gap-2.5">
             <button
@@ -83,7 +84,7 @@ type RequestProblem =
                 <app-spinner tone="current" />
                 Starting…
               } @else {
-                Analyze posting
+                Summarize job
               }
             </button>
             @if (usage(); as text) {
@@ -94,25 +95,25 @@ type RequestProblem =
         @case ('Queued') {
           <div role="status" class="flex items-center gap-2 text-small text-ink-2">
             <app-spinner />
-            Analyzing the posting…
+            Summarizing the job…
           </div>
         }
         @case ('Running') {
           <div role="status" class="flex items-center gap-2 text-small text-ink-2">
             <app-spinner />
-            Analyzing the posting…
+            Summarizing the job…
           </div>
         }
         @case ('WaitingForCapacity') {
           <div role="status" class="flex items-start gap-2 text-small text-status-no-response">
             <app-icon name="clock" [size]="14" class="mt-0.5" />
-            AI is busy for today. The analysis runs after the daily reset at {{ resetsAt() }}.
+            AI has reached its daily limit. Your summary will be ready after {{ resetsAt() }}.
           </div>
         }
         @case ('Failed') {
           <div role="alert" class="flex flex-wrap items-center gap-2 text-small text-danger">
             <app-icon name="warning" [size]="14" />
-            Couldn’t analyze this posting.
+            Couldn’t summarize this job.
             <button appButton size="xs" type="button" [disabled]="requesting()" (click)="request()">
               Try again
             </button>
@@ -136,7 +137,7 @@ type RequestProblem =
               </ul>
             }
             <p class="text-caption text-ink-muted">
-              Read from the posting text by AI on
+              Summarized by AI from the posting text on
               <span class="font-mono">{{ fields.analyzedAt | date: 'd MMM y' }}</span>.
             </p>
           }
@@ -145,12 +146,13 @@ type RequestProblem =
 
       @switch (problem()?.kind) {
         @case ('quota') {
-          <app-banner kind="warning" alert heading="You’ve used today’s posting analyses">
-            You can analyze more postings after the daily reset at {{ problemReset() }}.
+          <app-banner kind="warning" alert heading="Daily limit reached">
+            You’ve used all {{ limit() }} job summaries for today. You can summarize more after
+            {{ problemReset() }}.
           </app-banner>
         }
         @case ('failed') {
-          <app-banner kind="error" heading="Couldn’t start the analysis">
+          <app-banner kind="error" heading="Couldn’t start the summary">
             The server didn’t respond. Try again.
           </app-banner>
         }
@@ -215,6 +217,8 @@ export class PostingAnalysisPanel {
     const usage = this.analysis()?.usage;
     return usage ? resetTime(usage.resetsAt) : '';
   });
+
+  protected readonly limit = computed(() => this.analysis()?.usage.limit ?? 0);
 
   protected readonly problemReset = computed(() => {
     const problem = this.problem();

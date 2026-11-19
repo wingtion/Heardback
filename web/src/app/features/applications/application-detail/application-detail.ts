@@ -152,6 +152,16 @@ export class ApplicationDetail {
     return application ? timelineRows(application) : [];
   });
 
+  /** The application whose posting text is open; opening another application closes it again. */
+  private readonly postingOpenFor = signal<string | null>(null);
+
+  protected readonly showPosting = computed(() => this.postingOpenFor() === this.applicationId());
+
+  protected togglePosting(): void {
+    const id = this.applicationId();
+    this.postingOpenFor.update((open) => (open === id ? null : id));
+  }
+
   private readonly added = signal<AddedEvent | null>(null);
 
   /** Only for the application on screen: opening another one drops the highlight. */

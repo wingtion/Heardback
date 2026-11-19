@@ -142,6 +142,36 @@
           </section>
         }
 
+        @if (application.postingText; as postingText) {
+          <section class="flex flex-col items-start gap-1">
+            <h3 class="text-label font-semibold text-ink-2">Job posting</h3>
+            <button
+              appButton="ghost"
+              size="sm"
+              type="button"
+              class="-ml-2 max-lg:h-11"
+              [attr.aria-expanded]="showPosting()"
+              [attr.aria-controls]="showPosting() ? 'posting-text' : null"
+              (click)="togglePosting()"
+            >
+              <app-icon
+                name="chevron-down"
+                [size]="10"
+                class="text-ink-2"
+                [class.rotate-180]="showPosting()"
+              />
+              {{ showPosting() ? 'Hide posting text' : 'Show posting text' }}
+            </button>
+            @if (showPosting()) {
+              <p
+                id="posting-text"
+                class="max-h-96 w-full overflow-auto rounded-md border border-rule bg-surface p-3 whitespace-pre-line text-small text-ink"
+                [textContent]="postingText"
+              ></p>
+            }
+          </section>
+        }
+
         <app-posting-analysis-panel
           [applicationId]="application.id"
           [version]="application.version"

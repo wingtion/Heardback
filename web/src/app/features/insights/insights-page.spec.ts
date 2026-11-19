@@ -121,7 +121,9 @@ describe('InsightsPage', () => {
     const element = await create(DASHBOARD);
 
     expect(element.textContent).toContain('42%');
-    expect(element.textContent).toContain('5 of 12 applications got a status update.');
+    expect(element.textContent).toContain(
+      '5 of 12 applications got an answer: an interview, an offer or a rejection.',
+    );
     expect(element.textContent).toContain('6.5 days');
     expect(element.textContent).toContain('Median 4 days, from 5 responses.');
     expect(element.textContent).toContain('LinkedIn Easy Apply');
