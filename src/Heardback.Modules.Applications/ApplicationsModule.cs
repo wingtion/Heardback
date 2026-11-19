@@ -1,3 +1,5 @@
+using Heardback.Infrastructure.Llm.Jobs;
+using Heardback.Modules.Applications.Analysis;
 using Heardback.Modules.Applications.Board;
 using Heardback.Modules.Applications.Contracts;
 using Heardback.Modules.Applications.Create;
@@ -20,7 +22,7 @@ namespace Heardback.Modules.Applications;
 /// </summary>
 public static class ApplicationsModule
 {
-    /// <summary>Registers the Applications module's services. Needs the Postings module.</summary>
+    /// <summary>Registers the Applications module's services. Needs the Postings module and the LLM client.</summary>
     /// <param name="services">The application's service collection.</param>
     /// <returns>The same service collection, for chaining.</returns>
     public static IServiceCollection AddApplicationsModule(this IServiceCollection services)
@@ -48,6 +50,11 @@ public static class ApplicationsModule
         services.AddScoped<GetBoardHandler>();
         services.AddScoped<IApplicationPostings, ApplicationPostings>();
 
+        services.AddSingleton<PostingAnalysisPrompt>();
+        services.AddScoped<IAnalysisJobHandler, PostingAnalysisJobHandler>();
+        services.AddScoped<GetPostingAnalysisHandler>();
+        services.AddScoped<RequestPostingAnalysisHandler>();
+
         return services;
     }
 
@@ -59,6 +66,7 @@ public static class ApplicationsModule
         ArgumentNullException.ThrowIfNull(routes);
 
         routes.MapApplicationEndpoints();
+        routes.MapPostingAnalysisEndpoints();
 
         return routes;
     }

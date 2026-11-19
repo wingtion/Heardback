@@ -35,6 +35,9 @@ internal sealed class ApplicationConfiguration : IEntityTypeConfiguration<Applic
         builder.HasIndex(application => new { application.UserId, application.ContentHash }).IsUnique();
         builder.HasIndex(application => new { application.UserId, application.UpdatedAt });
 
+        // Posting analysis is shared by content hash across users; its job reads the text by hash alone.
+        builder.HasIndex(application => application.ContentHash);
+
         builder.HasMany(application => application.Events)
             .WithOne()
             .HasForeignKey(timelineEvent => timelineEvent.ApplicationId)

@@ -84,11 +84,21 @@ Two facts about the providers shaped the decisions below (checked 2026-11-19):
 
 ### Posting analysis
 
-- Queued automatically when a posting with text is created or its text changes. Results are stored by
-  content hash in the Postings schema, so the same text is analysed once for everyone.
-- Before sending, the same personal-details filter as for CVs runs over the posting text (ADR-0006).
-- The application detail API reports the analysis state: `Unavailable`, `Pending`, `Running`, `Ready`,
-  `Failed`.
+- **Queued only when the user asks** (`POST /api/applications/{id}/posting-analysis`; decided by the author
+  on 2026-11-19, so test postings never use the LLM). Adding a posting calls no LLM.
+- The input is the **application's own copy** (company, role, posting text), not the shared posting's
+  first-submitted text: an application found by link can carry different text, and nobody may see an
+  analysis of someone else's text (ADR-0004). Results are stored per content hash of that copy in
+  `applications.posting_analyses`, so identical text is analysed once and shows as ready for every user who
+  has it, without asking again. The job reads the text by hash with the ownership filter lifted for that one
+  read; every row with the hash holds the same text.
+- Before sending, the same personal-details filter as for CVs runs over the text (now in
+  `Heardback.Shared.Privacy`, ADR-0006), and the text is wrapped as untrusted data.
+- `GET /api/applications/{id}/posting-analysis` reports `Unavailable`, `NoPostingText`, `NotRequested`,
+  `Queued`, `Running`, `Ready` or `Failed`. Editing the text changes the hash, so the old analysis no longer
+  applies. A failed analysis can be requested again.
+- Tested once on real providers with an English, a Turkish and a vague posting: both gave usable fields
+  and ignored an injected instruction; Groq was slightly more precise on titles.
 
 ### CV tailoring suggestions
 
@@ -131,3 +141,6 @@ All numbers are options, so they change without a code change:
   UK. The current users are in Turkey; if that changes, use a paid key.
 - The job table is LLM-specific for now (`llm` schema). If non-LLM background work appears later, it can
   move to its own project.
+- **For Phase 7 (account deletion):** a posting analysis outlives the applications that led to it. It holds
+  only fields read from the text (company, title, skills, ...), no user id, but account deletion must also
+  remove analyses whose content hash no application uses any more.

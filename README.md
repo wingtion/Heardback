@@ -127,6 +127,9 @@ docs/design.md                   design system: tokens, type, components, screen
   Each call logs provider, model, prompt id, latency and token counts, never prompt or answer text.
   Prompts are versioned classes with a typed answer; the JSON schema is generated from the answer type,
   answers are parsed strictly and checked, and an unusable answer is retried once before it counts as failed.
+- **Posting analysis:** on the user's request, an LLM reads the application's own posting text (personal
+  details removed) into company, title, seniority, work mode, skills and location. Results are shared by
+  content hash, so identical text is analysed once; adding a posting never calls the LLM.
 - **Background jobs:** LLM work runs from a Postgres job table (`llm` schema) processed by an in-process
   worker. Jobs hold only ids and hashes, never user text. Claims use row locks and leases, so jobs run
   once even with several instances and survive a crash; failures retry with backoff and then fail.
