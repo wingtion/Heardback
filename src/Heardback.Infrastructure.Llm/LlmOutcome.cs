@@ -17,4 +17,9 @@ public enum LlmOutcome
 
     /// <summary>A provider rejected the request itself (bad key, bad request, blocked content). Retrying will not help.</summary>
     Rejected,
+
+    /// <summary>
+    /// Only from <see cref="IStructuredLlm"/>: the answer failed parsing or validation, also on the one retry.
+    /// </summary>
+    InvalidOutput,
 }

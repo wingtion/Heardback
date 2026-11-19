@@ -47,9 +47,12 @@ Two facts about the providers shaped the decisions below (checked 2026-11-19):
 
 - Each feature keeps its prompts in one class with an id and a version (for example `posting-analysis/v1`).
   The version is stored with every result so old results can be recognised after a prompt change.
-- The response is requested as JSON (and, where the provider supports it, with the JSON schema attached).
-  It is parsed strictly into a record (unknown fields, missing required fields and wrong types are
-  rejected), then checked with rules: enum values, list sizes, string lengths, no empty strings.
+- The response is requested as JSON with a JSON schema attached (Groq strict mode, Gemini response
+  schema). The schema is **generated from the answer record** (`JsonSchemaExporter`), so the two cannot
+  drift apart. The answer is parsed strictly into that record (unknown, missing, duplicate or null-for-
+  non-null fields, wrong types, numbers for enums, undefined enum names, code fences and trailing text are
+  refused; enum names are matched without case), then checked with the prompt's own rules: list sizes,
+  string lengths, no blank strings.
 - Invalid output is retried **once** with the same input; a second invalid answer fails the job without
   further retries (PLAN.md).
 - Model output is untrusted: posting text can contain instructions aimed at the model ("prompt

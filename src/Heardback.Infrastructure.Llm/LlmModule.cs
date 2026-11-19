@@ -2,6 +2,7 @@ using Heardback.Infrastructure.Llm.Providers;
 using Heardback.Infrastructure.Llm.Providers.Gemini;
 using Heardback.Infrastructure.Llm.Providers.Groq;
 using Heardback.Infrastructure.Llm.Settings;
+using Heardback.Infrastructure.Llm.Structured;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -29,6 +30,7 @@ public static class LlmModule
         AddProvider<GeminiProvider>(services, settings => settings.Gemini);
 
         services.AddTransient<ILlmClient, FallbackLlmClient>();
+        services.AddTransient<IStructuredLlm, StructuredLlm>();
 
         return services;
     }
