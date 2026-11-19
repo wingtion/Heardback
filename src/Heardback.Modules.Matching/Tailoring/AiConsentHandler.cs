@@ -1,3 +1,4 @@
+using Heardback.Infrastructure.Llm;
 using Heardback.Modules.Matching.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -10,6 +11,7 @@ namespace Heardback.Modules.Matching.Tailoring;
 /// </summary>
 internal sealed partial class AiConsentHandler(
     MatchingDbContext dbContext,
+    ILlmClient llmClient,
     TimeProvider timeProvider,
     ILogger<AiConsentHandler> logger)
 {
@@ -19,7 +21,7 @@ internal sealed partial class AiConsentHandler(
             .AsNoTracking()
             .Select(consent => (DateTimeOffset?)consent.GrantedAt)
             .FirstOrDefaultAsync(cancellationToken);
-        return new AiConsentResponse(grantedAt is not null, grantedAt);
+        return new AiConsentResponse(grantedAt is not null, grantedAt, llmClient.IsEnabled);
     }
 
     public async Task<AiConsentResponse> SetAsync(bool allowed, CancellationToken cancellationToken)
@@ -46,7 +48,7 @@ internal sealed partial class AiConsentHandler(
             LogWithdrawn();
         }
 
-        return new AiConsentResponse(false, null);
+        return new AiConsentResponse(false, null, llmClient.IsEnabled);
     }
 
     // Two tabs allowing at once: the second insert hits the primary key, and the user has consented either way.

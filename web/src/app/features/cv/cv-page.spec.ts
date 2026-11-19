@@ -1,3 +1,4 @@
+import { provideAiOff } from '../ai/ai.testing';
 import { provideHttpClient } from '@angular/common/http';
 import {
   HttpTestingController,
@@ -23,7 +24,13 @@ describe('CvPage', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        // The AI consent section has its own tests; here AI is off, so it stays hidden.
+        provideAiOff(),
+      ],
     });
     http = TestBed.inject(HttpTestingController);
   });

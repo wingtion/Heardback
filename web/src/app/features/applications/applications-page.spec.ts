@@ -6,6 +6,7 @@ import {
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
+import { provideAiOff } from '../ai/ai.testing';
 import { CvApi } from '../cv/cv-api';
 import { ApplicationMatch } from '../cv/cv.models';
 import { Router, provideRouter } from '@angular/router';
@@ -41,6 +42,7 @@ describe('ApplicationsPage', () => {
         ShellActions,
         // The match panel has its own tests; here it only needs an answer.
         { provide: CvApi, useValue: { match: () => of(NO_MATCH) } },
+        provideAiOff(),
       ],
     });
     http = TestBed.inject(HttpTestingController);

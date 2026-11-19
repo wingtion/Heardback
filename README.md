@@ -61,6 +61,10 @@ else on the **Invite codes** page (`/admin/invite-codes`).
 The bootstrap code must look like an invite code: 12 characters from 0-9 and A-Z without I, L, O or U
 (dashes are fine). The API refuses to start otherwise, with a message that says how to generate one.
 
+To try things out quickly, the admin sees **Add sample applications** on the Applications page: it adds
+eight realistic applications with posting text to the admin's own list. It is on only where
+`Applications:SampleDataEnabled` is true (`appsettings.Development.json`), never by default in production.
+
 ### Adding a database migration
 
 ```powershell

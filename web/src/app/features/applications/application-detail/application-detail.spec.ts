@@ -1,3 +1,4 @@
+import { provideAiOff } from '../../ai/ai.testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { Component, signal } from '@angular/core';
@@ -52,6 +53,8 @@ describe('ApplicationDetail', () => {
         provideHttpClientTesting(),
         // The match panel has its own tests; here it only needs an answer.
         { provide: CvApi, useValue: { match: () => of(NO_MATCH) } },
+        // The AI panels have their own tests; here AI is off, so they stay hidden.
+        provideAiOff(),
       ],
     });
     http = TestBed.inject(HttpTestingController);
