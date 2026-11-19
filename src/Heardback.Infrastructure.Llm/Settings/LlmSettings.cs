@@ -20,7 +20,7 @@ internal sealed class LlmSettings
     [ValidateObjectMembers]
     public LlmProviderSettings Gemini { get; set; } = new()
     {
-        Model = "gemini-3.8-flash",
+        Model = "gemini-3.1-flash-lite",
         BaseUrl = new Uri("https://generativelanguage.googleapis.com/v1beta/"),
         AllowsPersonalData = false,
     };

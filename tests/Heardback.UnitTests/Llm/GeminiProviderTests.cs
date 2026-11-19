@@ -47,7 +47,7 @@ public sealed class GeminiProviderTests
         await provider.SendAsync(LlmTestData.Request(), TestContext.Current.CancellationToken);
 
         Assert.NotNull(handler.LastRequest);
-        Assert.Equal(new Uri(BaseUrl + "models/gemini-3.8-flash:generateContent"), handler.LastRequest.RequestUri);
+        Assert.Equal(new Uri(BaseUrl + "models/gemini-3.1-flash-lite:generateContent"), handler.LastRequest.RequestUri);
         Assert.Equal([LlmTestData.GeminiKey], handler.LastRequest.Headers.GetValues("x-goog-api-key"));
         Assert.DoesNotContain(LlmTestData.GeminiKey, handler.LastRequest.RequestUri!.ToString(), StringComparison.Ordinal);
 
