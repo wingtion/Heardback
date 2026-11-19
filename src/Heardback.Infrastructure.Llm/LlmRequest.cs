@@ -14,6 +14,7 @@ namespace Heardback.Infrastructure.Llm;
 /// <c>additionalProperties: false</c>, which Groq's strict mode requires.
 /// </param>
 /// <param name="MaxOutputTokens">Upper bound on the answer's length, in tokens.</param>
+/// <param name="Reasoning">Reasoning effort for this request; <see cref="LlmReasoning.Default"/> uses the setting.</param>
 public sealed record LlmRequest(
     string PromptId,
     int PromptVersion,
@@ -22,4 +23,5 @@ public sealed record LlmRequest(
     string Input,
     string SchemaName,
     JsonElement ResponseSchema,
-    int MaxOutputTokens);
+    int MaxOutputTokens,
+    LlmReasoning Reasoning = LlmReasoning.Default);

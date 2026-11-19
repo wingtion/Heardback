@@ -24,6 +24,9 @@ public interface ILlmPrompt<in TInput, TOutput>
     /// <summary>Upper bound on the answer's length, in tokens.</summary>
     int MaxOutputTokens { get; }
 
+    /// <summary>Reasoning effort; raise it for prompts whose rules a quick answer tends to break.</summary>
+    LlmReasoning Reasoning { get; }
+
     /// <summary>The system prompt.</summary>
     string Instructions { get; }
 

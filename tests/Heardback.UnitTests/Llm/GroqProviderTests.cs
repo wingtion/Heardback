@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using Heardback.Infrastructure.Llm;
 using Heardback.Infrastructure.Llm.Providers;
 using Heardback.Infrastructure.Llm.Providers.Groq;
 using Microsoft.Extensions.Time.Testing;
@@ -64,6 +65,36 @@ public sealed class GroqProviderTests
         Assert.Equal("posting_analysis", schema.GetProperty("name").GetString());
         Assert.True(schema.GetProperty("strict").GetBoolean());
         Assert.True(JsonElement.DeepEquals(LlmTestData.Schema, schema.GetProperty("schema")));
+    }
+
+    [Theory]
+    [InlineData(LlmReasoning.Default, "low")]
+    [InlineData(LlmReasoning.Medium, "medium")]
+    [InlineData(LlmReasoning.High, "high")]
+    public async Task SendAsync_PromptReasoning_OverridesTheSetting(LlmReasoning reasoning, string expected)
+    {
+        var handler = StubHttpHandler.Json(Answer);
+        var provider = CreateProvider(handler);
+
+        await provider.SendAsync(LlmTestData.Request() with { Reasoning = reasoning }, TestContext.Current.CancellationToken);
+
+        using var body = JsonDocument.Parse(handler.LastBody!);
+        Assert.Equal(expected, body.RootElement.GetProperty("reasoning_effort").GetString());
+    }
+
+    [Fact]
+    public async Task SendAsync_ModelWithoutReasoningSetting_NeverSendsReasoningEffort()
+    {
+        var handler = StubHttpHandler.Json(Answer);
+        var settings = LlmTestData.Settings();
+        settings.Value.Groq.ReasoningEffort = null;
+        var provider = new GroqProvider(LlmTestData.Client(handler, BaseUrl), settings, TimeProvider.System);
+
+        await provider.SendAsync(
+            LlmTestData.Request() with { Reasoning = LlmReasoning.Medium }, TestContext.Current.CancellationToken);
+
+        using var body = JsonDocument.Parse(handler.LastBody!);
+        Assert.False(body.RootElement.TryGetProperty("reasoning_effort", out _));
     }
 
     [Fact]

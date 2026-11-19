@@ -41,7 +41,7 @@ internal sealed class GroqProvider(HttpClient httpClient, IOptions<LlmSettings> 
             new GroqResponseFormat("json_schema", new GroqJsonSchema(request.SchemaName, true, request.ResponseSchema)),
             request.MaxOutputTokens,
             Temperature: 0,
-            _settings.ReasoningEffort);
+            ReasoningEffort(request.Reasoning));
 
         var message = new HttpRequestMessage(HttpMethod.Post, CompletionsPath)
         {
@@ -52,6 +52,18 @@ internal sealed class GroqProvider(HttpClient httpClient, IOptions<LlmSettings> 
         return ProviderHttp.SendAsync<GroqChatResponse>(
             httpClient, message, JsonOptions, ReadAnswer, timeProvider, cancellationToken);
     }
+
+    // A null setting means the configured model does not reason, and Groq refuses the parameter for such models,
+    // so a prompt's own effort is only sent when the setting has one.
+    private string? ReasoningEffort(LlmReasoning reasoning) =>
+        (_settings.ReasoningEffort, reasoning) switch
+        {
+            (null, _) => null,
+            (_, LlmReasoning.Low) => "low",
+            (_, LlmReasoning.Medium) => "medium",
+            (_, LlmReasoning.High) => "high",
+            _ => _settings.ReasoningEffort,
+        };
 
     private ProviderReply ReadAnswer(GroqChatResponse response)
     {

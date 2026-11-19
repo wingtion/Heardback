@@ -35,7 +35,8 @@ internal sealed partial class StructuredLlm(ILlmClient client, ILlmCallBudget ca
             prompt.BuildInput(input),
             SchemaName(prompt.Id, prompt.Version),
             LlmJson.SchemaFor(typeof(TOutput)),
-            prompt.MaxOutputTokens);
+            prompt.MaxOutputTokens,
+            prompt.Reasoning);
 
         for (var attempt = 1; attempt <= MaxAttempts; attempt++)
         {
