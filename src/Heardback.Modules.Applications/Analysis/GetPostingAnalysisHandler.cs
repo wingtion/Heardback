@@ -78,7 +78,7 @@ internal sealed class GetPostingAnalysisHandler(
         var state = job switch
         {
             null => PostingAnalysisState.NotRequested,
-            { Status: AnalysisJobStatus.Pending, LastError: LlmFailure.DailyCap } => PostingAnalysisState.WaitingForCapacity,
+            { Status: AnalysisJobStatus.Pending, LastError: LlmJobOutcome.DailyCap } => PostingAnalysisState.WaitingForCapacity,
             { Status: AnalysisJobStatus.Pending } => PostingAnalysisState.Queued,
             { Status: AnalysisJobStatus.Running } => PostingAnalysisState.Running,
 

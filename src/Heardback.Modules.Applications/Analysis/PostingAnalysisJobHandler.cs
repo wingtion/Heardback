@@ -40,7 +40,7 @@ internal sealed class PostingAnalysisJobHandler(
         var result = await llm.RunAsync(prompt, input, cancellationToken);
         if (!result.IsSuccess)
         {
-            return LlmFailure.ToJobOutcome(result);
+            return LlmJobOutcome.FromFailure(result);
         }
 
         var now = timeProvider.GetUtcNow();
