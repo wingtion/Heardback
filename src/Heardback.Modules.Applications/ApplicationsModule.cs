@@ -50,6 +50,7 @@ public static class ApplicationsModule
         services.AddScoped<AddEventHandler>();
         services.AddScoped<GetBoardHandler>();
         services.AddScoped<IApplicationPostings, ApplicationPostings>();
+        services.AddScoped<IApplicationHistory, ApplicationHistoryReader>();
 
         services.AddSingleton<PostingAnalysisPrompt>();
         services.AddScoped<IAnalysisJobHandler, PostingAnalysisJobHandler>();
