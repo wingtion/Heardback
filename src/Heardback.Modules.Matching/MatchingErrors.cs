@@ -61,7 +61,7 @@ internal static class MatchingErrors
             "matching.tailoring_quota_exceeded",
             string.Create(
                 CultureInfo.InvariantCulture,
-                $"You've used today's {dailyLimit} suggestion requests. You can ask again after the daily reset."),
+                $"You've used all {dailyLimit} suggestion requests for today. You can ask for more after the daily reset."),
             resetsAt);
 
     public static Error CvTooLarge(int maxBytes) =>

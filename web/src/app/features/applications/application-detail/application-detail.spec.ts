@@ -95,6 +95,25 @@ describe('ApplicationDetail', () => {
     await render();
   }
 
+  it('posting_WithText_IsClosedUntilShown', async () => {
+    await respond(application({ postingText: 'We build shipment APIs.\nRemote in Turkey.' }));
+
+    expect(detail().textContent).toContain('Job posting');
+    expect(detail().querySelector('#posting-text')).toBeNull();
+    button('Show posting text').click();
+    await render();
+
+    const text = detail().querySelector('#posting-text');
+    expect(text?.textContent).toBe('We build shipment APIs.\nRemote in Turkey.');
+    expect(button('Hide posting text').getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('posting_WithoutText_IsNotShown', async () => {
+    await respond(application({ postingText: null }));
+
+    expect(detail().textContent).not.toContain('Job posting');
+  });
+
   it('load_InFlight_ShowsLoading', () => {
     expect(detail().textContent).toContain('Loading application…');
     http.expectOne(DETAIL_URL).flush(application());

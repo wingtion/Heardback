@@ -48,6 +48,9 @@ export const SELECTED_PARAM = 'id';
 
 /** "board" in the query string shows the board; the list is the default. */
 export const VIEW_PARAM = 'view';
+
+/** Opens the list filtered by status; only read when the page opens. */
+export const STATUS_PARAM = 'status';
 const BOARD_VIEW: ApplicationsView = 'board';
 
 const SEARCH_DELAY_MS = 300;
@@ -108,7 +111,12 @@ export class ApplicationsPage {
   protected readonly statusOf = statusDisplay;
 
   protected readonly search = signal('');
-  protected readonly status = signal<ApplicationListStatus | null>(null);
+  // A link can open the list filtered, e.g. Overview's "See all" with ?status=NoResponse.
+  protected readonly status = signal<ApplicationListStatus | null>(
+    STATUS_FILTERS.find(
+      (option) => option.value === this.route.snapshot.queryParamMap.get(STATUS_PARAM),
+    )?.value ?? null,
+  );
   protected readonly channel = signal<ApplicationChannel | null>(null);
   protected readonly page = signal(1);
 

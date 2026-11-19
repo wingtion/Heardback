@@ -370,3 +370,34 @@ describe('ApplicationsPage', () => {
     });
   });
 });
+
+describe('ApplicationsPage opened with a status', () => {
+  it('open_StatusInTheUrl_StartsFiltered', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: 'applications', component: ApplicationsPage }]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        ApplicationsSummaryStore,
+        ShellActions,
+        { provide: CvApi, useValue: { match: () => of(NO_MATCH) } },
+        provideAiOff(),
+      ],
+    });
+    const http = TestBed.inject(HttpTestingController);
+    const harness = await RouterTestingHarness.create();
+
+    await harness.navigateByUrl('/applications?status=NoResponse', ApplicationsPage);
+    TestBed.tick();
+    await new Promise((resolve) => setTimeout(resolve));
+    TestBed.tick();
+
+    const list = http.expectOne(
+      (request) => request.url === APPLICATIONS_API && request.method === 'GET',
+    );
+    expect(list.request.params.get('status')).toBe('NoResponse');
+    list.flush(applicationPage());
+    http.expectOne(SUMMARY_URL).flush({ total: 8, noResponse: 2 });
+    http.verify();
+  });
+});

@@ -46,7 +46,7 @@ const HIDDEN = ['loading', 'Unavailable', 'NoPostingText', 'NoCv'];
         }
         @case ('ConsentRequired') {
           <p class="text-small text-ink-2">
-            AI can suggest how to rework what your CV already says for this posting.
+            AI can suggest how to present what’s already in your CV so it fits this job better.
           </p>
           <p class="text-caption text-ink-muted">
             To do that, Heardback sends your CV text (emails, phone numbers, links and addresses
@@ -75,7 +75,7 @@ const HIDDEN = ['loading', 'Unavailable', 'NoPostingText', 'NoCv'];
         }
         @case ('NotRequested') {
           <p class="text-small text-ink-2">
-            AI can suggest how to rework what your CV already says for this posting.
+            AI can suggest how to present what’s already in your CV so it fits this job better.
           </p>
           <ng-container *ngTemplateOutlet="requestRow" />
         }
@@ -99,8 +99,7 @@ const HIDDEN = ['loading', 'Unavailable', 'NoPostingText', 'NoCv'];
       @if (view() === 'WaitingForCapacity') {
         <div role="status" class="flex items-start gap-2 text-small text-status-no-response">
           <app-icon name="clock" [size]="14" class="mt-0.5" />
-          AI is busy for today. The suggestions are written after the daily reset at
-          {{ resetsAt() }}.
+          AI has reached its daily limit. Your suggestions will be ready after {{ resetsAt() }}.
         </div>
       }
 
@@ -136,8 +135,9 @@ const HIDDEN = ['loading', 'Unavailable', 'NoPostingText', 'NoCv'];
 
       @switch (problem()?.kind) {
         @case ('quota') {
-          <app-banner kind="warning" alert heading="You’ve used today’s suggestions">
-            You can ask for more after the daily reset at {{ problemReset() }}.
+          <app-banner kind="warning" alert heading="Daily limit reached">
+            You’ve used all {{ limit() }} suggestion requests for today. You can ask for more after
+            {{ problemReset() }}.
           </app-banner>
         }
         @case ('failed') {
@@ -217,6 +217,8 @@ export class TailoringPanel {
     const usage = this.tailoring()?.usage;
     return usage ? resetTime(usage.resetsAt) : '';
   });
+
+  protected readonly limit = computed(() => this.tailoring()?.usage.limit ?? 0);
 
   protected readonly problemReset = computed(() => {
     const problem = this.problem();

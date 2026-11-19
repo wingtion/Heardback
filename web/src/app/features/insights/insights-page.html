@@ -1,0 +1,249 @@
+<div class="flex flex-wrap items-baseline gap-x-3.5 gap-y-1">
+  <h1 class="font-serif text-page-title-sm font-semibold text-ink lg:text-page-title">Overview</h1>
+  @if (numbers(); as numbers) {
+    @if (numbers.totalApplications > 0) {
+      <span class="text-small text-ink-2 tabular-nums">
+        {{ numbers.totalApplications }}
+        {{ numbers.totalApplications === 1 ? 'application' : 'applications' }}
+      </span>
+    }
+  }
+</div>
+
+@switch (view()) {
+  @case ('loading') {
+    <div role="status" class="flex items-center gap-2 text-small text-ink-2">
+      <app-spinner />
+      Working out your numbers…
+    </div>
+  }
+  @case ('error') {
+    <app-banner kind="error" heading="Couldn’t load your numbers">
+      <span class="flex flex-wrap items-center gap-2">
+        The server didn’t respond.
+        <button appButton size="xs" type="button" (click)="retry()">Try again</button>
+      </span>
+    </app-banner>
+  }
+  @case ('empty') {
+    <div class="flex flex-col items-start gap-2.5 py-6">
+      <app-envelope-illustration />
+      <h2 class="font-serif text-empty-title font-semibold text-ink">No numbers yet</h2>
+      <p class="text-small text-ink-2">
+        Add your first application to see how your search is going.
+      </p>
+      <a appButton="primary" class="mt-1 h-8.5" [routerLink]="applicationsPath"
+        >Go to Applications</a
+      >
+    </div>
+  }
+  @case ('ready') {
+    @if (numbers(); as numbers) {
+      <!-- Follow up first: the one thing on this page to act on. -->
+      <section
+        aria-labelledby="follow-up-title"
+        class="flex flex-col gap-2.5 rounded-md border border-rule bg-base px-4 py-3"
+      >
+        <div class="flex items-baseline justify-between gap-2">
+          <h2 id="follow-up-title" class="text-body font-semibold text-ink">Follow up</h2>
+          @if (followUpPage(); as page) {
+            @if (page.totalCount > 0) {
+              <span class="font-mono text-label text-ink-2 tabular-nums">
+                {{ page.totalCount }} waiting
+              </span>
+            }
+          }
+        </div>
+
+        @if (followUpsFailed()) {
+          <div role="alert" class="flex flex-wrap items-center gap-2 text-small text-danger">
+            <app-icon name="warning" [size]="14" />
+            Couldn’t load the applications to follow up.
+            <button appButton size="xs" type="button" (click)="reloadFollowUps()">Try again</button>
+          </div>
+        } @else if (followUpPage(); as page) {
+          @if (page.items.length === 0) {
+            <p class="text-small text-ink-2">
+              Nothing waiting. No application has gone quiet long enough to follow up.
+            </p>
+          } @else {
+            <ul class="flex flex-col divide-y divide-rule" aria-label="Applications to follow up">
+              @for (followUp of page.items; track followUp.applicationId) {
+                <li class="flex flex-wrap items-center gap-x-3 gap-y-2 py-2.5 first:pt-0 last:pb-0">
+                  <div class="flex min-w-0 flex-1 flex-col">
+                    <span class="truncate text-cell font-semibold text-ink">{{
+                      followUp.company
+                    }}</span>
+                    <span class="truncate text-small text-ink-2">{{ followUp.role }}</span>
+                  </div>
+                  <span class="text-label text-status-no-response">
+                    {{ noResponseLabel(followUp.noResponseDays) }}
+                  </span>
+                  <div class="flex gap-2 max-lg:w-full">
+                    <a
+                      appButton
+                      size="xs"
+                      class="max-lg:h-11 max-lg:flex-1"
+                      [routerLink]="applicationsPath"
+                      [queryParams]="openQuery(followUp)"
+                    >
+                      Open
+                    </a>
+                    <button
+                      appButton
+                      size="xs"
+                      type="button"
+                      class="max-lg:h-11 max-lg:flex-1"
+                      [disabled]="marking().has(followUp.applicationId)"
+                      [attr.aria-busy]="marking().has(followUp.applicationId) || null"
+                      (click)="markFollowedUp(followUp)"
+                    >
+                      @if (marking().has(followUp.applicationId)) {
+                        <app-spinner tone="current" />
+                        Saving…
+                      } @else {
+                        Mark followed up
+                      }
+                    </button>
+                  </div>
+                  @if (markFailed() === followUp.applicationId) {
+                    <p role="alert" class="w-full text-small text-danger">
+                      Couldn’t save. Try again.
+                    </p>
+                  }
+                </li>
+              }
+            </ul>
+            @if (page.totalCount > page.items.length) {
+              <a
+                appLink
+                class="self-end text-small"
+                [routerLink]="applicationsPath"
+                [queryParams]="noResponseQuery"
+              >
+                See all {{ page.totalCount }} in the list
+              </a>
+            }
+          }
+        } @else {
+          <div role="status" class="flex items-center gap-2 text-small text-ink-2">
+            <app-spinner />
+            Loading…
+          </div>
+        }
+        <p class="text-caption text-ink-muted">
+          “Mark followed up” adds a note dated today, so the application leaves this list until it
+          goes quiet again.
+        </p>
+      </section>
+
+      <div class="grid gap-4 lg:grid-cols-2">
+        <section
+          aria-labelledby="rate-title"
+          class="flex flex-col gap-1 rounded-md border border-rule bg-base px-4 py-3"
+        >
+          <h2 id="rate-title" class="text-label font-semibold text-ink-2">Response rate</h2>
+          <p class="flex items-baseline gap-2">
+            <span class="font-mono text-page-title font-medium text-ink tabular-nums">
+              {{ numbers.responseRatePercent }}%
+            </span>
+            <span class="text-small text-ink-2">heard back</span>
+          </p>
+          <p class="text-caption text-ink-muted">
+            {{ ofText(numbers.responded, numbers.totalApplications) }} applications got an answer:
+            an interview, an offer or a rejection.
+          </p>
+        </section>
+
+        <section
+          aria-labelledby="time-title"
+          class="flex flex-col gap-1 rounded-md border border-rule bg-base px-4 py-3"
+        >
+          <h2 id="time-title" class="text-label font-semibold text-ink-2">
+            Time to first response
+          </h2>
+          @if (numbers.responseTime.averageDays !== null) {
+            <p class="flex items-baseline gap-2">
+              <span class="font-mono text-page-title font-medium text-ink tabular-nums">
+                {{ daysText(numbers.responseTime.averageDays) }}
+              </span>
+              <span class="text-small text-ink-2">on average</span>
+            </p>
+            <p class="text-caption text-ink-muted">
+              Median {{ daysText(numbers.responseTime.medianDays ?? 0) }}, from
+              {{ numbers.responseTime.responded }}
+              {{ numbers.responseTime.responded === 1 ? 'response' : 'responses' }}.
+            </p>
+          } @else {
+            <p class="text-small text-ink-2">No responses yet.</p>
+          }
+        </section>
+      </div>
+
+      <section
+        aria-labelledby="weeks-title"
+        class="flex flex-col gap-2 rounded-md border border-rule bg-base px-4 py-3"
+      >
+        <h2 id="weeks-title" class="text-label font-semibold text-ink-2">Applications per week</h2>
+        <app-weekly-chart [weeks]="numbers.weeks" />
+      </section>
+
+      <div class="grid gap-4 lg:grid-cols-2">
+        <section
+          aria-labelledby="channels-title"
+          class="flex flex-col gap-2.5 rounded-md border border-rule bg-base px-4 py-3"
+        >
+          <h2 id="channels-title" class="text-label font-semibold text-ink-2">By channel</h2>
+          <ul class="flex flex-col gap-2.5">
+            @for (channel of numbers.channels; track channel.channel) {
+              <li class="flex flex-col gap-1">
+                <div class="flex items-baseline justify-between gap-2 text-small">
+                  <span class="text-ink">{{ channelLabels[channel.channel] }}</span>
+                  <span class="font-mono text-label text-ink-2 tabular-nums">
+                    {{ ofText(channel.responded, channel.applications) }} ·
+                    {{ channel.responseRatePercent }}%
+                  </span>
+                </div>
+                <app-meter-bar [value]="channel.responseRatePercent" />
+              </li>
+            }
+          </ul>
+          <p class="text-caption text-ink-muted">Share of applications that got an answer.</p>
+        </section>
+
+        <section
+          aria-labelledby="funnel-title"
+          class="flex flex-col gap-2.5 rounded-md border border-rule bg-base px-4 py-3"
+        >
+          <h2 id="funnel-title" class="text-label font-semibold text-ink-2">How far they got</h2>
+          <dl class="grid grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-2 text-small">
+            <dt class="text-ink">Applied</dt>
+            <dd><app-meter-bar [value]="100" /></dd>
+            <dd class="text-right font-mono text-label text-ink tabular-nums">
+              {{ numbers.funnel.applied }}
+            </dd>
+            <dt class="text-ink">Interview</dt>
+            <dd>
+              <app-meter-bar [value]="(numbers.funnel.interview / numbers.funnel.applied) * 100" />
+            </dd>
+            <dd class="text-right font-mono text-label text-ink tabular-nums">
+              {{ numbers.funnel.interview }}
+            </dd>
+            <dt class="text-ink">Offer</dt>
+            <dd>
+              <app-meter-bar [value]="(numbers.funnel.offer / numbers.funnel.applied) * 100" />
+            </dd>
+            <dd class="text-right font-mono text-label text-ink tabular-nums">
+              {{ numbers.funnel.offer }}
+            </dd>
+          </dl>
+          <p class="text-caption text-ink-muted">
+            The furthest stage each application reached.
+            {{ numbers.funnel.rejected }}
+            {{ numbers.funnel.rejected === 1 ? 'was' : 'were' }} rejected.
+          </p>
+        </section>
+      </div>
+    }
+  }
+}
