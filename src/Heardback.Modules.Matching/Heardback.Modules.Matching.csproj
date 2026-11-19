@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Heardback.Shared\Heardback.Shared.csproj" />
+    <ProjectReference Include="..\Heardback.Infrastructure.Llm\Heardback.Infrastructure.Llm.csproj" />
     <!-- Only its Contracts namespace is used (IApplicationPostings); architecture tests enforce this. -->
     <ProjectReference Include="..\Heardback.Modules.Applications\Heardback.Modules.Applications.csproj" />
   </ItemGroup>

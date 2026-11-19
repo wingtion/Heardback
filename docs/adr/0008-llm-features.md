@@ -102,11 +102,30 @@ Two facts about the providers shaped the decisions below (checked 2026-11-19):
 
 ### CV tailoring suggestions
 
-- Requested with a button, per application. Needs the user's **opt-in** ("send my CV text to the AI
-  provider"), stored per user and revocable. Without it the endpoint refuses with a clear reason.
-- Input is the stored CV text (personal details already removed on upload, ADR-0006) and the posting text.
-- The result is stored with fingerprints of the CV text and posting text it was made from. When either
-  changes, the result is shown as out of date; reading a result never calls the LLM.
+- Requested with a button, per application (`POST /api/applications/{id}/tailoring`). Needs the user's
+  **opt-in** (`PUT /api/cv/ai-consent`), stored per user. Without it the endpoint refuses with a clear
+  reason. **Withdrawing it deletes every suggestion**, and a job still in the queue then ends without an LLM
+  call and gives its use back.
+- Content (approved by the author on 2026-11-19): a 2-3 sentence fit summary and 3-6 concrete suggestions,
+  each naming a CV section, quoting the CV line it is about and saying what to change. The missing keywords
+  come from the deterministic match (Phase 3), never from the LLM. No cover letter.
+- Input is the stored CV text (personal details already removed on upload, ADR-0006), the application's
+  posting copy (filtered again) and the match lists, each wrapped as untrusted data. The data class is
+  `Personal`, so with the default settings only Groq receives it (verified on the real APIs: a Gemini-only
+  setup returns `NoEligibleProvider` and sends nothing).
+- **Grounding.** On the real API the model kept suggesting skills the CV does not show, against the
+  instructions. Two measures fixed it in testing: the prompt asks for `medium` reasoning (per-prompt
+  `LlmReasoning`; posting analysis stays at the `low` default), and a deterministic filter keeps a suggestion
+  only when its quote appears in the CV (case, spacing, dashes and quote marks normalised) and its advice
+  names none of the missing skills. If nothing is left, the job fails and gives its use back. Light
+  embellishment of an existing line can still slip through, so the UI labels suggestions as AI-written.
+- The job runs **as the requesting user** (`BackgroundUser`, set by the queue from the job row), so the CV,
+  consent and application are read through the normal per-user filters; a test proves Alice's job never
+  reads Bob's CV.
+- The result is stored per application with fingerprints of the CV text and posting copy it was made from.
+  When either changes, the result is shown as out of date (and still shown while a new one is made);
+  reading never calls the LLM. Suggestions are deleted with the CV, with the consent and with the
+  application (`IApplicationDeletedHandler`, a contract the Applications module calls on delete).
 
 ### Quotas
 

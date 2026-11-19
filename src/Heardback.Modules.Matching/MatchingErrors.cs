@@ -43,6 +43,27 @@ internal static class MatchingErrors
             FileField,
             "This PDF has no text we can read; it may be a scan. Export your CV as a PDF from your editor instead.");
 
+    public static readonly Error AiConsentRequired =
+        Error.Conflict(
+            "matching.ai_consent_required", "Allow Heardback to send your CV text to the AI provider first.");
+
+    public static readonly Error TailoringNeedsCv =
+        Error.Conflict("matching.tailoring_needs_cv", "Upload a CV to get suggestions.");
+
+    public static readonly Error TailoringNeedsPostingText =
+        Error.Conflict("matching.tailoring_needs_posting_text", "Add the posting text to get suggestions.");
+
+    public static readonly Error TailoringUnavailable =
+        Error.Conflict("matching.tailoring_unavailable", "AI suggestions aren't available right now.");
+
+    public static Error TailoringQuotaExceeded(int dailyLimit, DateTimeOffset resetsAt) =>
+        Error.QuotaExceeded(
+            "matching.tailoring_quota_exceeded",
+            string.Create(
+                CultureInfo.InvariantCulture,
+                $"You've used today's {dailyLimit} suggestion requests. You can ask again after the daily reset."),
+            resetsAt);
+
     public static Error CvTooLarge(int maxBytes) =>
         Error.Validation(
             "matching.cv_too_large",
