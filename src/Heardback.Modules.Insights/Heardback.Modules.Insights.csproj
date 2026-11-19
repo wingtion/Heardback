@@ -6,6 +6,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Heardback.Shared\Heardback.Shared.csproj" />
+    <!-- Only its Contracts namespace is used (IApplicationHistory); architecture tests enforce this. -->
+    <ProjectReference Include="..\Heardback.Modules.Applications\Heardback.Modules.Applications.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Heardback.UnitTests" />
   </ItemGroup>
 
 </Project>
