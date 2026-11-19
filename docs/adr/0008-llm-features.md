@@ -66,10 +66,17 @@ Two facts about the providers shaped the decisions below (checked 2026-11-19):
 - **The payload holds ids and hashes only, never text.** The handler loads the current text when the job
   runs, so a deleted CV or application simply ends the job as `Succeeded` with nothing to do, and no user
   text sits in the job table.
-- A `BackgroundService` claims due jobs with `FOR UPDATE SKIP LOCKED` and sets a lease. A job whose lease
-  expired (the process died mid-run) is claimed again. Several app instances can run the worker safely.
-- Transient failures (provider down, rate limit, timeout) are retried with exponential backoff plus jitter,
-  honouring `Retry-After`, up to a maximum number of attempts; then the job is `Failed`.
+- A `BackgroundService` claims one due job at a time with `FOR UPDATE SKIP LOCKED` and gives it a lease
+  (5 minutes) and a fresh lease token. Only the holder of that token can record the outcome, so a worker
+  that lost its lease cannot overwrite newer state. A job whose lease expired (the process died mid-run) is
+  claimed again as its next attempt; once the attempts are used up it is marked `Failed`
+  (`lease_expired`), so a job that crashes the process cannot loop forever. Several app instances can run
+  the worker safely; an integration test fails without the row lock.
+- Transient failures (provider down, rate limit, timeout, a handler exception) are retried with
+  exponential backoff (30 s, doubling, at most 1 hour, ±20% jitter), never sooner than `Retry-After`, up
+  to 6 attempts; then the job is `Failed`. A handler can also defer a job to a known time (a quota reset)
+  without using an attempt. On shutdown, a running job is put back without using an attempt.
+- The worker stays idle while the LLM is disabled.
 - A partial unique index allows only one unfinished job per kind and subject key, so double clicks and
   races do not queue the same work twice.
 - Handlers are registered by the module that owns the data (Postings for posting analysis, Matching for

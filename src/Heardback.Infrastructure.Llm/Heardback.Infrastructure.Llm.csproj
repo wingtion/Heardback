@@ -10,6 +10,8 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Heardback.UnitTests" />
+    <!-- The job queue and runner are internal; their concurrency is proven against real Postgres. -->
+    <InternalsVisibleTo Include="Heardback.IntegrationTests" />
   </ItemGroup>
 
 </Project>

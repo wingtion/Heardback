@@ -64,7 +64,7 @@ The bootstrap code must look like an invite code: 12 characters from 0-9 and A-Z
 ### Adding a database migration
 
 ```powershell
-./scripts/Add-Migration.ps1 -Module Identity -Name DescriptiveName
+./scripts/Add-Migration.ps1 -Module Identity -Name DescriptiveName   # -Module Llm for the job table
 ```
 
 The script runs `dotnet ef` and makes the generated classes `internal`, so modules keep exposing only
@@ -127,6 +127,9 @@ docs/design.md                   design system: tokens, type, components, screen
   Each call logs provider, model, prompt id, latency and token counts, never prompt or answer text.
   Prompts are versioned classes with a typed answer; the JSON schema is generated from the answer type,
   answers are parsed strictly and checked, and an unusable answer is retried once before it counts as failed.
+- **Background jobs:** LLM work runs from a Postgres job table (`llm` schema) processed by an in-process
+  worker. Jobs hold only ids and hashes, never user text. Claims use row locks and leases, so jobs run
+  once even with several instances and survive a crash; failures retry with backoff and then fail.
 - **Errors and validation** ([ADR-0003](docs/adr/0003-request-validation.md)): RFC 9457 ProblemDetails
   everywhere, 400 with field-level errors for invalid requests, and configuration validated at startup.
 

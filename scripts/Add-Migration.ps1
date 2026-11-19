@@ -1,6 +1,7 @@
 <#
 .SYNOPSIS
   Adds an EF Core migration to a module, e.g. ./scripts/Add-Migration.ps1 -Module Identity -Name AddInviteNotes
+  (-Module Llm targets src/Heardback.Infrastructure.Llm, which owns the llm schema.)
 
 .DESCRIPTION
   Generated migration classes are public by default, but modules may only expose their Contracts
@@ -15,6 +16,9 @@ param(
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 $project = Join-Path $root "src/Heardback.Modules.$Module"
+if (-not (Test-Path $project)) {
+    $project = Join-Path $root "src/Heardback.Infrastructure.$Module"
+}
 $migrations = Join-Path $project 'Persistence/Migrations'
 
 dotnet tool restore | Out-Null
