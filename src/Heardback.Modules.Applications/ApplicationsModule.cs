@@ -8,6 +8,7 @@ using Heardback.Modules.Applications.Domain;
 using Heardback.Modules.Applications.Endpoints;
 using Heardback.Modules.Applications.Persistence;
 using Heardback.Modules.Applications.Read;
+using Heardback.Modules.Applications.Samples;
 using Heardback.Modules.Applications.Timeline;
 using Heardback.Modules.Applications.Update;
 using Heardback.Shared.Persistence;
@@ -54,6 +55,7 @@ public static class ApplicationsModule
         services.AddScoped<IAnalysisJobHandler, PostingAnalysisJobHandler>();
         services.AddScoped<GetPostingAnalysisHandler>();
         services.AddScoped<RequestPostingAnalysisHandler>();
+        services.AddScoped<AddSampleApplicationsHandler>();
 
         return services;
     }
@@ -67,6 +69,7 @@ public static class ApplicationsModule
 
         routes.MapApplicationEndpoints();
         routes.MapPostingAnalysisEndpoints();
+        routes.MapSampleApplicationEndpoints();
 
         return routes;
     }

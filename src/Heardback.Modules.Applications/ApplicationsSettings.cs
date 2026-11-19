@@ -24,4 +24,10 @@ internal sealed class ApplicationsSettings
     /// </summary>
     [Range(1, 1000)]
     public int PostingAnalysesPerDay { get; set; } = 30;
+
+    /// <summary>
+    /// Lets admins add sample applications to their own list for trying the app out. Off unless configured: on in
+    /// appsettings.Development.json, off in production.
+    /// </summary>
+    public bool SampleDataEnabled { get; set; }
 }
