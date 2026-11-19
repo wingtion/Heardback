@@ -34,8 +34,8 @@ export const routes: Routes = [
         loadComponent: () => import('./features/cv/cv-page').then((page) => page.CvPage),
       },
       {
-        path: 'insights',
-        title: 'Insights · Heardback',
+        path: 'overview',
+        title: 'Overview · Heardback',
         loadComponent: () =>
           import('./features/insights/insights-page').then((page) => page.InsightsPage),
       },

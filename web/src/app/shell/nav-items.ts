@@ -10,7 +10,7 @@ export interface NavItem {
 export const SHELL_ROUTES = {
   applications: '/applications',
   cv: '/cv',
-  insights: '/insights',
+  overview: '/overview',
   inviteCodes: '/admin/invite-codes',
 } as const;
 
@@ -21,7 +21,7 @@ export const SHELL_ROUTES = {
 export const MAIN_NAV: readonly NavItem[] = [
   { label: 'Applications', path: SHELL_ROUTES.applications },
   { label: 'CV', path: SHELL_ROUTES.cv },
-  { label: 'Insights', path: SHELL_ROUTES.insights },
+  { label: 'Overview', path: SHELL_ROUTES.overview },
 ];
 
 export const ADMIN_NAV: readonly NavItem[] = [

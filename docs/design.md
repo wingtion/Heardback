@@ -273,7 +273,7 @@ Container: 1 px `rule` border, radius 4, horizontal scroll inside the box when n
 Bar inside the table container: `surface` background, 52 px tall. "Showing 1–20 of 34" on the left (13, `ink-2`), "Page 1 of 2" (13, `ink-muted`) plus Previous / Next secondary buttons (32 px, chevron icons) on the right. Previous is disabled on page 1, Next on the last page. Mobile: 44 px icon-only Previous/Next with `aria-label`, "Showing 1–20 of 34" centred.
 
 ### Sidebar navigation (desktop)
-**Only pages that exist are listed.** Companies and Settings appear in the design but are added in the phase that builds them. Today the list is Applications, CV and Insights (§17) (+ Invite codes for admins).
+**Only pages that exist are listed.** Companies and Settings appear in the design but are added in the phase that builds them. Today the list is Applications, CV and Overview (§17) (+ Invite codes for admins).
 
 208 px, `surface`, right border `rule`. Top: logo + wordmark (22 px) with a `rule` divider below. Items 34 px, padding 0 10, radius 3, 14 px `ink-2`; active item per §7. Applications shows its count at the right in DM Mono 12 `ink-muted`. **Admin section** (admins only): divider, small heading "Admin" (12, 600, `ink-muted`), then "Invite codes" with the mail icon. Bottom: divider, user's display name (13.5, 600), role underneath ("Admin" / "Member", 12, `ink-muted`), and a small secondary "Sign out" button.
 
@@ -633,11 +633,11 @@ The AI and match sections were hard to tell apart, so the detail groups them und
 | Seniority labels | Not stated, Intern, Junior, Mid-level, Senior, Lead; work mode: Not stated, On-site, Hybrid, Remote |
 | Server error texts | "Add the posting text to analyse it.", "AI analysis isn’t available right now.", "Allow Heardback to send your CV text to the AI provider first.", "Upload a CV to get suggestions." (shown only if the UI and server disagree) |
 
-## 17. Insights (Phase 5, composed from the existing system)
+## 17. Overview (Phase 5, composed from the existing system)
 
-**How this was designed (decided by the author, 2026-11-19):** no Claude Design handoff. The author approved an ASCII layout first, then screenshots of the built page. Only existing tokens; the charts are hand-drawn SVG (no chart library). Sidebar item "Insights" after CV.
+**How this was designed (decided by the author, 2026-11-19):** no Claude Design handoff. The author approved an ASCII layout first, then screenshots of the built page. Only existing tokens; the charts are hand-drawn SVG (no chart library). Sidebar item "Overview" after CV (named by the author on 2026-11-19; the page shows the Insights module). URL `/overview`.
 
-- **Page:** title "Insights" (`page-title`) with "19 applications" (`small`, `ink-2`); content at most 960 px wide; sections are bordered boxes (`rule`, radius 4, `base`, padding 12×16), headings `label` 600 `ink-2` (Follow up: `body` 600 `ink`).
+- **Page:** title "Overview" (`page-title`) with "19 applications" (`small`, `ink-2`); content at most 960 px wide; sections are bordered boxes (`rule`, radius 4, `base`, padding 12×16), headings `label` 600 `ink-2` (Follow up: `body` 600 `ink`).
 - **Follow up** (first: the one thing to act on): "N waiting" in DM Mono at the right. Up to 5 rows (company `cell` 600, role `small` `ink-2`, "No response · N days" `label` in `status-no-response`), each with 28 px secondary **Open** (opens the application in the list) and **Mark followed up** (adds the note "Followed up" dated today, so the row leaves the list); 44 px and full-width pairs below lg. "See all N in the list" link opens the list filtered to No response (`/applications?status=NoResponse`). Caption explains what marking does. Nothing waiting: "Nothing waiting. No application has gone quiet long enough to follow up."
 - **Response rate** and **Time to first response** side by side from lg: the headline number in DM Mono at `page-title` size, a short word beside it ("heard back", "on average"), and a caption with the counts behind it ("8 of 19 applications got a status update.", "Median 4 days, from 8 responses."). No responses: "No responses yet."
 - **Applications per week:** 12 bars in equal cells, 8 units wide, radius 1; past weeks `rule-strong`, empty weeks a 2-unit stub in `rule`, this week `accent`. Under the bars the count of each week (DM Mono `caption` `ink-2`), then the first week's date and "This week" (`caption` `ink-muted`). Each bar has a native tooltip; a visually hidden table repeats the numbers. One series, so no legend.

@@ -111,7 +111,7 @@ export class ApplicationsPage {
   protected readonly statusOf = statusDisplay;
 
   protected readonly search = signal('');
-  // A link can open the list filtered, e.g. Insights' "See all" with ?status=NoResponse.
+  // A link can open the list filtered, e.g. Overview's "See all" with ?status=NoResponse.
   protected readonly status = signal<ApplicationListStatus | null>(
     STATUS_FILTERS.find(
       (option) => option.value === this.route.snapshot.queryParamMap.get(STATUS_PARAM),

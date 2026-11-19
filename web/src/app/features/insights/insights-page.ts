@@ -27,7 +27,7 @@ export function daysText(days: number): string {
 }
 
 /**
- * Insights (docs/design.md §17, ADR-0011): what to follow up on first, then the user's own numbers. Built from
+ * Overview (docs/design.md §17, ADR-0011; the Insights module's page): what to follow up on first, then the user's own numbers. Built from
  * the existing design system with hand-drawn SVG charts (decided by the author on 2026-11-19).
  */
 @Component({
