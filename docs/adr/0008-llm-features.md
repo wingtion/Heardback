@@ -37,8 +37,8 @@ Two facts about the providers shaped the decisions below (checked 2026-11-19):
 - **`Personal` requests never go to a provider whose data may be used for training.** Each provider has a
   `AllowsPersonalData` setting; Gemini defaults to `false` (unpaid tier). With the default settings, CV
   tailoring only uses Groq; if Groq is unavailable the job waits and retries.
-- Models, timeouts and API keys come from options validated on start. **No Groq key means the LLM is
-  disabled**: nothing is queued, the API reports the feature as unavailable, and every non-LLM feature
+- Models, timeouts and API keys come from options validated on start. A provider without an API key is
+  skipped; **with no key at all the LLM is disabled**: nothing is queued, the API reports the feature as unavailable, and every non-LLM feature
   works as before.
 - Every call logs provider, model, prompt id and version, latency, token counts and outcome. Never prompt
   or response text.

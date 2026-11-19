@@ -32,8 +32,15 @@ dotnet user-secrets set "Database:ConnectionString" \
 dotnet user-secrets set "Identity:Tokens:SigningKey" "$(openssl rand -base64 48)"
 # 12 characters, the same shape as an invite code (hex digits are all valid invite characters)
 dotnet user-secrets set "Identity:Invites:BootstrapAdminCode" "$(openssl rand -hex 6)"
+# Optional: AI features. Without any key they are off and everything else works.
+dotnet user-secrets set "Llm:Groq:ApiKey" "<key from console.groq.com>"
+dotnet user-secrets set "Llm:Gemini:ApiKey" "<key from aistudio.google.com>"   # fallback
 cd ../..
 ```
+
+In production the same settings come from environment variables (`Llm__Groq__ApiKey`,
+`Llm__Gemini__ApiKey`). Models, timeouts and which provider may receive CV text are in the `Llm` settings
+section ([ADR-0008](docs/adr/0008-llm-features.md)).
 
 ### Run
 
@@ -114,6 +121,10 @@ docs/design.md                   design system: tokens, type, components, screen
   an application's role and posting text name and those the CV shows, and lists matched and missing
   skills with a score. Deterministic, no LLM, worked out on every read. A text dictionary cannot tell "I know
   Rust" from "my project checks Rust code", so users can mark a found skill as not theirs.
+- **LLM client** ([ADR-0008](docs/adr/0008-llm-features.md)): one `ILlmClient` tries Groq, then
+  Gemini on rate limits, server errors and timeouts, with plain HTTP calls and JSON schema output.
+  Requests containing CV text never go to a provider whose terms allow using them (Gemini's unpaid tier).
+  Each call logs provider, model, prompt id, latency and token counts, never prompt or answer text.
 - **Errors and validation** ([ADR-0003](docs/adr/0003-request-validation.md)): RFC 9457 ProblemDetails
   everywhere, 400 with field-level errors for invalid requests, and configuration validated at startup.
 

@@ -1,5 +1,6 @@
 using Heardback.Api.ClientIp;
 using Heardback.Api.RateLimiting;
+using Heardback.Infrastructure.Llm;
 using Heardback.Modules.Applications;
 using Heardback.Modules.Identity;
 using Heardback.Modules.Insights;
@@ -19,6 +20,7 @@ builder.Services.AddHealthChecks();
 builder.Services.AddDatabaseSettings();
 builder.Services.AddClientIpResolution();
 builder.Services.AddRateLimitRejection();
+builder.Services.AddLlm();
 
 // Every endpoint requires a signed-in user unless it is explicitly marked AllowAnonymous.
 builder.Services.AddAuthorizationBuilder()
