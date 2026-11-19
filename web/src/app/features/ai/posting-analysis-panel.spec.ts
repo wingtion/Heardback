@@ -82,7 +82,7 @@ describe('PostingAnalysisPanel', () => {
   it('load_NotRequested_OffersTheAnalysisWithWhatIsLeft', async () => {
     const element = await create(state('NotRequested'));
 
-    expect(element.textContent).toContain('Posting analysis');
+    expect(element.textContent).toContain('Job summary');
     expect(button(element, 'Analyze posting')).toBeTruthy();
     expect(element.textContent).toContain('28 of 30 left today');
   });

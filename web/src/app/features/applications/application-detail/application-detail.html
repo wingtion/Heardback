@@ -147,13 +147,21 @@
           [version]="application.version"
         />
 
-        <app-match-panel
-          [applicationId]="application.id"
-          [version]="application.version"
-          (edit)="openEdit(application)"
-        />
+        <section class="flex flex-col gap-4" aria-labelledby="cv-for-job-title">
+          <h3
+            id="cv-for-job-title"
+            class="-mb-2 border-t border-dashed border-rule-strong pt-2.5 text-cell font-semibold text-ink"
+          >
+            Your CV for this job
+          </h3>
+          <app-match-panel
+            [applicationId]="application.id"
+            [version]="application.version"
+            (edit)="openEdit(application)"
+          />
 
-        <app-tailoring-panel [applicationId]="application.id" [version]="application.version" />
+          <app-tailoring-panel [applicationId]="application.id" [version]="application.version" />
+        </section>
 
         <!-- Kept on screen so "Update added" is announced when it appears. -->
         <div role="status" class="empty:hidden">

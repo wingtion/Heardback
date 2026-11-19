@@ -594,16 +594,19 @@ Matched and missing differ by the check and the border style, never by colour al
 
 **How this was designed (decided by the author, 2026-11-19):** like §15, no Claude Design handoff; only tokens and components already in this document. The author approves from desktop and phone screenshots (light and dark). **Every AI section is hidden when AI is off on the server** (no API keys), not shown as "unavailable".
 
-### Posting analysis (application detail, between Notes and CV match)
-- Heading "Posting analysis" like Notes (`label`, 600, `ink-2`). Hidden while loading and when the application has no posting text (the match panel already asks for it).
+### Groups and headings (decided by the author, 2026-11-19, after testing)
+The AI and match sections were hard to tell apart, so the detail groups them under two titles, each a dashed `rule-strong` top border with 10 px above the text, `cell` 600 `ink`: **About this job** (Job summary) and **Your CV for this job** (Skills match, then How to improve your CV). Group titles are `h3`, section headings `h4`. Sections an LLM wrote carry a small **AI tag** at the right of their heading: 20 px high, radius 3, `field-border` border, `caption` 500 `ink-2`, plain text "AI" (screen readers hear "written by AI"); the skills match, worked out exactly, has none.
+
+### Job summary (posting analysis; application detail, "About this job", between Notes and the CV group)
+- Heading "Job summary" like Notes (`label`, 600, `ink-2`) with the AI tag; the "About this job" title shows only with it. Hidden while loading and when the application has no posting text (the match panel already asks for it).
 - **Not requested:** "AI can read this posting for its title, seniority, work mode and skills." + 28 px secondary **Analyze posting** (44 px below lg) and, beside it, the usage line in DM Mono `label` `ink-muted`: "28 of 30 left today · resets 03:00" (the reset in the user's own time zone, 24-hour).
 - **Queued / running:** spinner "Analyzing the posting…" (`role="status"`); the panel checks again every 3 seconds.
 - **Ready:** a two-column list (`small`; labels `ink-muted`, values `ink`; "Not stated" in `ink-muted`): Company, Title, Seniority, Work mode, Location; then the skills as **found** chips (§15); caption "Read from the posting text by AI on 19 Nov 2026." (date in DM Mono).
 - **Waiting for capacity** (app-wide daily cap): clock icon, `status-no-response` text: "AI is busy for today. The analysis runs after the daily reset at 03:00."
 - **Failed:** warning icon, `danger`: "Couldn’t analyze this posting." + 28 px Try again (asks again).
 
-### Suggestions (application detail, below CV match)
-- Heading "Suggestions". Hidden while loading, when AI is off, without posting text and without a CV (the match panel covers those).
+### How to improve your CV (tailoring suggestions; "Your CV for this job", below the skills match)
+- Heading "How to improve your CV" with the AI tag. The skills match (§15) is now headed "Skills match". Hidden while loading, when AI is off, without posting text and without a CV (the match panel covers those).
 - **Consent needed** (decided 2026-11-19: consent in place, one click): "AI can suggest how to rework what your CV already says for this posting." then a `caption` `ink-muted` paragraph saying what is sent to whom, with a link to the CV page, then a 28 px **primary** "Allow and get suggestions". The click records consent and asks.
 - **Not requested:** the same sentence + 28 px secondary **Get suggestions** + usage line.
 - **Ready:** the summary (`small`, `ink`), then an ordered list; each item has a 2 px `rule-strong` left border and 10 px padding: the CV section (`label`, 600, `ink-2`), the quoted CV line in DM Mono `caption` `ink-muted` in quotation marks, the advice (`small`, `ink`). Always ends with an info icon and "Written by AI from your CV and this posting. Check each suggestion before you use it." (`caption`, `ink-muted`).
@@ -624,7 +627,7 @@ Matched and missing differ by the check and the border style, never by colour al
 ### Proposed (needs the author's OK from the screenshots)
 | Item | Proposal |
 |---|---|
-| Section names | "Posting analysis", "Suggestions", "AI suggestions" (CV page) |
+| Section names | Decided 2026-11-19: "About this job" › "Job summary"; "Your CV for this job" › "Skills match", "How to improve your CV"; "AI suggestions" (CV page) |
 | Consent wording | "To do that, Heardback sends your CV text (emails, phone numbers, links and addresses already removed) and this posting to Groq, an AI provider. You can stop this at any time on the CV page." |
 | AI label | "Written by AI from your CV and this posting. Check each suggestion before you use it." |
 | Seniority labels | Not stated, Intern, Junior, Mid-level, Senior, Lead; work mode: Not stated, On-site, Hybrid, Remote |

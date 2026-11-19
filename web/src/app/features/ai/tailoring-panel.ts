@@ -10,6 +10,7 @@ import { Link } from '../../shared/ui/link/link';
 import { Spinner } from '../../shared/ui/spinner/spinner';
 import { SHELL_ROUTES } from '../../shell/nav-items';
 import { AiApi } from './ai-api';
+import { AiTag } from './ai-tag';
 import { quotaResetOf, resetTime, usageLine } from './ai-usage';
 import { IN_PROGRESS, POLL_INTERVAL_MS, Tailoring } from './ai.models';
 
@@ -20,17 +21,20 @@ type RequestProblem =
 const HIDDEN = ['loading', 'Unavailable', 'NoPostingText', 'NoCv'];
 
 /**
- * "Suggestions" under the CV match (docs/design.md §16): AI suggestions for reworking what the CV already says
+ * "How to improve your CV" (tailoring suggestions) under the skills match (docs/design.md §16): AI suggestions for reworking what the CV already says
  * for this posting. The first request asks for consent in place ("Allow and get suggestions", decided by the
  * author on 2026-11-19); it is withdrawn on the CV page. Suggestions are always labelled as written by AI.
  */
 @Component({
   selector: 'app-tailoring-panel',
-  imports: [NgTemplateOutlet, RouterLink, Banner, Button, Icon, Link, Spinner],
+  imports: [NgTemplateOutlet, RouterLink, AiTag, Banner, Button, Icon, Link, Spinner],
   host: { class: 'flex flex-col gap-2 empty:hidden' },
   template: `
     @if (visible()) {
-      <h3 class="text-label font-semibold text-ink-2">Suggestions</h3>
+      <div class="flex items-center justify-between gap-2">
+        <h4 class="text-label font-semibold text-ink-2">How to improve your CV</h4>
+        <app-ai-tag />
+      </div>
 
       @switch (view()) {
         @case ('error') {

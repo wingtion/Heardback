@@ -15,7 +15,7 @@ export function matchSummary(matched: number, total: number, score: number): str
 }
 
 /**
- * "CV match" in the application detail (docs/design.md §15): the skills the posting names, split into those
+ * "Skills match" in the application detail (docs/design.md §15): the skills the posting names, split into those
  * the CV shows and those it doesn't, with the share matched as plain text. No gauge: the theme stays in the
  * envelope, not in a score. Reloads when the application's version changes (after Edit or Add update).
  */
@@ -25,7 +25,7 @@ export function matchSummary(matched: number, total: number, score: number): str
   host: { class: 'flex flex-col gap-2' },
   template: `
     <div class="flex items-baseline justify-between gap-2">
-      <h3 class="text-label font-semibold text-ink-2">CV match</h3>
+      <h4 class="text-label font-semibold text-ink-2">Skills match</h4>
       @if (summary(); as text) {
         <span class="font-mono text-label text-ink tabular-nums">{{ text }}</span>
       }

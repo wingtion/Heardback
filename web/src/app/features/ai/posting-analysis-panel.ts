@@ -7,6 +7,7 @@ import { Icon } from '../../shared/ui/icon/icon';
 import { Spinner } from '../../shared/ui/spinner/spinner';
 import { SkillChip } from '../cv/skill-chip';
 import { AiApi } from './ai-api';
+import { AiTag } from './ai-tag';
 import { quotaResetOf, resetTime, usageLine } from './ai-usage';
 import {
   IN_PROGRESS,
@@ -38,17 +39,23 @@ type RequestProblem =
   { readonly kind: 'quota'; readonly resetsAt: string } | { readonly kind: 'failed' };
 
 /**
- * "Posting analysis" in the application detail (docs/design.md §16): on request, an LLM reads the posting text
+& (docs/design.md §16): on request, an LLM reads the posting text
  * into a few fields. Hidden while loading, when AI is off and when there is no posting text (the match panel
  * already asks for it). Checks again every few seconds while the analysis is queued or running.
  */
 @Component({
   selector: 'app-posting-analysis-panel',
-  imports: [DatePipe, Banner, Button, Icon, SkillChip, Spinner],
+  imports: [DatePipe, AiTag, Banner, Button, Icon, SkillChip, Spinner],
   host: { class: 'flex flex-col gap-2 empty:hidden' },
   template: `
     @if (visible()) {
-      <h3 class="text-label font-semibold text-ink-2">Posting analysis</h3>
+      <h3 class="border-t border-dashed border-rule-strong pt-2.5 text-cell font-semibold text-ink">
+        About this job
+      </h3>
+      <div class="flex items-center justify-between gap-2">
+        <h4 class="text-label font-semibold text-ink-2">Job summary</h4>
+        <app-ai-tag />
+      </div>
 
       @switch (view()) {
         @case ('error') {
