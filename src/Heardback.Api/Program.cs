@@ -66,5 +66,6 @@ var api = app.MapGroup(string.Empty).WithRequestValidation();
 api.MapIdentityEndpoints();
 api.MapApplicationsEndpoints();
 api.MapMatchingEndpoints();
+api.MapInsightsEndpoints();
 
 await app.RunAsync();
