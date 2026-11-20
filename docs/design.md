@@ -512,7 +512,7 @@ Opens with the cursor in the link field.
 1. **Job posting link · optional**: URL input (`inputmode="url"`, placeholder "Paste the job link") + a secondary **Paste** button (clipboard icon, same height) that pastes from the clipboard. The button is hidden when the browser has no Clipboard API. Error: "Enter a full link that starts with https://". Hint **(decided, replaces the autofill hint)**: "Used to spot a posting you already track."
 2. **Company · required** ("Enter the company name"), **Role · required** ("Enter the role").
 3. **Channel** (select, the six channels) and **Applied date** (date field, defaults to today) side by side.
-4. **Job posting text · optional**: textarea (3 rows, placeholder "Paste the job description"), hint "Paste the job description only. Don't add personal notes here; use Notes for those." (posting text is shared between users; Notes are in Edit).
+4. **Job description · optional** (renamed from "Job posting text" by the author, 2026-11-20): textarea (3 rows, placeholder "Paste the job description"), hint "Paste the job description only. Don't add personal notes here; use Notes for those." (posting text is shared between users; Notes are in Edit).
 
 Footer: Cancel + primary **"Add application"** ("Adding…" while busy).
 
@@ -526,7 +526,7 @@ Not built: the "· optional, fastest" label suffix and the "Company, role and po
 
 ### Edit application
 Opens from Edit in the detail panel or sheet header. Title "Edit application" with the line "Status changes through the board or Add update." under it (12.5, `ink-muted`).
-Fields: **Job posting link · optional** (full width); **Company · required** | **Role · required**; **Channel** | **Applied date**; **Job posting text · optional** (same hint as Add); **Notes · optional, only you see these** (textarea, 3 rows).
+Fields: **Job posting link · optional** (full width); **Company · required** | **Role · required**; **Channel** | **Applied date**; **Job description · optional** (same hint as Add); **Notes · optional, only you see these** (textarea, 3 rows).
 Errors: "Enter a full link that starts with https://", "Enter the company name", "Enter the role", "Pick today or an earlier date", "Pick a date after 1 January 2000", and **(decided)** "Pick a date on or before your first update (12 Nov 2026)" when the applied date would move past a later timeline event (that would silently change the status).
 Footer: Cancel + primary **"Save"** ("Saving…").
 Saving re-links the application to the matching shared posting (§12); the user sees nothing special unless it hits the "already tracked" case below.
@@ -599,7 +599,7 @@ Matched and missing differ by the check and the border style, never by colour al
 The AI and match sections were hard to tell apart, so the detail groups them under two titles, each a dashed `rule-strong` top border with 10 px above the text, `cell` 600 `ink`: **About this job** (Job summary) and **Your CV for this job** (Skills match, then How to improve your CV). Group titles are `h3`, section headings `h4`. Sections an LLM wrote carry a small **AI tag** at the right of their heading: 20 px high, radius 3, `field-border` border, `caption` 500 `ink-2`, plain text "AI" (screen readers hear "written by AI"); the skills match, worked out exactly, has none.
 
 ### Job posting (application detail, after Notes; added at the author's request, 2026-11-19)
-The posting text was only visible in Edit. Heading "Job posting" like Notes, then the CV page's stored-text pattern (§15): a ghost "Show posting text" / "Hide posting text" with the turning chevron, revealing the text as entered (`small`, `ink`, line breaks kept) on `surface` with a `rule` border, radius 4, at most 384 px high, scrolling. Closed by default and again when another application opens; not shown without posting text.
+The posting text was only visible in Edit. Heading "Job posting" like Notes, then the CV page's stored-text pattern (§15): a ghost "Show job description" / "Hide job description" (renamed from "posting text" by the author, 2026-11-20) with the turning chevron, revealing the text as entered (`small`, `ink`, line breaks kept) on `surface` with a `rule` border, radius 4, at most 384 px high, scrolling. Closed by default and again when another application opens; not shown without posting text.
 
 ### Job summary (posting analysis; application detail, "About this job", between Notes and the CV group)
 - Heading "Job summary" like Notes (`label`, 600, `ink-2`) with the AI tag; the "About this job" title shows only with it. Hidden while loading and when the application has no posting text (the match panel already asks for it).
@@ -674,7 +674,7 @@ Inside the envelope, right after the status / channel row, with a 1 px dashed `r
 
 ### Company page (`/applications/companies/:key`)
 Reached only from the "All your applications at {Company}" link; inside the normal app shell. The URL sits under `/applications` (the handoff says `/companies/:key`) so **Applications** stays the active nav item. No search, no list of companies.
-- **Desktop:** "Back to Applications" with a left chevron (13, `ink-2`, no underline), then the company name (Newsreader 28 / 34, 600, −0.01em) (no caption under it). Two columns, gap 24, from the xl breakpoint; between lg and xl the stats box sits under the list:
+- **Desktop:** "Back to Applications" with a left chevron (13, `ink-2`, no underline), which opens the application the page was opened from again (`?from=` in the URL; decided by the author, 2026-11-20), then the company name (Newsreader 28 / 34, 600, −0.01em) (no caption under it). Two columns, gap 24, from the xl breakpoint; between lg and xl the stats box sits under the list:
   - **Your applications at {Company}** (16, 600) + "Only your own applications are listed. Select one to open it." (12.5, `ink-2`). Table (columns sized by their content; dates, "Last update" and headers never wrap): 1 px `rule`, radius 4; header 40 px `surface`, 12.5 / 600 `ink-2`, `rule-strong` underline; rows at least 48 px with `row-hover`: **Role** (link, 600, `ink`, opens the application), **Status** (status label + ghost badge, wrapping), **Applied** (DM Mono 12.5), **Last update** (right-aligned, `ink-2`, relative such as "14 days ago").
   - **Stats box** (440 px from lg, so its heading fits on one line; the handoff's 360 px wrapped it; `envelope`, 1 px `rule-strong`, radius 4, padding 16, gap 10): heading "Stats from other members who applied to this company" (15, 600; no separate description line), the same five rows in one 96 px column, and the privacy line ending "Their postings and roles are never shown."
 - **Mobile:** the same "Back to Applications" link at 44 px height (the app header is already on screen, so no second header bar). Name (Newsreader 24 / 30), then "Your applications at {Company}" as a list (role 15 / 600 with the short applied date at the right in DM Mono 12 `ink-muted`; status label + badge below; `rule` dividers), then the stats box (96 px value column; privacy line "Based on other members only. You are not counted. Shown once at least 3 others applied.").

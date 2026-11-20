@@ -21,7 +21,7 @@ import {
 import { CommunityApi } from './community-api';
 import { showsBadge } from './community-display';
 import { CommunityNumbersTable } from './community-numbers';
-import { COMPANY_KEY_PARAM } from './community-routes';
+import { COMPANY_KEY_PARAM, FROM_APPLICATION_PARAM } from './community-routes';
 import {
   COMMUNITY_MINIMUM_MEMBERS,
   CompanyApplication,
@@ -83,6 +83,17 @@ export class CompanyPage {
     this.route.paramMap.pipe(map((params) => params.get(COMPANY_KEY_PARAM) ?? '')),
     { initialValue: '' },
   );
+
+  private readonly fromApplication = toSignal(
+    this.route.queryParamMap.pipe(map((params) => params.get(FROM_APPLICATION_PARAM))),
+    { initialValue: null },
+  );
+
+  /** "Back to Applications" opens the application this page was opened from again. */
+  protected readonly backQuery = computed(() => {
+    const id = this.fromApplication();
+    return id ? { id } : null;
+  });
 
   private readonly resource = rxResource({
     params: () => ({ key: this.companyKey() }),

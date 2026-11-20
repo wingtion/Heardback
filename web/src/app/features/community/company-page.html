@@ -1,5 +1,6 @@
 <a
   [routerLink]="applicationsPath"
+  [queryParams]="backQuery()"
   class="inline-flex items-center gap-1.5 self-start rounded-xs text-small text-ink-2 no-underline hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus max-lg:h-11"
 >
   <app-icon name="chevron-left" [size]="12" />

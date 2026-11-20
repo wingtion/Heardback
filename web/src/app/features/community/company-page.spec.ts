@@ -97,6 +97,27 @@ describe('CompanyPage', () => {
     expect(text()).toContain('Their postings and roles are never shown.');
   });
 
+  it('backLink_OpenedFromAnApplication_OpensThatApplicationAgain', async () => {
+    http.expectOne(URL).flush(COMPANY);
+    await harness.navigateByUrl('/applications/companies/brightline%20payments?from=app-7');
+    await render();
+
+    const back = Array.from(root().querySelectorAll('a')).find((link) =>
+      link.textContent?.includes('Back to Applications'),
+    );
+    expect(back?.getAttribute('href')).toBe('/applications?id=app-7');
+  });
+
+  it('backLink_OpenedDirectly_GoesToTheList', async () => {
+    http.expectOne(URL).flush(COMPANY);
+    await render();
+
+    const back = Array.from(root().querySelectorAll('a')).find((link) =>
+      link.textContent?.includes('Back to Applications'),
+    );
+    expect(back?.getAttribute('href')).toBe('/applications');
+  });
+
   it('load_TooFewOtherMembers_StillShowsYourApplications', async () => {
     http.expectOne(URL).flush({ ...COMPANY, numbers: null });
     await render();

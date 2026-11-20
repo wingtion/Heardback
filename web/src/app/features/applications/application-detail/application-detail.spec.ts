@@ -102,12 +102,12 @@ describe('ApplicationDetail', () => {
 
     expect(detail().textContent).toContain('Job posting');
     expect(detail().querySelector('#posting-text')).toBeNull();
-    button('Show posting text').click();
+    button('Show job description').click();
     await render();
 
     const text = detail().querySelector('#posting-text');
     expect(text?.textContent).toBe('We build shipment APIs.\nRemote in Turkey.');
-    expect(button('Hide posting text').getAttribute('aria-expanded')).toBe('true');
+    expect(button('Hide job description').getAttribute('aria-expanded')).toBe('true');
   });
 
   it('posting_WithoutText_IsNotShown', async () => {

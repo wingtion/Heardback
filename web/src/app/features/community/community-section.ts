@@ -6,7 +6,7 @@ import { Banner } from '../../shared/ui/banner/banner';
 import { Button } from '../../shared/ui/button/button';
 import { Icon } from '../../shared/ui/icon/icon';
 import { Spinner } from '../../shared/ui/spinner/spinner';
-import { companyPath } from './community-routes';
+import { FROM_APPLICATION_PARAM, companyPath } from './community-routes';
 import { NumbersColumn, CommunityNumbersTable } from './community-numbers';
 import { COMMUNITY_MINIMUM_MEMBERS, ApplicationCommunity } from './community.models';
 import { ghostHint } from './community-display';
@@ -150,6 +150,7 @@ type SectionView =
       @if (community.companyKey; as key) {
         <a
           [routerLink]="companyPath(key)"
+          [queryParams]="companyQuery()"
           class="inline-flex items-center gap-1.5 self-start rounded-xs text-cell font-semibold text-link underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
         >
           All your applications at {{ company() }}
@@ -203,6 +204,11 @@ export class CommunitySection {
   });
 
   protected hint = ghostHint;
+
+  /** Lets the company page open this application again on "Back to Applications". */
+  protected companyQuery(): Record<string, string> {
+    return { [FROM_APPLICATION_PARAM]: this.applicationId() };
+  }
 
   protected tableLabel(columns: readonly NumbersColumn[]): string {
     return `Stats from other members for ${columns.map((column) => column.heading?.toLowerCase()).join(' and ')}`;

@@ -112,7 +112,7 @@ describe('CommunitySection', () => {
     expect(element.querySelector('table')).toBeNull();
     const link = element.querySelector('a');
     expect(link?.textContent).toContain('All your applications at Northwind');
-    expect(link?.getAttribute('href')).toBe('/applications/companies/northwind');
+    expect(link?.getAttribute('href')).toBe('/applications/companies/northwind?from=app-1');
   });
 
   it('load_BothGroupsAndHighRisk_ShowsEveryReasonAndBothColumns', async () => {

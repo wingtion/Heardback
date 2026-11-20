@@ -123,7 +123,7 @@ describe('AddApplicationDialog', () => {
     let created: string | null = null;
     ref.componentInstance?.created.subscribe((value) => (created = value.id));
     fillRequired();
-    type('Job posting text', '  Shipment tracking APIs. ');
+    type('Job description', '  Shipment tracking APIs. ');
     type('Channel', 'Referral');
 
     await submit();
@@ -211,7 +211,7 @@ describe('AddApplicationDialog', () => {
 
   it('submit_ConflictWithoutLink_ShowsTheDuplicateTextBanner', async () => {
     fillRequired();
-    type('Job posting text', 'Same text as before');
+    type('Job description', 'Same text as before');
 
     await submit();
     http
