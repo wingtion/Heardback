@@ -93,6 +93,7 @@ internal static class DashboardCalculator
             applications.Count(application => Reached(application, ApplicationStage.Rejected)));
     }
 
-    private static int Rate(int part, int whole) =>
+    /// <summary>A whole percent, rounded half away from zero.</summary>
+    public static int Rate(int part, int whole) =>
         (int)Math.Round(Percent * part / whole, MidpointRounding.AwayFromZero);
 }

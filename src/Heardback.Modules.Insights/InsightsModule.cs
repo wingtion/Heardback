@@ -1,3 +1,4 @@
+using Heardback.Modules.Insights.Community;
 using Heardback.Modules.Insights.Dashboard;
 using Heardback.Modules.Insights.Endpoints;
 using Heardback.Modules.Insights.FollowUps;
@@ -19,13 +20,19 @@ public static class InsightsModule
     {
         ArgumentNullException.ThrowIfNull(services);
 
+        services.AddOptions<CommunitySettings>()
+            .BindConfiguration(CommunitySettings.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
         services.AddScoped<GetDashboardHandler>();
         services.AddScoped<ListFollowUpsHandler>();
+        services.AddScoped<CommunitySignalsHandler>();
 
         return services;
     }
 
-    /// <summary>Maps the Insights module's HTTP endpoints (<c>/api/insights/*</c>).</summary>
+    /// <summary>Maps the Insights module's HTTP endpoints (<c>/api/insights/*</c> and <c>/api/community/*</c>).</summary>
     /// <param name="routes">The application's endpoint route builder.</param>
     /// <returns>The same route builder, for chaining.</returns>
     public static IEndpointRouteBuilder MapInsightsEndpoints(this IEndpointRouteBuilder routes)
@@ -33,6 +40,7 @@ public static class InsightsModule
         ArgumentNullException.ThrowIfNull(routes);
 
         routes.MapInsightRoutes();
+        routes.MapCommunityRoutes();
 
         return routes;
     }

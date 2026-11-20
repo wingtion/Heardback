@@ -145,6 +145,12 @@ docs/design.md                   design system: tokens, type, components, screen
   applications per week, response rate per channel, time to first response and a funnel; `/api/insights/follow-ups`
   lists applications with no response, longest silence first. The Overview page (`/overview`) shows both with hand-drawn SVG charts. Worked out on every read from the user's own
   applications through a read-only Applications contract; nothing is stored and no LLM is used.
+- **Community signals** ([ADR-0013](docs/adr/0013-community-signals.md)): `/api/community/*` shows how other
+  members fared with the same posting and company (members, response rate, days to first answer) and an
+  explainable ghost-listing hint (0-5 points, each with its reason). Numbers appear only once at least 3 other
+  members have a settled application in the group; the viewer is never counted, and only postings and
+  companies the viewer tracks can be asked about. One Applications contract is the single cross-user read and
+  returns counts only.
 - **Background jobs:** LLM work runs from a Postgres job table (`llm` schema) processed by an in-process
   worker. Jobs hold only ids and hashes, never user text. Claims use row locks and leases, so jobs run
   once even with several instances and survive a crash; failures retry with backoff and then fail.

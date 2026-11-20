@@ -17,11 +17,16 @@ are matched after normalization with legal suffixes removed.
 
 ## Decision
 
-**One cross-user read path.** Every other query keeps the per-user ownership filter. The Applications module
-exposes a new contract, `ICommunityOutcomes`, which is the only place that switches the filter off. It runs the
-grouping in the database and returns counts only: no user id, application id, notes, posting text, link or
-date of an individual application leaves it. The Insights module turns those counts into the signal; it never
-sees rows. Nothing new is stored and everything is computed on each read (as in ADR-0011), so a deleted
+**One cross-user read path.** Every other request keeps the per-user ownership filter (the posting-analysis job
+reads text by content hash without a user, ADR-0008, but shows nothing about other users). The Applications
+module exposes a new contract, `ICommunityOutcomes`, the only place that reads other users' applications for
+something a user sees. It starts from the signed-in user's own applications, so it can only be asked about
+postings and companies that user tracks. Inside the module it reads other members' settled applications for
+those groups (user id, posting, company key, applied date and first response date only), groups them, drops
+groups below the minimum size and returns counts: no user id, application id, notes, posting text, link or date
+of an individual application leaves the module. The Insights module turns those counts into the signal. The
+minimum size is an Applications setting (`CommunityMinimumMembers`, never below 3), so the check sits next to
+the data. Nothing new is stored and everything is computed on each read (as in ADR-0011), so a deleted
 application drops out of every aggregate immediately.
 
 **Groups.**
@@ -30,8 +35,8 @@ application drops out of every aggregate immediately.
   compatibility normalization, removing accents and folding the Turkish dotless i (members type both
   "Şişecam" and "Sisecam"), lower-casing with the invariant culture, collapsing whitespace and punctuation,
   and removing trailing legal forms (Inc, LLC, Ltd, Limited, GmbH, AG, BV, SA, SAS, Corp, Co, A.Ş.,
-  Ltd. Şti., San. ve Tic., ...). It is stored on each application (indexed) so grouping runs in the
-  database, together with a role key (the same folding without removing legal forms) for the "posted again"
+  Ltd. Şti., San. ve Tic., ...). It is stored on each application (indexed) so the database can select a
+  company's applications, together with a role key (the same folding without removing legal forms) for the "posted again"
   rule. Two different companies with the same name are merged; that is accepted. Rows saved before the keys
   existed keep them empty until their next edit and are left out of company groups: nothing is deployed yet,
   so only local development data is affected, and the rules live in C#, which an SQL backfill could not
@@ -60,26 +65,32 @@ the sentences, never only the score. A point can only use a group that passed th
 | 1 | The posting was first seen here at least 30 days ago | posting |
 | 2 | No member heard back on this posting | posting |
 | 1 | Fewer than 1 in 4 members heard back on this posting (instead of the 2 above) | posting |
-| 1 | Fewer than 1 in 4 members heard back from this company | company |
+| 1 | Fewer than 1 in 4 of other members' applications to this company got an answer | company |
 | 1 | The company took 21 days or more to answer on average | company |
-| 1 | The company has had this role (same normalized title) as 3 or more separate postings | company |
+| 1 | The viewer's role at this company (same role key) is linked to 3 or more separate postings | company |
+
+"Fewer than 1 in 4" is compared exactly, so 1 of 4 is not low. The posting count for a role includes the
+viewer's own posting and is only given for a company that passed the minimum size.
 
 The total is capped at 5. Level: 0–1 Low, 2–3 Medium, 4–5 High. When neither group passes the minimum size the
 hint is not shown at all (design.md §12: render only when data exists). It is worded as a hint ("likely
-inactive"), not a verdict. The numbers (30 days, 1 in 4, 21 days, 3 postings, 3 members) are settings with
-these defaults and are checked on start.
+inactive"), not a verdict. The numbers (30 days, 1 in 4, 21 days, 3 postings) are settings in the `Community`
+section with these defaults and are checked on start.
 
 `times_added` from ADR-0004 is **not** used: it counts re-links after edits, and below the minimum size it
-would reveal that someone else tracks the posting.
+would reveal that someone else tracks the posting. For the same reason the posting's first-seen date is only
+read for postings that passed the minimum size.
 
-**Access.**
-- `GET /api/applications/{id}/community`: the posting and company signal for one of the viewer's own
-  applications (404 for anyone else's, like every other application route).
-- A light badge list for the viewer's applications (level only, Medium and High), so the list and board can
-  show badges without one request per row.
-- `GET /api/companies/{key}`: the company page, only when the viewer has at least one application with that
-  company key (404 otherwise). It shows the company aggregates and the viewer's own applications there. It
-  never lists other members' postings, roles or dates at that company. There is no company search or list.
+**Access** (Insights module, `/api/community`, signed-in users only).
+- `GET /api/community/applications/{id}`: other members' numbers for the posting and the company, the company
+  key and the ghost-listing hint for one of the viewer's own applications (404 for anyone else's, like every
+  application route).
+- `GET /api/community/badges`: the viewer's applications with a Medium or High hint (id, level, score), paged,
+  so the list and board can show badges without one request per row.
+- `GET /api/community/companies/{key}`: the company page, only when the viewer has at least one application with
+  that company key. A company only other members track gets the same 404 as one nobody tracks. It shows the
+  company numbers and the viewer's own applications there, never other members' postings, roles or dates.
+  There is no company search or list.
 - Admins get no extra access to community data.
 
 ## Consequences
