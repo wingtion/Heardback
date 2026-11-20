@@ -1,3 +1,6 @@
+import { provideCommunityQuiet } from '../../community/community.testing';
+import { CommunityApi } from '../../community/community-api';
+import { CommunityBadgesStore } from '../../community/community-badges';
 import { provideAiOff } from '../../ai/ai.testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
@@ -51,6 +54,7 @@ describe('ApplicationDetail', () => {
         provideRouter([]),
         provideHttpClient(),
         provideHttpClientTesting(),
+        ...provideCommunityQuiet(),
         // The match panel has its own tests; here it only needs an answer.
         { provide: CvApi, useValue: { match: () => of(NO_MATCH) } },
         // The AI panels have their own tests; here AI is off, so they stay hidden.
@@ -98,25 +102,49 @@ describe('ApplicationDetail', () => {
   it('posting_WithText_IsClosedUntilShown', async () => {
     await respond(application({ postingText: 'We build shipment APIs.\nRemote in Turkey.' }));
 
-    expect(detail().textContent).toContain('Job posting');
+    expect(detail().textContent).toContain('Job description');
     expect(detail().querySelector('#posting-text')).toBeNull();
-    button('Show posting text').click();
+    button('Show job description').click();
     await render();
 
     const text = detail().querySelector('#posting-text');
     expect(text?.textContent).toBe('We build shipment APIs.\nRemote in Turkey.');
-    expect(button('Hide posting text').getAttribute('aria-expanded')).toBe('true');
+    expect(button('Hide job description').getAttribute('aria-expanded')).toBe('true');
   });
 
   it('posting_WithoutText_IsNotShown', async () => {
     await respond(application({ postingText: null }));
 
-    expect(detail().textContent).not.toContain('Job posting');
+    expect(detail().textContent).not.toContain('Show job description');
   });
 
   it('load_InFlight_ShowsLoading', () => {
     expect(detail().textContent).toContain('Loading application…');
     http.expectOne(DETAIL_URL).flush(application());
+  });
+
+  it('load_GhostRiskHigh_ShowsTheBadgeBesideTheStatus', async () => {
+    TestBed.inject(CommunityApi).badges = () =>
+      of([{ applicationId: 'app-1', level: 'High', score: 4 }]);
+    TestBed.inject(CommunityBadgesStore).reload();
+    await respond();
+
+    const badge = detail().querySelector('app-ghost-badge');
+    expect(badge?.textContent).toContain('High');
+    expect(badge?.closest('div')?.querySelector('app-status-label')).toBeTruthy();
+  });
+
+  it('load_Loaded_NotesAndTimelineFirstStatsFromOtherMembersLast', async () => {
+    await respond();
+
+    const order = ['Notes', 'Timeline', 'Your CV for this job', 'Stats from other members'].map(
+      (heading) =>
+        Array.from(detail().querySelectorAll('h3')).findIndex((h3) =>
+          h3.textContent?.includes(heading),
+        ),
+    );
+    expect(order.every((index) => index >= 0)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
   });
 
   it('load_Loaded_ShowsTheEnvelopeStatusNotesAndTimeline', async () => {

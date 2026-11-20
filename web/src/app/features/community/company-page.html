@@ -1,0 +1,225 @@
+<a
+  [routerLink]="applicationsPath"
+  [queryParams]="backQuery()"
+  class="inline-flex items-center gap-1.5 self-start rounded-xs text-small text-ink-2 no-underline hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus max-lg:h-11"
+>
+  <app-icon name="chevron-left" [size]="12" />
+  Back to Applications
+</a>
+
+@let current = view();
+@switch (current.kind) {
+  @case ('loading') {
+    <div role="status" class="flex items-center gap-2 text-small text-ink-2">
+      <app-spinner />
+      Loading company…
+    </div>
+    <div aria-hidden="true" class="flex flex-col gap-3.5">
+      <span class="h-4.5 w-65 max-w-full rounded-xs bg-skeleton"></span>
+      <div class="flex gap-5">
+        <div class="flex flex-1 flex-col gap-2.5">
+          @for (row of skeletonRows; track row) {
+            <span class="h-10 rounded-sm bg-skeleton"></span>
+          }
+        </div>
+        <span class="hidden h-34 w-55 rounded-md border border-rule bg-surface lg:block"></span>
+      </div>
+    </div>
+  }
+
+  @case ('error') {
+    <app-banner kind="error" heading="Couldn’t load this company">
+      <p>The server didn’t respond. Your applications are safe.</p>
+      <button appButton size="sm" type="button" class="mt-1 max-lg:h-11" (click)="retry()">
+        Try again
+      </button>
+    </app-banner>
+  }
+
+  @case ('not-found') {
+    <div class="flex max-w-130 flex-col items-start gap-3 py-3 lg:py-1">
+      <app-envelope-illustration />
+      <h1 class="font-serif text-page-title-sm font-semibold text-ink lg:text-dialog-title">
+        You have no applications at this company
+      </h1>
+      <p class="text-body text-ink-2 lg:text-cell">
+        Company pages only open from your own applications. The link may be old, or the application
+        was deleted.
+      </p>
+      <a
+        appButton
+        [routerLink]="applicationsPath"
+        class="mt-1 h-9 max-lg:mt-1.5 max-lg:h-12 max-lg:w-full max-lg:text-ui-lg"
+      >
+        Go to Applications
+      </a>
+    </div>
+  }
+
+  @case ('loaded') {
+    <div>
+      <h1 class="font-serif text-page-title-sm font-semibold text-ink lg:text-page-title">
+        {{ current.company.company }}
+      </h1>
+    </div>
+
+    <div class="flex flex-col gap-4 lg:gap-6 xl:flex-row xl:items-start">
+      <section
+        class="flex min-w-0 flex-1 flex-col gap-2.5"
+        aria-labelledby="own-applications-title"
+      >
+        <div>
+          <h2 id="own-applications-title" class="text-ui-lg font-semibold text-ink lg:text-ui-xl">
+            Your applications at {{ current.company.company }}
+          </h2>
+          <p class="text-label text-ink-2">
+            Only your own applications are listed.<span class="max-lg:hidden">
+              Select one to open it.</span
+            >
+          </p>
+        </div>
+
+        <!-- Desktop: a table; phones: a list (docs/design.md §18). -->
+        <table
+          class="hidden w-full border-separate border-spacing-0 rounded-md border border-rule text-cell lg:table"
+          aria-labelledby="own-applications-title"
+        >
+          <thead>
+            <tr class="text-label font-semibold whitespace-nowrap text-ink-2">
+              <th
+                scope="col"
+                class="h-10 rounded-tl-md border-b border-rule-strong bg-surface pl-4 text-left"
+              >
+                Role
+              </th>
+              <th scope="col" class="border-b border-rule-strong bg-surface text-left">Status</th>
+              <th scope="col" class="border-b border-rule-strong bg-surface text-left">Applied</th>
+              <th
+                scope="col"
+                class="rounded-tr-md border-b border-rule-strong bg-surface pr-4 text-right"
+              >
+                Last update
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.item.applicationId; let last = $last) {
+              <tr class="hover:bg-row-hover">
+                <td
+                  class="h-12 py-1.5 pr-3 pl-4"
+                  [class.border-b]="!last"
+                  [class.border-rule]="!last"
+                >
+                  <a
+                    class="rounded-xs font-semibold text-ink underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                    [routerLink]="applicationsPath"
+                    [queryParams]="{ id: row.item.applicationId }"
+                  >
+                    {{ row.item.role }}
+                  </a>
+                </td>
+                <td class="py-1.5 pr-3" [class.border-b]="!last" [class.border-rule]="!last">
+                  <span class="flex flex-wrap gap-1.5">
+                    <app-status-label
+                      [label]="row.status.label"
+                      [tone]="row.status.tone"
+                      [glyph]="row.status.glyph"
+                    />
+                    @if (row.ghost; as ghost) {
+                      <app-ghost-badge [level]="ghost.level" [score]="ghost.score" />
+                    }
+                  </span>
+                </td>
+                <td
+                  class="py-1.5 pr-3 font-mono text-label whitespace-nowrap"
+                  [class.border-b]="!last"
+                  [class.border-rule]="!last"
+                >
+                  {{ row.item.appliedOn | date: dateFormat }}
+                </td>
+                <td
+                  class="py-1.5 pr-4 text-right text-ink-2 whitespace-nowrap"
+                  [class.border-b]="!last"
+                  [class.border-rule]="!last"
+                >
+                  {{ row.updated }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+
+        <ul class="border-t border-rule lg:hidden" aria-labelledby="own-applications-title">
+          @for (row of rows(); track row.item.applicationId) {
+            <li>
+              <a
+                class="flex flex-col gap-1.25 border-b border-rule py-2.5 text-ink no-underline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
+                [routerLink]="applicationsPath"
+                [queryParams]="{ id: row.item.applicationId }"
+              >
+                <span class="flex justify-between gap-2">
+                  <span class="text-ui-lg font-semibold">{{ row.item.role }}</span>
+                  <span class="shrink-0 font-mono text-caption text-ink-muted">
+                    {{ row.item.appliedOn | date: shortDateFormat }}
+                  </span>
+                </span>
+                <span class="flex flex-wrap gap-1.5">
+                  <app-status-label
+                    [label]="row.status.label"
+                    [tone]="row.status.tone"
+                    [glyph]="row.status.glyph"
+                  />
+                  @if (row.ghost; as ghost) {
+                    <app-ghost-badge [level]="ghost.level" [score]="ghost.score" />
+                  }
+                </span>
+              </a>
+            </li>
+          }
+        </ul>
+      </section>
+
+      <section
+        class="flex flex-col gap-2 rounded-md border border-rule-strong bg-envelope p-3.5 lg:w-110 lg:shrink-0 lg:gap-2.5 lg:p-4"
+        aria-labelledby="company-numbers-title"
+      >
+        <div>
+          <h2
+            id="company-numbers-title"
+            class="text-ui-lg font-semibold text-balance text-ink lg:whitespace-nowrap"
+          >
+            Stats from other members who applied to this company
+          </h2>
+        </div>
+
+        @if (current.company.numbers; as numbers) {
+          <app-community-numbers
+            [columns]="[{ heading: null, numbers }]"
+            label="Stats from other members who applied to this company"
+          />
+          <p class="flex gap-2 text-caption text-ink-2">
+            <app-icon name="info" [size]="14" class="mt-px shrink-0 max-lg:hidden" />
+            <span class="max-lg:hidden">
+              Based on other members only. You are not counted. Numbers appear once at least
+              {{ minimum }} other members have applied. Their postings and roles are never shown.
+            </span>
+            <span class="lg:hidden">
+              Based on other members only. You are not counted. Shown once at least
+              {{ minimum }} others applied.
+            </span>
+          </p>
+        } @else {
+          <div
+            class="flex flex-col gap-1 rounded-md border-thick border-dashed border-rule-strong p-3"
+          >
+            <span class="text-cell font-semibold text-ink">Not enough data yet</span>
+            <span class="text-small text-ink-2">
+              Fewer than {{ minimum }} other members have applied to this company. To keep everyone
+              anonymous, no numbers are shown until at least {{ minimum }} have.
+            </span>
+          </div>
+        }
+      </section>
+    </div>
+  }
+}

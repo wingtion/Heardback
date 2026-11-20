@@ -25,6 +25,11 @@ import { Spinner } from '../../../shared/ui/spinner/spinner';
 import { PostingAnalysisPanel } from '../../ai/posting-analysis-panel';
 import { TailoringPanel } from '../../ai/tailoring-panel';
 import { MatchPanel } from '../../cv/match-panel';
+import { CommunityBadgesStore } from '../../community/community-badges';
+import { showsBadge } from '../../community/community-display';
+import { CommunitySection } from '../../community/community-section';
+import { CommunityBadge } from '../../community/community.models';
+import { GhostBadge } from '../../community/ghost-badge';
 import { StatusGlyphIcon } from '../../../shared/ui/status-label/status-glyph';
 import { StatusLabel } from '../../../shared/ui/status-label/status-label';
 import {
@@ -79,6 +84,8 @@ type DetailView =
     Banner,
     Button,
     Icon,
+    CommunitySection,
+    GhostBadge,
     InlineSuccess,
     MatchPanel,
     PostingAnalysisPanel,
@@ -103,6 +110,7 @@ type DetailView =
 export class ApplicationDetail {
   private readonly api = inject(ApplicationsApi);
   private readonly dialogs = inject(DialogLauncher);
+  private readonly badges = inject(CommunityBadgesStore);
 
   readonly applicationId = input.required<string>();
   readonly layout = input<DetailLayout>('panel');
@@ -145,6 +153,12 @@ export class ApplicationDetail {
   protected readonly status = computed(() => {
     const application = this.application();
     return application ? statusDisplay(application.status, application.noResponseDays) : null;
+  });
+
+  /** Medium or High ghost risk beside the status, as in the list (docs/design.md §12). */
+  protected readonly ghostBadge = computed<CommunityBadge | null>(() => {
+    const badge = this.badges.badgeFor(this.applicationId());
+    return showsBadge(badge) ? badge : null;
   });
 
   protected readonly timeline = computed(() => {

@@ -8,7 +8,7 @@
   }
 </div>
 <p class="-mt-2 text-small text-ink-2 lg:-mt-2.5">
-  Heardback compares the skills in your CV with the posting of each application.
+  Heardback compares the skills in your CV with each job you applied for.
 </p>
 
 <app-banner kind="info" heading="Only the text of your CV is kept">
@@ -133,8 +133,8 @@
           </div>
           @if (editingSkills()) {
             <p class="text-caption text-ink-muted">
-              Remove skills your CV only mentions, such as a language one of your projects checks.
-              They won’t count in any match, also after you upload a new CV.
+              Remove a skill if your CV mentions it but you don’t really have it, for example a tool
+              named in a project. Removed skills stay removed, even after you upload a new CV.
             </p>
           }
           @if (cv.skills.length > 0) {
@@ -158,7 +158,7 @@
 
           @if (cv.excludedSkills.length > 0) {
             <h3 class="mt-1 text-label font-semibold text-ink-2">
-              Not counted
+              Removed
               <span class="font-normal text-ink-muted">· removed by you</span>
             </h3>
             <ul class="flex flex-wrap gap-1.5">

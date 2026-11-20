@@ -23,7 +23,7 @@ import { Spinner } from '../shared/ui/spinner/spinner';
     </div>
     <div class="flex items-center gap-2 text-body text-ink-2">
       <app-spinner />
-      Restoring your session…
+      Signing you in…
     </div>
   `,
 })

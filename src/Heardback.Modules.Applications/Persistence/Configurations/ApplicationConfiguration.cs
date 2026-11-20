@@ -16,6 +16,8 @@ internal sealed class ApplicationConfiguration : IEntityTypeConfiguration<Applic
         builder.Property(application => application.Id).ValueGeneratedNever();
         builder.Property(application => application.Company).HasMaxLength(PostingLimits.CompanyMaxLength);
         builder.Property(application => application.Role).HasMaxLength(PostingLimits.TitleMaxLength);
+        builder.Property(application => application.CompanyKey).HasMaxLength(PostingLimits.CompanyMaxLength);
+        builder.Property(application => application.RoleKey).HasMaxLength(PostingLimits.TitleMaxLength);
         builder.Property(application => application.Url).HasMaxLength(PostingLimits.UrlMaxLength);
         builder.Property(application => application.PostingText).HasMaxLength(PostingLimits.TextMaxLength);
         builder.Property(application => application.Notes).HasMaxLength(Application.NotesMaxLength);
@@ -37,6 +39,10 @@ internal sealed class ApplicationConfiguration : IEntityTypeConfiguration<Applic
 
         // Posting analysis is shared by content hash across users; its job reads the text by hash alone.
         builder.HasIndex(application => application.ContentHash);
+
+        // Community groups (ADR-0013) are read across users by posting and by company.
+        builder.HasIndex(application => application.PostingId);
+        builder.HasIndex(application => new { application.CompanyKey, application.RoleKey });
 
         builder.HasMany(application => application.Events)
             .WithOne()

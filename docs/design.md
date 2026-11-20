@@ -246,7 +246,7 @@ Label above (`label`, 600, `ink-2`), 5 px gap, input 36 px desktop / 42 px auth 
 Variants: **select** (native `<select>`, `appearance: none`, chevron icon at right); **date** (DM Mono 13 px value, calendar icon at right); **number** (DM Mono, 96 px wide, with trailing unit text "days"); **invite code** (DM Mono 15, +0.08em, uppercase, dashes added while typing, `maxlength` 14, `autocomplete="off"`, `spellcheck="false"`); **password** with a live character counter in DM Mono at the right of the hint ("12–128 characters" · "19 characters").
 
 ### Toolbar field group
-Search, Status filter and Channel filter on the list page: one 36 px bordered box, label cell on the left (`label`, `ink-2`, divided by a `rule` line), input or select on the right without its own border. Search label includes the search icon. Mobile: 44 px, search label is visually hidden (icon only), filters in a 2-column grid.
+Search, Status filter and Applied via filter on the list page: one 36 px bordered box, label cell on the left (`label`, `ink-2`, divided by a `rule` line), input or select on the right without its own border. Search label includes the search icon. Mobile: 44 px, search label is visually hidden (icon only), filters in a 2-column grid.
 
 ### Banners — `app-banner`
 Row of icon + text, padding 10–12 px, radius 4, 1 px border.
@@ -267,7 +267,7 @@ Title 13.5 / 600 in the border colour; body 13 in `ink-2` (warning body in `ink`
 - Text is plain: "Applied", "No response · 14 days", "Interview", "Rejected", "Offer". Invite codes: "Active", "Used", "Expired".
 
 ### Data table
-Container: 1 px `rule` border, radius 4, horizontal scroll inside the box when narrow. Header: `surface`, `label` 600 `ink-2`, 1 px `rule-strong` underline. Rows: 46 px, 1 px `rule` dividers (none on the last row), `cell` text. Company 500 (600 when selected); secondary columns (Channel, Last update) in `ink-2`; date columns in DM Mono at `label` size; right-aligned "Last update" in tabular numbers; cells don't wrap. Rows are focusable (`tabindex="0"`) and open the detail with Enter/Space as well as click. Footer count "Showing 8 of 8" in `label` `ink-muted`.
+Container: 1 px `rule` border, radius 4, horizontal scroll inside the box when narrow. Header: `surface`, `label` 600 `ink-2`, 1 px `rule-strong` underline. Rows: 46 px, 1 px `rule` dividers (none on the last row), `cell` text. Company 500 (600 when selected); secondary columns (Applied via, Last update) in `ink-2`; date columns in DM Mono at `label` size; right-aligned "Last update" in tabular numbers; cells don't wrap. Rows are focusable (`tabindex="0"`) and open the detail with Enter/Space as well as click. Footer count "Showing 8 of 8" in `label` `ink-muted`.
 
 ### Pagination
 Bar inside the table container: `surface` background, 52 px tall. "Showing 1–20 of 34" on the left (13, `ink-2`), "Page 1 of 2" (13, `ink-muted`) plus Previous / Next secondary buttons (32 px, chevron icons) on the right. Previous is disabled on page 1, Next on the last page. Mobile: 44 px icon-only Previous/Next with `aria-label`, "Showing 1–20 of 34" centred.
@@ -285,10 +285,13 @@ Header 60 px, `surface`, bottom `rule`: logo 24 px + wordmark 20 px + 44 px menu
 1. **Header bar** (52 px, `base`, bottom `rule`): ✕ icon button "Close details", title "Application" (14, 600), Edit secondary button (32 px) and, in the desktop panel, a danger outline Delete with the trash icon right of it (§12). **Buttons never sit inside the envelope, and no flap line passes behind a button.**
 2. **Envelope** (inset 16/20 px): `envelope` background, 1 px `rule-strong`, radius 4, padding 0 20 16. Decorations, all `aria-hidden`: flap V-line (`rule-strong`) across the top; postage stamp top-right (50 × 60); postmark waves (44 × 22) crossing the stamp's left edge. No dated circle (§12).
 3. Content, 72 px below the top: "To" (caption, `ink-muted`) → company (`panel-title`) → role (14, `ink-2`) → posting link (13, `link`, underline offset 2).
-4. Dashed divider, then a row: postmark status label · "Updated 3 days ago" (12.5, `ink-muted`) · channel + applied date at the right (DM Mono date).
-5. **Ghost-risk box** (Phase 6 insight; render only when data exists): `base`, 1 px `rule-strong`, radius 3; "Ghost risk: High" (13.5, 600, `danger` for High), five-wave meter, "4 of 5" (DM Mono 12), one-line explanation (12.5, `ink-2`).
-6. **Notes**: heading (12.5, 600, `ink-2`) + text (13.5, `ink`).
-7. **Timeline**: heading + "Add update" secondary button (28 px); ordered list of events. Each event = **timeline stamp** + text. The stamp is 42 × 46, `base` fill, 2 px dotted outer + 1 px inner border in the event's status colour (the inner border is dashed for No response), month (8 px caps) above the day number (DM Mono 15/500). Text: status name (13.5, 600, status colour; Applied stays `ink`) + short date (DM Mono 12, `ink-muted`), and a description line (12.5, `ink-2`). The stamp is `aria-hidden`; the date is repeated in the text.
+4. Dashed divider (1 px, `field-border`: section dividers inside the envelope are one step darker than `rule-strong` so the sections read apart; decided by the author, 2026-11-20), then a row: postmark status label · "Updated 3 days ago" (12.5, `ink-muted`) · channel + applied date at the right (DM Mono date).
+5. **Notes**: heading (12.5, 600, `ink-2`) + text (13.5, `ink`).
+6. **Timeline**: heading + "Add update" secondary button (28 px); ordered list of events. Each event = **timeline stamp** + text. The stamp is 42 × 46, `base` fill, 2 px dotted outer + 1 px inner border in the event's status colour (the inner border is dashed for No response), month (8 px caps) above the day number (DM Mono 15/500). Text: status name (13.5, 600, status colour; Applied stays `ink`) + short date (DM Mono 12, `ink-muted`), and a description line (12.5, `ink-2`). The stamp is `aria-hidden`; the date is repeated in the text.
+7. **About this job** (AI summary, §16), then **Job description** (heading + the "Show job description" toggle), then **Your CV for this job** (§15, §16).
+8. **Community section** (Phase 6): replaces the earlier one-line ghost-risk box; see **§18**.
+
+**Order (decided by the author, 2026-11-20):** what the user needs first comes first: status, own notes and the timeline with Add update; then preparation and reference (job summary, job description, CV); the stats from other members come last (moved there by the author the same day). A Medium or High **ghost badge** (§18) also sits in the status row after the status label, so the warning is seen before scrolling.
 
 ### Full-screen detail sheet (mobile)
 `role="dialog"`, `aria-modal`, `surface`. Header 60 px (`base`): 44 px ✕ "Close and go back to applications", title "Application" (15, 600), Edit (36 px). Same envelope inside with 16 px margin (slightly smaller stamp and postmark); the channel/date line wraps to its own row. Sticky footer (`base`, top `rule`): **Delete** (danger outline with trash, 48 px) and **Add update** (primary, 48 px), side by side.
@@ -311,7 +314,7 @@ Inside the table container: a status row with spinner + "Loading applications…
 Inside the table container: an error banner with title "Couldn't load …", one reassuring sentence, and a "Try again" secondary button.
 
 ### Full-page session loading
-Shown while the session is restored on reload (refresh call in flight). Centred on `base`: 40 px logo + wordmark (30 px; mobile 32 / 26), below it spinner + "Restoring your session…" (14, `ink-2`). `role="status"`, `aria-live="polite"`.
+Shown while the session is restored on reload (refresh call in flight). Centred on `base`: 40 px logo + wordmark (30 px; mobile 32 / 26), below it spinner + "Signing you in…" (14, `ink-2`). `role="status"`, `aria-live="polite"`.
 
 ### Invite code display (created dialog)
 Code in DM Mono 500, 30 px (mobile 26), +0.06em, centred in a 72 px box: 1 px `accent` inner border, 2 px dotted `accent` outer frame, `envelope` fill. Below: "Expires 01 Dec 2026 · in 7 days" and "Single use" (12.5, `ink-2`).
@@ -371,7 +374,7 @@ Heading "Invite codes", summary "34 codes · 9 active" (total from the paged res
 - **States:** empty ("No invite codes yet" / "Create a code to let someone join Heardback."), loading ("Loading invite codes…" + skeleton), error ("Couldn't load invite codes" / "The server didn't respond. Existing codes still work." + Try again).
 
 ### Applications (Phase 2; designed, not built yet)
-List page with heading, summary ("8 applications · 2 with no response"), List / Board toggle, toolbar (Search, Status, Channel, primary "Add application"), table (Company, Role, Channel, Applied, Status, Last update), detail panel / sheet, confirm delete, and empty / loading / error states. Exact rules are in §8. The board view, Add application, Edit application and Add update are in **§14** (the Add application form there replaces the earlier version).
+List page with heading, summary ("8 applications · 2 with no response"), List / Board toggle, toolbar (Search, Status, Applied via, primary "Add application"), table (Company, Role, Applied via, Applied, Status, Last update), detail panel / sheet, confirm delete, and empty / loading / error states. Exact rules are in §8. The board view, Add application, Edit application and Add update are in **§14** (the Add application form there replaces the earlier version).
 
 - The toolbar **Delete** button in the desktop artboard was only a style sample. **Delete lives in the detail panel/sheet**, not the toolbar.
 - "No response · N days" is **derived from dates** (applied/last event + threshold), not stored by a background job. The timeline row "Marked automatically after 14 days" is a computed row, not a stored event.
@@ -425,7 +428,7 @@ Decisions the author made where the handoff was silent or showed only a sample.
 | Detail can't load | Error banner "Couldn't load this application" / "The server didn't respond. Try again." + Try again |
 | Detail not found (deleted elsewhere) | Info banner "Couldn't find this application" / "It may have been deleted in another tab or on another device." |
 | Delete fails | Error banner inside the confirm box: "Couldn't delete the application" / "The server didn't respond. Try again." A 404 counts as deleted |
-| Add: same posting text, no link | Error banner "You already track this posting" / "Another of your applications has the same posting text." (the "already tracked" panel needs a link to look the application up) |
+| Add: same posting text, no link | Error banner "You already added this job" / "Another of your applications has the same job description." (the "already tracked" panel needs a link to look the application up) |
 | Applied date field | The browser's native date field, so the picker and keyboard entry are accessible; it shows the date in the browser's own format (e.g. "18.11.2026") rather than "18 Nov 2026" |
 
 **Decided during the board and forms build** (approved by the author, 2026-11-18). Built from existing components and copy; nothing new visually:
@@ -448,6 +451,7 @@ These go back to Claude Design with a brief written from the API that exists at 
 
 - **Phase 2:** nothing left. The board, Edit application, Add update and Add application on mobile came in the "B refined · Board and forms" handoff (§14).
 - **Phase 3:** nothing left. The CV page and the match panel were composed from the existing system instead of a Claude Design handoff (§15).
+- **Phase 6:** nothing left. Badges, the Community section and the company page came in the "B refined · Community signals" handoff (§18).
 
 ---
 
@@ -464,11 +468,11 @@ Segmented control at the right of the page heading: 1 px `field-border`, radius 
 
 ### Board page, desktop
 - **Header:** "Applications" (`page-title`), summary "8 applications · 2 with no response" (`small`, `ink-2`, tabular numbers), view toggle (`ml-auto`), primary "Add application" (36 px, plus icon).
-- **Toolbar:** Search (320 px, placeholder "Company or role") and Channel ("All channels" + the six channels) as toolbar field groups (§8). **No Status filter** on the board, because the columns are the statuses.
+- **Toolbar:** Search (320 px, placeholder "Company or role") and Applied via ("All" + the six channels) as toolbar field groups (§8). **No Status filter** on the board, because the columns are the statuses.
 - **Columns:** a 4-column grid with 12 px gaps: **Applied, Interview, Offer, Rejected**. "No response · N days" is a label on Applied cards, **not a column**. Each column: `surface`, 1 px `rule`, radius 4, padding 8, gap 8, min height 520. Column heading (`<h2>`): status glyph + name (13.5, 600, `ink`) + count at the right (DM Mono 12.5, `ink-muted`), padding 4 4 8, bottom `rule`. Cards sit in an `<ol>`.
 - **Card** (`<article>`, `aria-label` "Company, Role"): `base`, 1 px `rule-strong`, radius 4, padding 10 6 10 12, gap 6, `cursor: grab`; hover border `field-border`. Content: company (14, 600) and role (13, `ink-2`) together as one link that opens the detail; meta "Channel · 12 Nov 2026" (12.5, `ink-2`, date in DM Mono); optional "No response · N days" status label (§8, table form).
 - **Move to… button:** 30 px icon-only (move icon), `aria-label` "Move {Company} to…", `aria-haspopup="menu"`; transparent border and background until hover or open (then `field-border` border + `row-hover`).
-- **Move to menu** (`role="menu"`, CDK Menu): 214 px, under the button, right-aligned, `base`, 1 px `rule-strong`, radius 4, padding 4, `shadow-menu`. Heading "Move to" (12, 600, `ink-muted`). Items: the **three other statuses** (36 px, glyph + name, 13.5, radius 3; active item `row-hover`). Footer: `rule` divider + "Adds a timeline event dated today." (12, `ink-muted`). Arrow keys move between items; Escape closes and returns focus to the button.
+- **Move to menu** (`role="menu"`, CDK Menu): 214 px, under the button, right-aligned, `base`, 1 px `rule-strong`, radius 4, padding 4, `shadow-menu`. Heading "Move to" (12, 600, `ink-muted`). Items: the **three other statuses** (36 px, glyph + name, 13.5, radius 3; active item `row-hover`). Footer: `rule` divider + "This also adds an entry dated today to the timeline." (12, `ink-muted`). Arrow keys move between items; Escape closes and returns focus to the button.
 - **Truncated column (decided):** after the 200th card, one line "Showing 200 of 340 · see all in the list" (12.5, `ink-2`); "see all in the list" is a link-button that switches to the List view filtered to that status.
 - **Detail (decided):** a card opens the same detail panel / sheet as the list (§8, §9).
 
@@ -493,10 +497,10 @@ Escape cancels the drag. Keyboard and screen reader users use "Move to…". A mo
 
 ### Board, mobile (< 1024 px)
 - **Header:** logo + wordmark + primary **"Add"** button (plus icon, `aria-label` "Add application") + menu button. No sticky bottom bar on this page. The handoff's Add button is 40 px tall; it is built at **44 px** **(decided)**.
-- Below the header: "Applications" (`page-title-sm`) + view toggle; then Search (icon-only label, flex) and Channel (150 px, option "All"), both 44 px.
+- Below the header: "Applications" (`page-title-sm`) + view toggle; then Search (icon-only label, flex) and Applied via (150 px, option "All"), both 44 px.
 - **Status tabs** (`role="tablist"`, one column at a time, **no dragging**): 4 equal tabs, 54 px, `surface` strip with `rule` lines above and below. Each tab: glyph + name (13) over the count (DM Mono 12, `ink-muted`). Selected: `base`, inset 3 px `accent` bar at the bottom, `ink`, 600, `aria-selected="true"`. Others: transparent, `ink-2`, 500.
 - **Tab panel:** padding 12 16, gap 8. Cards: padding 12 10 10 14; company 15 / 600, role 13.5 `ink-2`, meta 12.5; on the right a 44 px secondary **"Move to…"** button (move icon + text, `aria-haspopup="dialog"`).
-- **Move to sheet:** bottom sheet with `scrim-sheet`: title "Move to" (`dialog-title`), line "Larkspur Labs · Backend Engineering Intern · now in Applied" (13.5, `ink-2`), a bordered list (`rule`, radius 4) of the three other statuses as 52 px rows (glyph + name, 15), the note "Adds a timeline event dated today." (12.5, `ink-muted`), and a full-width 48 px Cancel.
+- **Move to sheet:** bottom sheet with `scrim-sheet`: title "Move to" (`dialog-title`), line "Larkspur Labs · Backend Engineering Intern · now in Applied" (13.5, `ink-2`), a bordered list (`rule`, radius 4) of the three other statuses as 52 px rows (glyph + name, 15), the note "This also adds an entry dated today to the timeline." (12.5, `ink-muted`), and a full-width 48 px Cancel.
 - **Empty tab:** dashed box "No applications in Offer" (15, 600) + "Use Move to… on any card to move it here." (13.5, `ink-2`).
 - **Move failed:** the same alert as on desktop, with the Try again button on its own line (44 px; the handoff shows 40 px) **(decided)**.
 
@@ -508,10 +512,10 @@ Escape cancels the drag. Keyboard and screen reader users use "Move to…". A mo
 
 ### Add application
 Opens with the cursor in the link field.
-1. **Job posting link · optional**: URL input (`inputmode="url"`, placeholder "Paste the job link") + a secondary **Paste** button (clipboard icon, same height) that pastes from the clipboard. The button is hidden when the browser has no Clipboard API. Error: "Enter a full link that starts with https://". Hint **(decided, replaces the autofill hint)**: "Used to spot a posting you already track."
+1. **Job link · optional**: URL input (`inputmode="url"`, placeholder "Paste the job link") + a secondary **Paste** button (clipboard icon, same height) that pastes from the clipboard. The button is hidden when the browser has no Clipboard API. Error: "Enter a full link that starts with https://". Hint **(decided, replaces the autofill hint)**: "Lets us warn you if you already added this job."
 2. **Company · required** ("Enter the company name"), **Role · required** ("Enter the role").
-3. **Channel** (select, the six channels) and **Applied date** (date field, defaults to today) side by side.
-4. **Job posting text · optional**: textarea (3 rows, placeholder "Paste the job description"), hint "Paste the job description only. Don't add personal notes here; use Notes for those." (posting text is shared between users; Notes are in Edit).
+3. **Applied via** (select, the six channels) and **Applied date** (date field, defaults to today) side by side.
+4. **Job description · optional** (renamed from "Job posting text" by the author, 2026-11-20): textarea (3 rows, placeholder "Paste the job description"), hint "Paste the job description only. Don't add personal notes here; use Notes for those." (posting text is shared between users; Notes are in Edit).
 
 Footer: Cancel + primary **"Add application"** ("Adding…" while busy).
 
@@ -521,11 +525,11 @@ Not built: the "· optional, fastest" label suffix and the "Company, role and po
 |---|---|
 | Validation | Field errors as above |
 | Server error | Error banner at the top of the body: "Couldn't add the application" / "The server didn't respond. Your details are still filled in. Try again." |
-| Already tracked | Shown when the link matches a posting this user already tracks (checked after the link is entered, and again by the server on submit). The other fields are replaced by a panel (`envelope`, 1 px `field-border`, radius 4, padding 12, `role="status"`): info icon + "You already track this posting" (14, 600); a small card (`base`, `rule-strong`, radius 4) with company, role, status label and "Applied 03 Nov 2026"; then "Open it to add an update instead of creating a second copy." (12.5, `ink-2`). Footer: Cancel + primary **"View application"**, which opens that application's detail |
+| Already tracked | Shown when the link matches a posting this user already tracks (checked after the link is entered, and again by the server on submit). The other fields are replaced by a panel (`envelope`, 1 px `field-border`, radius 4, padding 12, `role="status"`): info icon + "You already added this job" (14, 600); a small card (`base`, `rule-strong`, radius 4) with company, role, status label and "Applied 03 Nov 2026"; then "Open it to add an update instead of creating a second copy." (12.5, `ink-2`). Footer: Cancel + primary **"View application"**, which opens that application's detail |
 
 ### Edit application
-Opens from Edit in the detail panel or sheet header. Title "Edit application" with the line "Status changes through the board or Add update." under it (12.5, `ink-muted`).
-Fields: **Job posting link · optional** (full width); **Company · required** | **Role · required**; **Channel** | **Applied date**; **Job posting text · optional** (same hint as Add); **Notes · optional, only you see these** (textarea, 3 rows).
+Opens from Edit in the detail panel or sheet header. Title "Edit application" with the line "To change the status, use Add update or move the card on the board." under it (12.5, `ink-muted`).
+Fields: **Job link · optional** (full width); **Company · required** | **Role · required**; **Applied via** | **Applied date**; **Job description · optional** (same hint as Add); **Notes · optional, only you see these** (textarea, 3 rows).
 Errors: "Enter a full link that starts with https://", "Enter the company name", "Enter the role", "Pick today or an earlier date", "Pick a date after 1 January 2000", and **(decided)** "Pick a date on or before your first update (12 Nov 2026)" when the applied date would move past a later timeline event (that would silently change the status).
 Footer: Cancel + primary **"Save"** ("Saving…").
 Saving re-links the application to the matching shared posting (§12); the user sees nothing special unless it hits the "already tracked" case below.
@@ -534,10 +538,10 @@ Saving re-links the application to the matching shared posting (§12); the user 
 |---|---|
 | Server error | Error banner "Couldn't save your changes" / "The server didn't respond. Your edits are still here. Try again." |
 | Changed elsewhere (409, version check) | Warning banner (`status-no-response` border and title, `warn-tint`, refresh icon): "This application changed since you opened it." / "It was edited in another tab or on another device. Reload to see the latest version. Your edits here will be lost when you reload." + secondary "Reload latest version" (32 px; 44 on mobile). **Save is disabled** |
-| Link matches another application you track **(decided; not in the handoff)** | Error banner "You already track this posting" / "Another of your applications uses this link. Open that one instead, or change the link." |
+| Link matches another application you track **(decided; not in the handoff)** | Error banner "You already added this job" / "Another of your applications uses this link. Open that one instead, or change the link." |
 
 ### Add update
-Opens from "Add update" on the timeline (desktop) or the sheet footer (mobile). Desktop dialog 410 px; mobile **bottom sheet** over the detail sheet with `scrim-sheet`. Title "Add update" with "Northwind Logistics · Backend Engineer (.NET)" under it (12.5, `ink-2`).
+Opens from "Add update" on the timeline (desktop) or the sheet footer (mobile). Desktop dialog 410 px; mobile **bottom sheet** over the detail sheet with `scrim-sheet`. Title "Add update" with "Northwind Logistics · Backend Engineer (.NET)" under it, then "Record a reply, an interview, a rejection or just a note." (same style; added in the plain-language pass, 2026-11-20) (12.5, `ink-2`).
 1. **New status · optional** (`<fieldset>` + `<legend>`): radio chips (34 px; 44 on mobile), each a `<label>` with a radio, glyph and name: **No change** (default), Applied, Interview, Offer, Rejected. The current status is disabled and labelled "Interview · current" (`ink-muted`). Chip: 1 px `field-border`, radius 4, `base`; selected: 1.5 px `ink` border, `row-selected`, 600. Focus ring on the chip (`:focus-within`). Hint: "Leave “No change” to add a note only."
 2. **Date**: date field 180 px, defaults to today, hint "Today or an earlier date.", error "The date can't be in the future. Pick today or earlier."; **(decided)** "Pick a date on or after the applied date (12 Nov 2026)" for a date before the applied date.
 3. **Note · optional**: textarea (2 rows, max 280 characters, placeholder "e.g. Recruiter called, interview next week"), live counter "0 / 280" (DM Mono 12, `ink-muted`, right-aligned).
@@ -567,8 +571,8 @@ Applied and update dates are calendar dates in the user's own day. "Today or ear
 - **After an upload:** inline success "CV uploaded" in a persistent status region (§8).
 - **Upload problems:** a problem with the file is an error banner with the server's sentence as its title; the hourly limit is a warning banner ("You've uploaded 5 CVs in the last hour. Try again in about N minutes."); no answer is the usual error banner "Couldn't upload your CV" / "The server didn't respond. Try again."
 - **The CV** (bordered section, `rule`, radius 4, `base`): "Skills found" heading (`label`, 600, `ink-2`) with the count in DM Mono, then found **skill chips**; a "Show stored text" ghost button (the chevron turns when open) that reveals the text exactly as stored in DM Mono 12.5 on `surface` (at most 384 px high, scrolls), with the markers `[email]` `[phone]` `[link]` `[address]` on `nav-active` in `ink-2`; a bar with the danger outline **Delete CV** (trash icon; full width, 48 px on phones).
-- **Skills that are not the user's (decided 2026-11-18, after testing a real CV):** a 28 px secondary **Remove skills** button at the right of "Skills found" (44 px on phones, `aria-pressed`) turns the found chips into buttons with a ✕ ("Remove Rust: not my skill"); its label becomes **Done**, and a caption explains that removed skills count in no match, also after a new upload. Removed skills appear under **Not counted · removed by you** as dashed chips with a + ("Count Rust again"), always shown when there are any. Chip buttons are 28 px tall, 44 px below lg. Failure: error banner "Couldn't save your skills" / "The server didn't respond. Try again."
-- **Delete:** the same confirm as deleting an application (§8): "Delete your CV?" / "The stored text is removed for good. Matches show “No CV” until you upload one again." + Cancel / **Delete CV**; failure banner "Couldn't delete your CV".
+- **Skills that are not the user's (decided 2026-11-18, after testing a real CV):** a 28 px secondary **Remove skills** button at the right of "Skills found" (44 px on phones, `aria-pressed`) turns the found chips into buttons with a ✕ ("Remove Rust: not my skill"); its label becomes **Done**, and a caption explains that removed skills count in no match, also after a new upload. Removed skills appear under **Removed · removed by you** as dashed chips with a + ("Count Rust again"), always shown when there are any. Chip buttons are 28 px tall, 44 px below lg. Failure: error banner "Couldn't save your skills" / "The server didn't respond. Try again."
+- **Delete:** the same confirm as deleting an application (§8): "Delete your CV?" / "Your CV text is deleted for good. Skill matches will ask you to upload a CV again." + Cancel / **Delete CV**; failure banner "Couldn't delete your CV".
 - **Loading / error:** spinner "Loading your CV…"; error banner "Couldn't load your CV" + Try again.
 
 ### Skill chip
@@ -581,12 +585,12 @@ Applied and update dates are calendar dates in the user's own day. "Today or ear
 
 Matched and missing differ by the check and the border style, never by colour alone.
 
-### Match panel ("CV match", in the envelope between Notes and Timeline)
+### Match panel ("CV match", in the envelope (order in §12))
 - Heading like Notes and Timeline (`label`, 600, `ink-2`); when ready, "3 of 5 skills · 60%" at the right in DM Mono (`label`, `ink`). **No gauge or ring:** the share is plain text.
 - **Ready:** "Your CV shows" + matched chips, "Missing from your CV" + missing chips (captions in `caption`, `ink-muted`), then "Skills named in the role and posting text, compared with your CV."
-- **No CV:** "This posting asks for" + missing chips, then "Upload your CV to see which of these it shows." with a link to the CV page.
-- **No posting text:** "Add the job posting text to see how your CV matches." + link-button "Edit application" (opens Edit).
-- **No known skills:** "No skills Heardback knows were found in this posting." (neutral, not an error).
+- **No CV:** "This job asks for" + missing chips, then "Upload your CV to see which of these it shows." with a link to the CV page.
+- **No posting text:** "Add the job description to see how your CV matches." + link-button "Edit application" (opens Edit).
+- **No known skills:** "No skills Heardback knows were found in this job description." (neutral, not an error).
 - **Loading:** spinner "Checking your CV…". **Error:** warning icon and "Couldn't check your CV." in `danger` with a 28 px Try again; the rest of the detail stays usable.
 - The panel checks again whenever the application changes (Edit, Add update, a board move).
 
@@ -597,14 +601,14 @@ Matched and missing differ by the check and the border style, never by colour al
 ### Groups and headings (decided by the author, 2026-11-19, after testing)
 The AI and match sections were hard to tell apart, so the detail groups them under two titles, each a dashed `rule-strong` top border with 10 px above the text, `cell` 600 `ink`: **About this job** (Job summary) and **Your CV for this job** (Skills match, then How to improve your CV). Group titles are `h3`, section headings `h4`. Sections an LLM wrote carry a small **AI tag** at the right of their heading: 20 px high, radius 3, `field-border` border, `caption` 500 `ink-2`, plain text "AI" (screen readers hear "written by AI"); the skills match, worked out exactly, has none.
 
-### Job posting (application detail, after Notes; added at the author's request, 2026-11-19)
-The posting text was only visible in Edit. Heading "Job posting" like Notes, then the CV page's stored-text pattern (§15): a ghost "Show posting text" / "Hide posting text" with the turning chevron, revealing the text as entered (`small`, `ink`, line breaks kept) on `surface` with a `rule` border, radius 4, at most 384 px high, scrolling. Closed by default and again when another application opens; not shown without posting text.
+### Job posting (application detail, after the job summary (order in §12); added at the author's request, 2026-11-19)
+The posting text was only visible in Edit. Heading "Job description" like Notes, then the CV page's stored-text pattern (§15): a ghost "Show job description" / "Hide job description" (renamed from "posting text" by the author, 2026-11-20) with the turning chevron, revealing the text as entered (`small`, `ink`, line breaks kept) on `surface` with a `rule` border, radius 4, at most 384 px high, scrolling. Closed by default and again when another application opens; not shown without posting text.
 
-### Job summary (posting analysis; application detail, "About this job", between Notes and the CV group)
+### Job summary (posting analysis; application detail, "About this job", after the timeline (order in §12))
 - Heading "Job summary" like Notes (`label`, 600, `ink-2`) with the AI tag; the "About this job" title shows only with it. Hidden while loading and when the application has no posting text (the match panel already asks for it).
 - **Not requested:** "AI can summarize this job for you: title, seniority, work mode, location and the skills it asks for." + 28 px secondary **Summarize job** (44 px below lg) and, beside it, the usage line in DM Mono `label` `ink-muted`: "28 of 30 left today · resets 03:00" (the reset in the user's own time zone, 24-hour).
 - **Queued / running:** spinner "Summarizing the job…" (`role="status"`); the panel checks again every 3 seconds.
-- **Ready:** a two-column list (`small`; labels `ink-muted`, values `ink`; "Not stated" in `ink-muted`): Company, Title, Seniority, Work mode, Location; then the skills as **found** chips (§15); caption "Summarized by AI from the posting text on 19 Nov 2026." (date in DM Mono).
+- **Ready:** a two-column list (`small`; labels `ink-muted`, values `ink`; "Not stated" in `ink-muted`): Company, Title, Seniority, Work mode, Location; then the skills as **found** chips (§15); caption "Summarized by AI from the job description on 19 Nov 2026." (date in DM Mono).
 - **Waiting for capacity** (app-wide daily cap): clock icon, `status-no-response` text: "AI has reached its daily limit. Your summary will be ready after 03:00."
 - **Failed:** warning icon, `danger`: "Couldn’t summarize this job." + 28 px Try again (asks again).
 
@@ -612,15 +616,15 @@ The posting text was only visible in Edit. Heading "Job posting" like Notes, the
 - Heading "How to improve your CV" with the AI tag. The skills match (§15) is now headed "Skills match". Hidden while loading, when AI is off, without posting text and without a CV (the match panel covers those).
 - **Consent needed** (decided 2026-11-19: consent in place, one click): "AI can suggest how to present what’s already in your CV so it fits this job better." then a `caption` `ink-muted` paragraph saying what is sent to whom, with a link to the CV page, then a 28 px **primary** "Allow and get suggestions". The click records consent and asks.
 - **Not requested:** the same sentence + 28 px secondary **Get suggestions** + usage line.
-- **Ready:** the summary (`small`, `ink`), then an ordered list; each item has a 2 px `rule-strong` left border and 10 px padding: the CV section (`label`, 600, `ink-2`), the quoted CV line in DM Mono `caption` `ink-muted` in quotation marks, the advice (`small`, `ink`). Always ends with an info icon and "Written by AI from your CV and this posting. Check each suggestion before you use it." (`caption`, `ink-muted`).
-- **Out of date** (CV or posting changed): above the suggestions, a box like the info banner but compact (`surface`, `field-border`, radius 4): info icon "Your CV or this posting changed since these suggestions were written." + **Update suggestions** + usage line. While new ones are written the old ones stay visible under the spinner "Writing suggestions…".
+- **Ready:** the summary (`small`, `ink`), then an ordered list; each item has a 2 px `rule-strong` left border and 10 px padding: the CV section (`label`, 600, `ink-2`), the quoted CV line in DM Mono `caption` `ink-muted` in quotation marks, the advice (`small`, `ink`). Always ends with an info icon and "Written by AI from your CV and this job description. Check each suggestion before you use it." (`caption`, `ink-muted`).
+- **Out of date** (CV or posting changed): above the suggestions, a box like the info banner but compact (`surface`, `field-border`, radius 4): info icon "Your CV or this job description changed since these suggestions were written." + **Update suggestions** + usage line. While new ones are written the old ones stay visible under the spinner "Writing suggestions…".
 - **Queued / running, waiting for capacity, failed:** as in Posting analysis ("Writing suggestions…", "AI has reached its daily limit. Your suggestions will be ready after 03:00.", "Couldn’t write suggestions.").
 
 ### AI suggestions (CV page, after the CV)
 - Bordered section (`rule`, radius 4, `base`), heading "AI suggestions" (`body`, 600). Text on what is sent, to whom, and that it never goes to providers that may train on it.
 - **Allowed:** "Allowed since 19 Nov 2026." + danger outline **Stop sending my CV** (opens the confirm below).
 - **Not allowed:** "Not allowed. Your CV text is not sent anywhere." + secondary **Allow**.
-- **Withdraw confirm** (the delete confirm, §8): "Stop sending your CV to AI?" / "All suggestions made from your CV are deleted. You can allow it again from any application’s Suggestions." + Cancel / danger-solid **Stop and delete suggestions**.
+- **Withdraw confirm** (the delete confirm, §8): "Stop sending your CV to AI?" / "All suggestions made from your CV are deleted. You can allow it again from “How to improve your CV” in any application." + Cancel / danger-solid **Stop and delete suggestions**.
 
 ### Limit and failure messages
 - Daily limit (429): warning banner, `alert`, "Daily limit reached" / "You’ve used all 30 job summaries for today. You can summarize more after 03:00." and "You’ve used all 10 suggestion requests for today. You can ask for more after 03:00." (wording revised by the author on 2026-11-19).
@@ -631,10 +635,10 @@ The posting text was only visible in Edit. Heading "Job posting" like Notes, the
 | Item | Proposal |
 |---|---|
 | Section names | Decided 2026-11-19: "About this job" › "Job summary"; "Your CV for this job" › "Skills match", "How to improve your CV"; "AI suggestions" (CV page) |
-| Consent wording | "To do that, Heardback sends your CV text (emails, phone numbers, links and addresses already removed) and this posting to Groq, an AI provider. You can stop this at any time on the CV page." |
-| AI label | "Written by AI from your CV and this posting. Check each suggestion before you use it." |
+| Consent wording | "To do that, Heardback sends your CV text (emails, phone numbers, links and addresses already removed) and this job description to Groq, an AI provider. You can stop this at any time on the CV page." |
+| AI label | "Written by AI from your CV and this job description. Check each suggestion before you use it." |
 | Seniority labels | Not stated, Intern, Junior, Mid-level, Senior, Lead; work mode: Not stated, On-site, Hybrid, Remote |
-| Server error texts | "Add the posting text to analyse it.", "AI analysis isn’t available right now.", "Allow Heardback to send your CV text to the AI provider first.", "Upload a CV to get suggestions." (shown only if the UI and server disagree) |
+| Server error texts | "Add the job description to analyse it.", "Add the job description to get suggestions.", "AI analysis isn’t available right now.", "Allow Heardback to send your CV text to the AI provider first.", "Upload a CV to get suggestions." (shown only if the UI and server disagree) |
 
 ## 17. Overview (Phase 5, composed from the existing system)
 
@@ -642,7 +646,66 @@ The posting text was only visible in Edit. Heading "Job posting" like Notes, the
 
 - **Page:** title "Overview" (`page-title`) with "19 applications" (`small`, `ink-2`); content at most 960 px wide; sections are bordered boxes (`rule`, radius 4, `base`, padding 12×16), headings `label` 600 `ink-2` (Follow up: `body` 600 `ink`).
 - **Follow up** (first: the one thing to act on): "N waiting" in DM Mono at the right. Up to 5 rows (company `cell` 600, role `small` `ink-2`, "No response · N days" `label` in `status-no-response`), each with 28 px secondary **Open** (opens the application in the list) and **Mark followed up** (adds the note "Followed up" dated today, so the row leaves the list); 44 px and full-width pairs below lg. "See all N in the list" link opens the list filtered to No response (`/applications?status=NoResponse`). Caption explains what marking does. Nothing waiting: "Nothing waiting. No application has gone quiet long enough to follow up."
-- **Response rate** and **Time to first response** side by side from lg: the headline number in DM Mono at `page-title` size, a short word beside it ("heard back", "on average"), and a caption with the counts behind it ("8 of 19 applications got an answer: an interview, an offer or a rejection.", "Median 4 days, from 8 responses."). No responses: "No responses yet."
+- **Response rate** and **Time until the first reply** side by side from lg: the headline number in DM Mono at `page-title` size, a short word beside it ("heard back", "on average"), and a caption with the counts behind it ("8 of 19 applications got an answer: an interview, an offer or a rejection.", "Median 4 days, from 8 responses."). No responses: "No responses yet."
 - **Applications per week:** 12 bars in equal cells, 8 units wide, radius 1; past weeks `rule-strong`, empty weeks a 2-unit stub in `rule`, this week `accent`. Under the bars the count of each week (DM Mono `caption` `ink-2`), then the first week's date and "This week" (`caption` `ink-muted`). Each bar has a native tooltip; a visually hidden table repeats the numbers. One series, so no legend.
-- **By channel:** per channel the label, "2 of 9 · 22%" (DM Mono `label`) and an 8 px meter (`rule` track, `ink-2` fill, radius 2). **How far they got:** Applied, Interview, Offer with meters relative to Applied and the counts at the right; caption "The furthest stage each application reached. 4 were rejected." Meters are decorative; the numbers carry the meaning.
+- **By how you applied:** per channel the label, "2 of 9 · 22%" (DM Mono `label`) and an 8 px meter (`rule` track, `ink-2` fill, radius 2). **How far they got:** Applied, Interview, Offer with meters relative to Applied and the counts at the right; caption "The furthest stage each application reached. 4 were rejected." Meters are decorative; the numbers carry the meaning.
 - **States:** loading spinner "Working out your numbers…"; error banner "Couldn’t load your numbers" + Try again; no applications: envelope empty state "No numbers yet" / "Add your first application to see how your search is going." + primary "Go to Applications"; follow-ups failing alone: inline "Couldn’t load the applications to follow up." + Try again; a failed mark: "Couldn’t save. Try again." on that row.
+
+## 18. Community signals (Phase 6 handoff)
+
+Source: Claude Design canvas page "B refined · Community signals" (artboards *Ghost-risk badge*, *Application detail · Community section and states*, *Company page*), handed off 2026-11-20. Data and wording rules come from ADR-0013. Only existing tokens: `danger`, `status-no-response`, `rule`, `rule-strong`, `envelope`, `base`, `surface`, `danger-tint`, `skeleton`, `link`, `row-hover`, `ink` / `ink-2` / `ink-muted`.
+
+### Ghost-risk badge — `app-ghost-badge`
+- **Only Medium and High.** Low gets no badge anywhere in lists.
+- 22 px high, padding 0 7 0 6, gap 5, **1 px dashed** border in the level colour, radius 3 (`rounded-sm`), text 12 px `ink-2`, no wrap.
+- Content: a 27 × 10 wave meter (five small arcs, stroke 1.4, round caps; the first *score* arcs in the level colour, the rest `rule-strong`; `aria-hidden`), "Ghost risk" and the level in weight 600 and the level colour.
+- Level colour: **High** `danger`; **Medium** `status-no-response`.
+- Screen readers hear "Ghost risk High, 4 of 5" (", 4 of 5" visually hidden).
+- Placement: **table** in the Status cell after the status label (gap 8, wraps); **board card** in a wrapping row under the meta line, after the optional "No response" label (gap 6); **mobile list card** in the status row after the status label (gap 6); **company page rows** after the status label.
+
+### Community section (application detail, desktop panel and mobile sheet)
+At the end of the envelope (order in §12), with a 1 px dashed `field-border` top border and 12 px above. It replaces the old ghost-risk box (§12 item 5). Content gap 12.
+- **Heading** "Stats from other members" (14, 600, `ink`) and the line "Members who applied to the same posting or company." (12, `ink-muted`) **(decided: plain headings that say what the numbers are)**.
+- **Ghost-risk box** (Medium and High): `base`, 1 px `rule-strong`, radius 3, padding 10 12, gap 8. Top row: "Ghost risk: High" (13.5, 600, level colour), the 84 × 14 five-wave meter (stroke 1.6), "4 of 5" at the right (DM Mono 12, `ink-muted`). Then the hint (13, `ink`): High "This job is likely inactive. Here is why:", Medium "This job may be inactive. Here is why:". Then **every reason** from the API as a bulleted list (13, `ink-2`, gap 4, largest point first).
+- **Low** (numbers exist, at most one point): no box, one quiet line: `base`, 1 px `rule`, radius 3, padding 8 12; the meter with the first wave `ink-muted` and the rest `rule-strong`; "**Ghost risk: Low.** No warning signs from other members so far." (13, `ink-2`; the first part 600 `ink`).
+- **Numbers table**: a label column and one right-aligned column per group, headers "This job" / "This company" (12, 600, `ink-2`, 1 px `rule-strong` underline). A real `<table>` with row and column headers. Rows (13; labels `ink-2`; values DM Mono 12.5 `ink`; 1 px `rule` dividers; padding 6 0): **Members who applied**, **Applications**, **Heard back** ("3 · 21%"), **Average days to first answer** ("23.5"), **Median days to first answer** ("19"). An empty time is "—", with the caption "“—” means nobody has heard back yet, so there is no answer time." (12, `ink-muted`). Value cells give screen readers a version that reads well ("3, 21 percent", "23.5 days", "No answers yet"). Two 88 px columns when both groups have numbers (the handoff's 76 px wrapped "This company" onto two lines; headers stay on one line); one 96 px column when only one group has (headed "This job" or "This company"). **(decided)** When only the company has numbers, the line "Fewer than 3 other members applied to this exact job, so only company numbers are shown." (13, `ink-2`) sits above the table; when only the posting has, "Fewer than 3 other members applied to this company, so only job numbers are shown."; the ghost-risk box still shows whatever reasons exist.
+- **Privacy line** (12, `ink-2`, 14 px info icon): "Based on other members only. You are not counted. Numbers appear once at least 3 other members have applied."
+- **"All your applications at {Company}"** link (13.5, 600, `link`, chevron; replaces the handoff's "View company", which did not say where it goes) to `/companies/:key` when the application has a company key.
+- **No company key** (older application): instead of the link, under a dashed `field-border` divider: "Company stats and the list of your applications at this company aren’t available here, because this application was added before companies were linked." (12.5, `ink-2`).
+- **States:** *loading*: `base`, 1 px `rule`, radius 3, padding 12; spinner + "Loading community numbers…" (13, `ink-2`, `role="status"`) and three `skeleton` bars (70 / 90 / 55 %). *Error*: the error banner (§9) "Couldn’t load community numbers" / "Your own application details are fine." + secondary **Try again** (30 px desktop, 44 px mobile). *Not enough data*: 1.5 px dashed `rule-strong`, radius 4, padding 12; "Not enough data yet" (13.5, 600) / "Fewer than 3 other members have applied to this job. To keep everyone anonymous, no numbers are shown until at least 3 have." (13, `ink-2`); the link to your applications at the company still shows under it.
+- Mobile sheet: the same content; buttons 44 px.
+
+### Company page (`/applications/companies/:key`)
+Reached only from the "All your applications at {Company}" link; inside the normal app shell. The URL sits under `/applications` (the handoff says `/companies/:key`) so **Applications** stays the active nav item. No search, no list of companies.
+- **Desktop:** "Back to Applications" with a left chevron (13, `ink-2`, no underline), which opens the application the page was opened from again (`?from=` in the URL; decided by the author, 2026-11-20), then the company name (Newsreader 28 / 34, 600, −0.01em) (no caption under it). Two columns, gap 24, from the xl breakpoint; between lg and xl the stats box sits under the list:
+  - **Your applications at {Company}** (16, 600) + "Only your own applications are listed. Select one to open it." (12.5, `ink-2`). Table (columns sized by their content; dates, "Last update" and headers never wrap): 1 px `rule`, radius 4; header 40 px `surface`, 12.5 / 600 `ink-2`, `rule-strong` underline; rows at least 48 px with `row-hover`: **Role** (link, 600, `ink`, opens the application), **Status** (status label + ghost badge, wrapping), **Applied** (DM Mono 12.5), **Last update** (right-aligned, `ink-2`, relative such as "14 days ago").
+  - **Stats box** (440 px from lg, so its heading fits on one line; the handoff's 360 px wrapped it; `envelope`, 1 px `rule-strong`, radius 4, padding 16, gap 10): heading "Stats from other members who applied to this company" (15, 600; no separate description line), the same five rows in one 96 px column, and the privacy line ending "Their postings and roles are never shown."
+- **Mobile:** the same "Back to Applications" link at 44 px height (the app header is already on screen, so no second header bar). Name (Newsreader 24 / 30), then "Your applications at {Company}" as a list (role 15 / 600 with the short applied date at the right in DM Mono 12 `ink-muted`; status label + badge below; `rule` dividers), then the stats box (96 px value column; privacy line "Based on other members only. You are not counted. Shown once at least 3 others applied.").
+- **States:** *loading*: spinner "Loading company…" with a skeleton title, three 40 px row bars and a box outline. *Not enough data*: your applications still show; the box holds the dashed "Not enough data yet" card ("…applied to this company…"). *Error*: back link + error banner "Couldn’t load this company" / "The server didn’t respond. Your applications are safe." + Try again. *Not found*: envelope illustration (§9 empty state), "You have no applications at this company" (Newsreader 22, mobile 24), "Company pages only open from your own applications. The link may be old, or the application was deleted." and secondary "Go to Applications" (36 px; full-width 48 px on mobile).
+
+### Aligned with the API (decided by the author, 2026-11-20: no new design round; the rules above already include these)
+1. **Only one group has numbers.** The handoff draws "both groups" and "posting only"; with about 15 members the most common case is the company passing the minimum while the posting does not. That case uses the one-column table headed "This company" with "Not enough members for this posting yet." above it (and the mirror for posting only).
+2. **Badge ranges follow ADR-0013:** Low 0–1, Medium 2–3, High 4–5, so a 2-point posting shows a Medium badge. The handoff's "Low · 1–2 of 5" label is not used.
+3. **"Last update" on the company page** comes from a new `updatedAt` on the company page items (relative time, like the list).
+4. **Plain headings** (decided by the author after testing the demo, 2026-11-20): the same day an app-wide plain-language pass followed (one word for the listing, "job"; "Channel" became "Applied via"; clearer CV, AI and Edit hints), keeping "Ghost risk" as designed. Here: headings say what the numbers are instead of "Community" / "Community numbers", the link says where it goes ("All your applications at {Company}"), "Other members" became "Members who applied", the one-column case explains itself, and captions that repeat a heading (or only said "Company name as you saved it") are gone.
+5. The handoff's sample sidebar (Dashboard / CV / Settings) and sample numbers ("Medium · 3 of 5" from two one-point reasons) are mock data; the real shell and API values are used.
+
+## 19. UI terms and code names
+
+The UI uses plain words for the people who use Heardback; the code, API and database keep the domain names
+from PLAN.md and the ADRs. Both are deliberate (decided by the author, 2026-11-20): UI copy can change without
+renaming API fields, columns and migrations. When the two differ:
+
+| On screen | In code, API and database |
+| --- | --- |
+| Job description | `postingText` (`posting_text`) |
+| Job link | `url` |
+| Applied via | `channel` (`ApplicationChannel`) |
+| Job (the listing several members can share) | `JobPosting` in the Postings module (ADR-0004) |
+| Add update / timeline entry | `ApplicationEvent` |
+| No response · N days | derived from `NoResponseRule`, never stored |
+| Stats from other members | community outcomes, `ICommunityOutcomes`, `/api/community` (ADR-0013) |
+| Members who applied | `CommunityOutcome.Members` (other members only) |
+| Ghost risk, warning signs | `GhostSignal`, `GhostReason` (ADR-0013) |
+| All your applications at {Company} | company page, `/api/community/companies/{key}` (`CompanyKey`) |
+| Removed (CV skills) | excluded skills, `excludedSkills` |

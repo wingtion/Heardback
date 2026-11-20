@@ -49,7 +49,9 @@ type RequestProblem =
   host: { class: 'flex flex-col gap-2 empty:hidden' },
   template: `
     @if (visible()) {
-      <h3 class="border-t border-dashed border-rule-strong pt-2.5 text-cell font-semibold text-ink">
+      <h3
+        class="border-t border-dashed border-field-border pt-2.5 text-cell font-semibold text-ink"
+      >
         About this job
       </h3>
       <div class="flex items-center justify-between gap-2">
@@ -130,14 +132,14 @@ type RequestProblem =
               }
             </dl>
             @if (fields.skills.length > 0) {
-              <ul class="flex flex-wrap gap-1.5" aria-label="Skills the posting asks for">
+              <ul class="flex flex-wrap gap-1.5" aria-label="Skills the job asks for">
                 @for (skill of fields.skills; track skill) {
                   <li><app-skill-chip kind="found" [name]="skill" /></li>
                 }
               </ul>
             }
             <p class="text-caption text-ink-muted">
-              Summarized by AI from the posting text on
+              Summarized by AI from the job description on
               <span class="font-mono">{{ fields.analyzedAt | date: 'd MMM y' }}</span>.
             </p>
           }

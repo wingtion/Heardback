@@ -21,13 +21,13 @@ describe('App', () => {
     fixture.detectChanges();
     const root = fixture.nativeElement as HTMLElement;
 
-    expect(root.textContent).toContain('Restoring your session…');
+    expect(root.textContent).toContain('Signing you in…');
 
     http.expectOne(AUTH_API.refresh).flush(null, { status: 401, statusText: 'Unauthorized' });
     await restore;
     fixture.detectChanges();
 
-    expect(root.textContent).not.toContain('Restoring your session…');
+    expect(root.textContent).not.toContain('Signing you in…');
     expect(root.querySelector('router-outlet')).not.toBeNull();
     http.verify();
   });

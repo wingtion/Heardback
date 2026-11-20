@@ -112,6 +112,11 @@ namespace Heardback.Modules.Applications.Persistence.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("company");
 
+                    b.Property<string>("CompanyKey")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("company_key");
+
                     b.Property<string>("ContentHash")
                         .HasMaxLength(64)
                         .HasColumnType("character(64)")
@@ -151,6 +156,11 @@ namespace Heardback.Modules.Applications.Persistence.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("role");
 
+                    b.Property<string>("RoleKey")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("role_key");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(32)
@@ -181,6 +191,12 @@ namespace Heardback.Modules.Applications.Persistence.Migrations
 
                     b.HasIndex("ContentHash")
                         .HasDatabaseName("ix_applications_content_hash");
+
+                    b.HasIndex("PostingId")
+                        .HasDatabaseName("ix_applications_posting_id");
+
+                    b.HasIndex("CompanyKey", "RoleKey")
+                        .HasDatabaseName("ix_applications_company_key_role_key");
 
                     b.HasIndex("UserId", "ContentHash")
                         .IsUnique()

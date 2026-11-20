@@ -97,7 +97,7 @@ describe('MatchPanel', () => {
       missing: [skill('C#'), skill('Docker')],
     });
 
-    expect(chips(element, 'Skills this posting asks for')).toEqual(['C#', 'Docker']);
+    expect(chips(element, 'Skills this job asks for')).toEqual(['C#', 'Docker']);
     expect(element.querySelector('a')?.getAttribute('href')).toBe('/cv');
     expect(element.textContent).not.toContain('%');
   });
@@ -110,7 +110,7 @@ describe('MatchPanel', () => {
       missing: [],
     });
 
-    expect(element.textContent).toContain('Add the job posting text to see how your CV matches.');
+    expect(element.textContent).toContain('Add the job description to see how your CV matches.');
     element.querySelector('button')?.click();
 
     expect(host.edits).toBe(1);
@@ -124,7 +124,9 @@ describe('MatchPanel', () => {
       missing: [],
     });
 
-    expect(element.textContent).toContain('No skills Heardback knows were found in this posting.');
+    expect(element.textContent).toContain(
+      'No skills Heardback knows were found in this job description.',
+    );
     expect(element.querySelector('[role="alert"]')).toBeNull();
   });
 

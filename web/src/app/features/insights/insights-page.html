@@ -160,7 +160,7 @@
           class="flex flex-col gap-1 rounded-md border border-rule bg-base px-4 py-3"
         >
           <h2 id="time-title" class="text-label font-semibold text-ink-2">
-            Time to first response
+            Time until the first reply
           </h2>
           @if (numbers.responseTime.averageDays !== null) {
             <p class="flex items-baseline gap-2">
@@ -193,7 +193,9 @@
           aria-labelledby="channels-title"
           class="flex flex-col gap-2.5 rounded-md border border-rule bg-base px-4 py-3"
         >
-          <h2 id="channels-title" class="text-label font-semibold text-ink-2">By channel</h2>
+          <h2 id="channels-title" class="text-label font-semibold text-ink-2">
+            By how you applied
+          </h2>
           <ul class="flex flex-col gap-2.5">
             @for (channel of numbers.channels; track channel.channel) {
               <li class="flex flex-col gap-1">

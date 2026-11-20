@@ -12,15 +12,15 @@
         </app-banner>
       }
       @if (duplicateText()) {
-        <app-banner kind="error" heading="You already track this posting">
-          Another of your applications has the same posting text.
+        <app-banner kind="error" heading="You already added this job">
+          Another of your applications has the same job description.
         </app-banner>
       }
 
       <app-field
-        label="Job posting link"
+        label="Job link"
         optional
-        hint="Used to spot a posting you already track."
+        hint="Lets us warn you if you already added this job."
         [error]="errors().url ?? null"
       >
         <div class="flex gap-2">
@@ -57,7 +57,7 @@
         >
           <div class="flex items-center gap-2 text-body font-semibold text-ink">
             <app-icon name="info" [size]="16" class="text-ink-2" />
-            You already track this posting
+            You already added this job
           </div>
           <div
             class="flex flex-col gap-0.75 rounded-md border border-rule-strong bg-base px-3 py-2.5"
@@ -104,7 +104,7 @@
           />
         </app-field>
         <div class="grid grid-cols-2 gap-3">
-          <app-field label="Channel" [error]="errors().channel ?? null">
+          <app-field label="Applied via" [error]="errors().channel ?? null">
             <app-select>
               <select appInput formControlName="channel" class="max-lg:h-11">
                 @for (channel of channels; track channel) {
@@ -126,7 +126,7 @@
           </app-field>
         </div>
         <app-field
-          label="Job posting text"
+          label="Job description"
           optional
           hint="Paste the job description only. Don’t add personal notes here; use Notes for those."
           [error]="errors().postingText ?? null"

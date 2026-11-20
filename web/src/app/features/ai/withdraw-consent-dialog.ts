@@ -27,8 +27,8 @@ import { AiConsent } from './ai.models';
       Stop sending your CV to AI?
     </h2>
     <p class="text-small text-ink-2">
-      All suggestions made from your CV are deleted. You can allow it again from any application’s
-      Suggestions.
+      All suggestions made from your CV are deleted. You can allow it again from “How to improve
+      your CV” in any application.
     </p>
     @if (failed()) {
       <app-banner kind="error" heading="Couldn’t save your choice">

@@ -45,7 +45,7 @@ export interface MoveToSheetData {
         </button>
       }
     </div>
-    <p class="text-label text-ink-muted">Adds a timeline event dated today.</p>
+    <p class="text-label text-ink-muted">This also adds an entry dated today to the timeline.</p>
     <button appButton size="xl" type="button" class="w-full" (click)="close()">Cancel</button>
   `,
 })

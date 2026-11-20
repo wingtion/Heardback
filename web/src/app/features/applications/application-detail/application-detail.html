@@ -116,7 +116,7 @@
         </div>
 
         <div
-          class="flex flex-wrap items-center gap-2.5 border-t border-dashed border-rule-strong pt-2.5"
+          class="flex flex-wrap items-center gap-2.5 border-t border-dashed border-field-border pt-2.5"
         >
           @if (status(); as status) {
             <app-status-label
@@ -125,6 +125,10 @@
               [tone]="status.tone"
               [glyph]="status.glyph"
             />
+          }
+          <!-- The same badge as in the list, so the warning is seen before scrolling to the stats. -->
+          @if (ghostBadge(); as badge) {
+            <app-ghost-badge [level]="badge.level" [score]="badge.score" />
           }
           <span class="text-label text-ink-muted">Updated {{ updated() }}</span>
           <span class="text-label text-ink-2" [class]="sheet() ? 'w-full' : 'ml-auto'">
@@ -141,57 +145,6 @@
             </p>
           </section>
         }
-
-        @if (application.postingText; as postingText) {
-          <section class="flex flex-col items-start gap-1">
-            <h3 class="text-label font-semibold text-ink-2">Job posting</h3>
-            <button
-              appButton="ghost"
-              size="sm"
-              type="button"
-              class="-ml-2 max-lg:h-11"
-              [attr.aria-expanded]="showPosting()"
-              [attr.aria-controls]="showPosting() ? 'posting-text' : null"
-              (click)="togglePosting()"
-            >
-              <app-icon
-                name="chevron-down"
-                [size]="10"
-                class="text-ink-2"
-                [class.rotate-180]="showPosting()"
-              />
-              {{ showPosting() ? 'Hide posting text' : 'Show posting text' }}
-            </button>
-            @if (showPosting()) {
-              <p
-                id="posting-text"
-                class="max-h-96 w-full overflow-auto rounded-md border border-rule bg-surface p-3 whitespace-pre-line text-small text-ink"
-                [textContent]="postingText"
-              ></p>
-            }
-          </section>
-        }
-
-        <app-posting-analysis-panel
-          [applicationId]="application.id"
-          [version]="application.version"
-        />
-
-        <section class="flex flex-col gap-4" aria-labelledby="cv-for-job-title">
-          <h3
-            id="cv-for-job-title"
-            class="-mb-2 border-t border-dashed border-rule-strong pt-2.5 text-cell font-semibold text-ink"
-          >
-            Your CV for this job
-          </h3>
-          <app-match-panel
-            [applicationId]="application.id"
-            [version]="application.version"
-            (edit)="openEdit(application)"
-          />
-
-          <app-tailoring-panel [applicationId]="application.id" [version]="application.version" />
-        </section>
 
         <!-- Kept on screen so "Update added" is announced when it appears. -->
         <div role="status" class="empty:hidden">
@@ -237,6 +190,63 @@
             }
           </ol>
         </section>
+
+        <app-posting-analysis-panel
+          [applicationId]="application.id"
+          [version]="application.version"
+        />
+
+        @if (application.postingText; as postingText) {
+          <section class="flex flex-col items-start gap-1">
+            <h3 class="text-label font-semibold text-ink-2">Job description</h3>
+            <button
+              appButton="ghost"
+              size="sm"
+              type="button"
+              class="-ml-2 max-lg:h-11"
+              [attr.aria-expanded]="showPosting()"
+              [attr.aria-controls]="showPosting() ? 'posting-text' : null"
+              (click)="togglePosting()"
+            >
+              <app-icon
+                name="chevron-down"
+                [size]="10"
+                class="text-ink-2"
+                [class.rotate-180]="showPosting()"
+              />
+              {{ showPosting() ? 'Hide job description' : 'Show job description' }}
+            </button>
+            @if (showPosting()) {
+              <p
+                id="posting-text"
+                class="max-h-96 w-full overflow-auto rounded-md border border-rule bg-surface p-3 whitespace-pre-line text-small text-ink"
+                [textContent]="postingText"
+              ></p>
+            }
+          </section>
+        }
+
+        <section class="flex flex-col gap-4" aria-labelledby="cv-for-job-title">
+          <h3
+            id="cv-for-job-title"
+            class="-mb-2 border-t border-dashed border-field-border pt-2.5 text-cell font-semibold text-ink"
+          >
+            Your CV for this job
+          </h3>
+          <app-match-panel
+            [applicationId]="application.id"
+            [version]="application.version"
+            (edit)="openEdit(application)"
+          />
+
+          <app-tailoring-panel [applicationId]="application.id" [version]="application.version" />
+        </section>
+
+        <app-community-section
+          [applicationId]="application.id"
+          [version]="application.version"
+          [company]="application.company"
+        />
       </article>
     }
   </div>

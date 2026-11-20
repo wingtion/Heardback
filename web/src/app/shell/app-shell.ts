@@ -11,6 +11,7 @@ import {
   RETURN_URL_PARAM,
 } from '../features/auth/auth-paths';
 import { ApplicationsSummaryStore } from '../features/applications/applications-summary';
+import { CommunityBadgesStore } from '../features/community/community-badges';
 import { AuthService } from '../features/auth/auth.service';
 import { Logo } from '../shared/ui/brand/logo';
 import { Button } from '../shared/ui/button/button';
@@ -27,7 +28,7 @@ import { ShellActions } from './shell-actions';
   selector: 'app-shell',
   imports: [A11yModule, NgTemplateOutlet, RouterOutlet, Logo, Button, Icon, NavMenu],
   // Per signed-in session: the shell is destroyed on sign-out, and these with it.
-  providers: [ApplicationsSummaryStore, ShellActions],
+  providers: [ApplicationsSummaryStore, CommunityBadgesStore, ShellActions],
   templateUrl: './app-shell.html',
 })
 export class AppShell {

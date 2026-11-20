@@ -26,7 +26,7 @@ import { CvApi } from './cv-api';
       Delete your CV?
     </h2>
     <p class="text-small text-ink-2">
-      The stored text is removed for good. Matches show “No CV” until you upload one again.
+      Your CV text is deleted for good. Skill matches will ask you to upload a CV again.
     </p>
     @if (failed()) {
       <app-banner kind="error" heading="Couldn’t delete your CV">

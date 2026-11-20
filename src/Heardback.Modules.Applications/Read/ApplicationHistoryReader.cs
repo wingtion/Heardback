@@ -43,16 +43,7 @@ internal sealed class ApplicationHistoryReader(ApplicationsDbContext dbContext, 
                 row.AppliedOn,
                 row.LastActivityOn,
                 noResponse.DaysFor(row.Status, row.LastActivityOn),
-                row.Changes.Select(change => new ApplicationStatusChange(ToStage(change.Status), change.OccurredOn)).ToList()))
+                row.Changes.Select(change => new ApplicationStatusChange(ApplicationStages.From(change.Status), change.OccurredOn)).ToList()))
             .ToList();
     }
-
-    private static ApplicationStage ToStage(ApplicationStatus status) => status switch
-    {
-        ApplicationStatus.Applied => ApplicationStage.Applied,
-        ApplicationStatus.Interview => ApplicationStage.Interview,
-        ApplicationStatus.Offer => ApplicationStage.Offer,
-        ApplicationStatus.Rejected => ApplicationStage.Rejected,
-        _ => throw new ArgumentOutOfRangeException(nameof(status), status, "Unknown status."),
-    };
 }
