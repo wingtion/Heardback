@@ -45,6 +45,15 @@ internal sealed class Application : IUserOwned
     /// <summary>Fingerprint of company, role and posting text (<see cref="PostingKeys.ContentHash"/>); unique per user.</summary>
     public string? ContentHash { get; private set; }
 
+    /// <summary>
+    /// Comparison key of <see cref="Company"/> (<see cref="NameKeys.Company"/>): the company's community group
+    /// (ADR-0013). Null only on rows saved before the key existed.
+    /// </summary>
+    public string? CompanyKey { get; private set; }
+
+    /// <summary>Comparison key of <see cref="Role"/> (<see cref="NameKeys.Role"/>), to spot a role posted again.</summary>
+    public string? RoleKey { get; private set; }
+
     public ApplicationChannel Channel { get; private set; }
 
     public DateOnly AppliedOn { get; private set; }
@@ -165,6 +174,8 @@ internal sealed class Application : IUserOwned
     {
         Company = details.Company.Trim();
         Role = details.Role.Trim();
+        CompanyKey = NameKeys.Company(Company);
+        RoleKey = NameKeys.Role(Role);
         Url = string.IsNullOrWhiteSpace(details.Url) ? null : details.Url.Trim();
         PostingText = string.IsNullOrWhiteSpace(details.PostingText) ? null : details.PostingText.Trim();
         NormalizedUrl = PostingKeys.NormalizeUrl(Url);

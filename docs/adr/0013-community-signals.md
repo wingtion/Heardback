@@ -27,10 +27,15 @@ application drops out of every aggregate immediately.
 **Groups.**
 - **Posting:** applications linked to the same shared posting (ADR-0004).
 - **Company:** applications with the same company key. The key is the company name after Unicode
-  normalization (NFC), lower-casing with the invariant culture, collapsing whitespace and punctuation, and
-  removing a trailing legal suffix (Inc, LLC, Ltd, Limited, GmbH, AG, BV, SA, SAS, Corp, Co, A.Ş., Ltd. Şti.,
-  ...). It is stored on each application (new column, indexed, filled for existing rows in the migration) so
-  grouping runs in the database. Two different companies with the same name are merged; that is accepted.
+  compatibility normalization, removing accents and folding the Turkish dotless i (members type both
+  "Şişecam" and "Sisecam"), lower-casing with the invariant culture, collapsing whitespace and punctuation,
+  and removing trailing legal forms (Inc, LLC, Ltd, Limited, GmbH, AG, BV, SA, SAS, Corp, Co, A.Ş.,
+  Ltd. Şti., San. ve Tic., ...). It is stored on each application (indexed) so grouping runs in the
+  database, together with a role key (the same folding without removing legal forms) for the "posted again"
+  rule. Two different companies with the same name are merged; that is accepted. Rows saved before the keys
+  existed keep them empty until their next edit and are left out of company groups: nothing is deployed yet,
+  so only local development data is affected, and the rules live in C#, which an SQL backfill could not
+  follow exactly.
 
 **Who counts.**
 - The **viewer's own applications are always left out** of the group they look at. They already know their own
