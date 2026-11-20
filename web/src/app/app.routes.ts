@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { adminGuard, authGuard, guestGuard } from './features/auth/auth.guards';
+import { COMPANY_ROUTE } from './features/community/community-routes';
 
 export const routes: Routes = [
   {
@@ -27,6 +28,12 @@ export const routes: Routes = [
         title: 'Applications · Heardback',
         loadComponent: () =>
           import('./features/applications/applications-page').then((page) => page.ApplicationsPage),
+      },
+      {
+        path: COMPANY_ROUTE,
+        title: 'Company · Heardback',
+        loadComponent: () =>
+          import('./features/community/company-page').then((page) => page.CompanyPage),
       },
       {
         path: 'cv',
