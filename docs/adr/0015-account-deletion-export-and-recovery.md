@@ -93,5 +93,12 @@ account, and member reset codes are valid for 24 hours and work once.
 - Deleting a single application now also deletes its posting when nobody else tracks it. Community history for
   that posting (first seen, times added) is lost with it, which only matters for postings nobody tracks anymore.
 - Linking an application to a posting takes a short lock; at this scale that costs nothing measurable.
+- **AI jobs finishing after a deletion (approved trade-off, 2026-11-20).** An AI call takes seconds. A tailoring
+  or posting-analysis job that started before the CV, the AI consent, the application or the whole account was
+  deleted could save its result afterwards (this also applied to deleting a CV or withdrawing consent since
+  Phase 4). The jobs now check again, right before saving, that what they were made from still exists, and save
+  nothing otherwise. A deletion landing in the few milliseconds between that check and the save can still leave
+  one result behind; closing that fully would need a lock shared across modules. The author accepted this
+  remaining window for a group of about 15 people.
 - Every new module table with user data needs an eraser and an exporter; the deletion test fails if an eraser is
   missing, and the export has a test per module part.

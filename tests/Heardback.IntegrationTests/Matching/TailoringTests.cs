@@ -364,6 +364,35 @@ public sealed class TailoringTests(PostgresFixture postgres) : ApplicationsTestB
         Assert.Equal(HttpStatusCode.Unauthorized, request.StatusCode);
     }
 
+
+    [Theory]
+    [InlineData("DELETE FROM matching.cvs")]
+    [InlineData("DELETE FROM matching.ai_consents")]
+    [InlineData("DELETE FROM applications.applications")]
+    public async Task Run_SourceRemovedDuringTheAiCall_SavesNothing(string removal)
+    {
+        var application = await ReadyToTailorAsync(Alice);
+        await Client.RequestTailoringOkAsync(Alice, application);
+        _llm.Respond = _ =>
+        {
+            RunSqlNow(removal);
+            return CannedLlmClient.Answer(Answer);
+        };
+
+        await RunJobsAsync();
+
+        Assert.Equal(0, await CountRowsAsync("matching.tailoring_results"));
+    }
+
+    // The canned client answers synchronously, so the removal runs synchronously too, mid-call.
+    private void RunSqlNow(string sql)
+    {
+        using var connection = new Npgsql.NpgsqlConnection(ConnectionString);
+        connection.Open();
+        using var command = new Npgsql.NpgsqlCommand(sql, connection);
+        command.ExecuteNonQuery();
+    }
+
     private async Task<Guid> ReadyToTailorAsync(string accessToken, string cvMarker = "ALICE-CV-MARKER")
     {
         await UploadAsync(accessToken, cvMarker);

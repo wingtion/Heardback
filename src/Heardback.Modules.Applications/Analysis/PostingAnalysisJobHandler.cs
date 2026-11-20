@@ -43,6 +43,13 @@ internal sealed class PostingAnalysisJobHandler(
             return LlmJobOutcome.FromFailure(result);
         }
 
+        // The AI call takes seconds; if the last application with this text was deleted meanwhile, an analysis saved
+        // now would outlive it (ADR-0015).
+        if (await FindTextAsync(contentHash, cancellationToken) is null)
+        {
+            return AnalysisJobOutcome.Succeeded();
+        }
+
         var now = timeProvider.GetUtcNow();
         if (existing is null)
         {

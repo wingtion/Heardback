@@ -330,6 +330,26 @@ public sealed class PostingAnalysisTests(PostgresFixture postgres) : Application
         Assert.Equal(1, waiting.Usage.Used);
     }
 
+
+    [Fact]
+    public async Task Run_ApplicationDeletedDuringTheAiCall_SavesNoAnalysis()
+    {
+        var application = await CreateAsync(Alice);
+        await Client.RequestPostingAnalysisOkAsync(Alice, application);
+        _llm.Respond = _ =>
+        {
+            using var connection = new Npgsql.NpgsqlConnection(ConnectionString);
+            connection.Open();
+            using var command = new Npgsql.NpgsqlCommand("DELETE FROM applications.applications", connection);
+            command.ExecuteNonQuery();
+            return CannedLlmClient.Answer(ValidAnswer);
+        };
+
+        await RunJobsAsync();
+
+        Assert.Equal(0, await CountRowsAsync("applications.posting_analyses"));
+    }
+
     private async Task<Guid> CreateAsync(string accessToken, string? postingText = PostingText, string? url = Url) =>
         (await Client.CreateApplicationOkAsync(accessToken, NewApplication(url: url, postingText: postingText))).Id;
 
