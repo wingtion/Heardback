@@ -286,7 +286,7 @@ Header 60 px, `surface`, bottom `rule`: logo 24 px + wordmark 20 px + 44 px menu
 2. **Envelope** (inset 16/20 px): `envelope` background, 1 px `rule-strong`, radius 4, padding 0 20 16. Decorations, all `aria-hidden`: flap V-line (`rule-strong`) across the top; postage stamp top-right (50 × 60); postmark waves (44 × 22) crossing the stamp's left edge. No dated circle (§12).
 3. Content, 72 px below the top: "To" (caption, `ink-muted`) → company (`panel-title`) → role (14, `ink-2`) → posting link (13, `link`, underline offset 2).
 4. Dashed divider, then a row: postmark status label · "Updated 3 days ago" (12.5, `ink-muted`) · channel + applied date at the right (DM Mono date).
-5. **Ghost-risk box** (Phase 6 insight; render only when data exists): `base`, 1 px `rule-strong`, radius 3; "Ghost risk: High" (13.5, 600, `danger` for High), five-wave meter, "4 of 5" (DM Mono 12), one-line explanation (12.5, `ink-2`).
+5. **Community section** (Phase 6): replaces the earlier one-line ghost-risk box; see **§18**.
 6. **Notes**: heading (12.5, 600, `ink-2`) + text (13.5, `ink`).
 7. **Timeline**: heading + "Add update" secondary button (28 px); ordered list of events. Each event = **timeline stamp** + text. The stamp is 42 × 46, `base` fill, 2 px dotted outer + 1 px inner border in the event's status colour (the inner border is dashed for No response), month (8 px caps) above the day number (DM Mono 15/500). Text: status name (13.5, 600, status colour; Applied stays `ink`) + short date (DM Mono 12, `ink-muted`), and a description line (12.5, `ink-2`). The stamp is `aria-hidden`; the date is repeated in the text.
 
@@ -448,6 +448,7 @@ These go back to Claude Design with a brief written from the API that exists at 
 
 - **Phase 2:** nothing left. The board, Edit application, Add update and Add application on mobile came in the "B refined · Board and forms" handoff (§14).
 - **Phase 3:** nothing left. The CV page and the match panel were composed from the existing system instead of a Claude Design handoff (§15).
+- **Phase 6:** nothing left. Badges, the Community section and the company page came in the "B refined · Community signals" handoff (§18).
 
 ---
 
@@ -646,3 +647,42 @@ The posting text was only visible in Edit. Heading "Job posting" like Notes, the
 - **Applications per week:** 12 bars in equal cells, 8 units wide, radius 1; past weeks `rule-strong`, empty weeks a 2-unit stub in `rule`, this week `accent`. Under the bars the count of each week (DM Mono `caption` `ink-2`), then the first week's date and "This week" (`caption` `ink-muted`). Each bar has a native tooltip; a visually hidden table repeats the numbers. One series, so no legend.
 - **By channel:** per channel the label, "2 of 9 · 22%" (DM Mono `label`) and an 8 px meter (`rule` track, `ink-2` fill, radius 2). **How far they got:** Applied, Interview, Offer with meters relative to Applied and the counts at the right; caption "The furthest stage each application reached. 4 were rejected." Meters are decorative; the numbers carry the meaning.
 - **States:** loading spinner "Working out your numbers…"; error banner "Couldn’t load your numbers" + Try again; no applications: envelope empty state "No numbers yet" / "Add your first application to see how your search is going." + primary "Go to Applications"; follow-ups failing alone: inline "Couldn’t load the applications to follow up." + Try again; a failed mark: "Couldn’t save. Try again." on that row.
+
+## 18. Community signals (Phase 6 handoff)
+
+Source: Claude Design canvas page "B refined · Community signals" (artboards *Ghost-risk badge*, *Application detail · Community section and states*, *Company page*), handed off 2026-11-20. Data and wording rules come from ADR-0013. Only existing tokens: `danger`, `status-no-response`, `rule`, `rule-strong`, `envelope`, `base`, `surface`, `danger-tint`, `skeleton`, `link`, `row-hover`, `ink` / `ink-2` / `ink-muted`.
+
+### Ghost-risk badge — `app-ghost-badge`
+- **Only Medium and High.** Low gets no badge anywhere in lists.
+- 22 px high, padding 0 7 0 6, gap 5, **1 px dashed** border in the level colour, radius 3 (`rounded-sm`), text 12 px `ink-2`, no wrap.
+- Content: a 27 × 10 wave meter (five small arcs, stroke 1.4, round caps; the first *score* arcs in the level colour, the rest `rule-strong`; `aria-hidden`), "Ghost risk" and the level in weight 600 and the level colour.
+- Level colour: **High** `danger`; **Medium** `status-no-response`.
+- Screen readers hear "Ghost risk High, 4 of 5" (", 4 of 5" visually hidden).
+- Placement: **table** in the Status cell after the status label (gap 8, wraps); **board card** in a wrapping row under the meta line, after the optional "No response" label (gap 6); **mobile list card** in the status row after the status label (gap 6); **company page rows** after the status label.
+
+### Community section (application detail, desktop panel and mobile sheet)
+Inside the envelope, right after the status / channel row, with a 1 px dashed `rule-strong` top border and 12 px above. It replaces the old ghost-risk box (§12 item 5). Content gap 12.
+- **Heading** "Community" (14, 600, `ink`) and the line "From other members who applied to the same posting or company." (12, `ink-muted`) **(decided)**.
+- **Ghost-risk box** (Medium and High): `base`, 1 px `rule-strong`, radius 3, padding 10 12, gap 8. Top row: "Ghost risk: High" (13.5, 600, level colour), the 84 × 14 five-wave meter (stroke 1.6), "4 of 5" at the right (DM Mono 12, `ink-muted`). Then the hint (13, `ink`): High "This posting is likely inactive. Here is why:", Medium "This posting may be inactive. Here is why:". Then **every reason** from the API as a bulleted list (13, `ink-2`, gap 4, largest point first).
+- **Low** (numbers exist, at most one point): no box, one quiet line: `base`, 1 px `rule`, radius 3, padding 8 12; the meter with the first wave `ink-muted` and the rest `rule-strong`; "**Ghost risk: Low.** No warning signs from other members so far." (13, `ink-2`; the first part 600 `ink`).
+- **Numbers table** (`role="table"`): a label column and one right-aligned column per group, headers "This posting" / "This company" (12, 600, `ink-2`, 1 px `rule-strong` underline). Rows (13; labels `ink-2`; values DM Mono 12.5 `ink`; 1 px `rule` dividers; padding 6 0): **Other members**, **Applications**, **Heard back** ("3 · 21%"), **Average days to first answer** ("23.5"), **Median days to first answer** ("19"). An empty time is "—", with the caption "“—” means nobody has heard back yet, so there is no answer time." (12, `ink-muted`). Value cells carry an `aria-label` that reads well ("3, 21 percent", "23.5 days", "No answers yet"). Two 76 px columns when both groups have numbers; one 96 px column when only one group has (headed "This posting" or "This company"). **(decided)** When only the company has numbers, the line "Not enough members for this posting yet." (13, `ink-2`) sits above the table; when only the posting has, "Not enough members for this company yet."; the ghost-risk box still shows whatever reasons exist.
+- **Privacy line** (12, `ink-2`, 14 px info icon): "Based on other members only. You are not counted. Numbers appear once at least 3 other members have applied."
+- **"View company"** link (13.5, 600, `link`, chevron) to `/companies/:key` when the application has a company key.
+- **No company key** (older application): instead of the link, under a dashed `rule-strong` divider: "Company numbers and the company page aren’t available for this application, because it was added before companies were linked." (12.5, `ink-2`).
+- **States:** *loading*: `base`, 1 px `rule`, radius 3, padding 12; spinner + "Loading community numbers…" (13, `ink-2`, `role="status"`) and three `skeleton` bars (70 / 90 / 55 %). *Error*: the error banner (§9) "Couldn’t load community numbers" / "Your own application details are fine." + secondary **Try again** (30 px desktop, 44 px mobile). *Not enough data*: 1.5 px dashed `rule-strong`, radius 4, padding 12; "Not enough data yet" (13.5, 600) / "Fewer than 3 other members have applied to this posting. To keep everyone anonymous, no numbers are shown until at least 3 have." (13, `ink-2`); "View company" still shows under it.
+- Mobile sheet: the same content; buttons 44 px.
+
+### Company page (`/companies/:key`)
+Reached only from "View company"; inside the normal app shell with **Applications** as the active nav item. No search, no list of companies.
+- **Desktop:** "Back to Applications" with a left chevron (13, `ink-2`, no underline), then the company name (Newsreader 28 / 34, 600, −0.01em) with "Company name as you saved it" (13, `ink-muted`). Two columns, gap 24:
+  - **Your applications here** (16, 600) + "Only your own applications are listed. Select one to open it." (12.5, `ink-2`). Table: 1 px `rule`, radius 4; header 40 px `surface`, 12.5 / 600 `ink-2`, `rule-strong` underline; rows at least 48 px with `row-hover`: **Role** (link, 600, `ink`, opens the application), **Status** (status label + ghost badge, wrapping), **Applied** (DM Mono 12.5), **Last update** (right-aligned, `ink-2`, relative such as "14 days ago").
+  - **Community numbers** box (360 px, `envelope`, 1 px `rule-strong`, radius 4, padding 16, gap 10): heading (15, 600) + "Totals from other members who applied to this company." (12.5, `ink-2`), the same five rows in one 96 px column, and the privacy line ending "Their postings and roles are never shown."
+- **Mobile:** 60 px header (`surface`) with a 44 px back arrow ("Back to Applications") and "Company" (15, 600). Name (Newsreader 24 / 30), then "Your applications here" as a list (role 15 / 600 with the short applied date at the right in DM Mono 12 `ink-muted`; status label + badge below; `rule` dividers), then the Community numbers box (90 px value column; privacy line "Based on other members only. You are not counted. Shown once at least 3 others applied.").
+- **States:** *loading*: spinner "Loading company…" with a skeleton title, three 40 px row bars and a box outline. *Not enough data*: your applications still show; the box holds the dashed "Not enough data yet" card ("…applied to this company…"). *Error*: back link + error banner "Couldn’t load this company" / "The server didn’t respond. Your applications are safe." + Try again. *Not found*: envelope illustration (§9 empty state), "You have no applications at this company" (Newsreader 22, mobile 24), "Company pages only open from your own applications. The link may be old, or the application was deleted." and secondary "Go to Applications" (36 px; full-width 48 px on mobile).
+
+### Aligned with the API (decided by the author, 2026-11-20: no new design round; the rules above already include these)
+1. **Only one group has numbers.** The handoff draws "both groups" and "posting only"; with about 15 members the most common case is the company passing the minimum while the posting does not. That case uses the one-column table headed "This company" with "Not enough members for this posting yet." above it (and the mirror for posting only).
+2. **Badge ranges follow ADR-0013:** Low 0–1, Medium 2–3, High 4–5, so a 2-point posting shows a Medium badge. The handoff's "Low · 1–2 of 5" label is not used.
+3. **"Last update" on the company page** comes from a new `updatedAt` on the company page items (relative time, like the list).
+4. **Section subtitle** covers both columns: "From other members who applied to the same posting or company."
+5. The handoff's sample sidebar (Dashboard / CV / Settings) and sample numbers ("Medium · 3 of 5" from two one-point reasons) are mock data; the real shell and API values are used.
