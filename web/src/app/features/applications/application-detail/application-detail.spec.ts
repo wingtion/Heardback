@@ -134,10 +134,10 @@ describe('ApplicationDetail', () => {
     expect(badge?.closest('div')?.querySelector('app-status-label')).toBeTruthy();
   });
 
-  it('load_Loaded_NotesAndTimelineComeBeforeCommunityAndCv', async () => {
+  it('load_Loaded_NotesAndTimelineFirstStatsFromOtherMembersLast', async () => {
     await respond();
 
-    const order = ['Notes', 'Timeline', 'Stats from other members', 'Your CV for this job'].map(
+    const order = ['Notes', 'Timeline', 'Your CV for this job', 'Stats from other members'].map(
       (heading) =>
         Array.from(detail().querySelectorAll('h3')).findIndex((h3) =>
           h3.textContent?.includes(heading),

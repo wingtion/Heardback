@@ -191,12 +191,6 @@
           </ol>
         </section>
 
-        <app-community-section
-          [applicationId]="application.id"
-          [version]="application.version"
-          [company]="application.company"
-        />
-
         <app-posting-analysis-panel
           [applicationId]="application.id"
           [version]="application.version"
@@ -247,6 +241,12 @@
 
           <app-tailoring-panel [applicationId]="application.id" [version]="application.version" />
         </section>
+
+        <app-community-section
+          [applicationId]="application.id"
+          [version]="application.version"
+          [company]="application.company"
+        />
       </article>
     }
   </div>
