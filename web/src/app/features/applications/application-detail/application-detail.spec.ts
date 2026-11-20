@@ -1,4 +1,6 @@
 import { provideCommunityQuiet } from '../../community/community.testing';
+import { CommunityApi } from '../../community/community-api';
+import { CommunityBadgesStore } from '../../community/community-badges';
 import { provideAiOff } from '../../ai/ai.testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
@@ -100,7 +102,7 @@ describe('ApplicationDetail', () => {
   it('posting_WithText_IsClosedUntilShown', async () => {
     await respond(application({ postingText: 'We build shipment APIs.\nRemote in Turkey.' }));
 
-    expect(detail().textContent).toContain('Job posting');
+    expect(detail().textContent).toContain('Job description');
     expect(detail().querySelector('#posting-text')).toBeNull();
     button('Show job description').click();
     await render();
@@ -113,12 +115,36 @@ describe('ApplicationDetail', () => {
   it('posting_WithoutText_IsNotShown', async () => {
     await respond(application({ postingText: null }));
 
-    expect(detail().textContent).not.toContain('Job posting');
+    expect(detail().textContent).not.toContain('Show job description');
   });
 
   it('load_InFlight_ShowsLoading', () => {
     expect(detail().textContent).toContain('Loading application…');
     http.expectOne(DETAIL_URL).flush(application());
+  });
+
+  it('load_GhostRiskHigh_ShowsTheBadgeBesideTheStatus', async () => {
+    TestBed.inject(CommunityApi).badges = () =>
+      of([{ applicationId: 'app-1', level: 'High', score: 4 }]);
+    TestBed.inject(CommunityBadgesStore).reload();
+    await respond();
+
+    const badge = detail().querySelector('app-ghost-badge');
+    expect(badge?.textContent).toContain('High');
+    expect(badge?.closest('div')?.querySelector('app-status-label')).toBeTruthy();
+  });
+
+  it('load_Loaded_NotesAndTimelineComeBeforeCommunityAndCv', async () => {
+    await respond();
+
+    const order = ['Notes', 'Timeline', 'Stats from other members', 'Your CV for this job'].map(
+      (heading) =>
+        Array.from(detail().querySelectorAll('h3')).findIndex((h3) =>
+          h3.textContent?.includes(heading),
+        ),
+    );
+    expect(order.every((index) => index >= 0)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
   });
 
   it('load_Loaded_ShowsTheEnvelopeStatusNotesAndTimeline', async () => {

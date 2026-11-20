@@ -286,9 +286,12 @@ Header 60 px, `surface`, bottom `rule`: logo 24 px + wordmark 20 px + 44 px menu
 2. **Envelope** (inset 16/20 px): `envelope` background, 1 px `rule-strong`, radius 4, padding 0 20 16. Decorations, all `aria-hidden`: flap V-line (`rule-strong`) across the top; postage stamp top-right (50 × 60); postmark waves (44 × 22) crossing the stamp's left edge. No dated circle (§12).
 3. Content, 72 px below the top: "To" (caption, `ink-muted`) → company (`panel-title`) → role (14, `ink-2`) → posting link (13, `link`, underline offset 2).
 4. Dashed divider (1 px, `field-border`: section dividers inside the envelope are one step darker than `rule-strong` so the sections read apart; decided by the author, 2026-11-20), then a row: postmark status label · "Updated 3 days ago" (12.5, `ink-muted`) · channel + applied date at the right (DM Mono date).
-5. **Community section** (Phase 6): replaces the earlier one-line ghost-risk box; see **§18**.
-6. **Notes**: heading (12.5, 600, `ink-2`) + text (13.5, `ink`).
-7. **Timeline**: heading + "Add update" secondary button (28 px); ordered list of events. Each event = **timeline stamp** + text. The stamp is 42 × 46, `base` fill, 2 px dotted outer + 1 px inner border in the event's status colour (the inner border is dashed for No response), month (8 px caps) above the day number (DM Mono 15/500). Text: status name (13.5, 600, status colour; Applied stays `ink`) + short date (DM Mono 12, `ink-muted`), and a description line (12.5, `ink-2`). The stamp is `aria-hidden`; the date is repeated in the text.
+5. **Notes**: heading (12.5, 600, `ink-2`) + text (13.5, `ink`).
+6. **Timeline**: heading + "Add update" secondary button (28 px); ordered list of events. Each event = **timeline stamp** + text. The stamp is 42 × 46, `base` fill, 2 px dotted outer + 1 px inner border in the event's status colour (the inner border is dashed for No response), month (8 px caps) above the day number (DM Mono 15/500). Text: status name (13.5, 600, status colour; Applied stays `ink`) + short date (DM Mono 12, `ink-muted`), and a description line (12.5, `ink-2`). The stamp is `aria-hidden`; the date is repeated in the text.
+7. **Community section** (Phase 6): replaces the earlier one-line ghost-risk box; see **§18**.
+8. **About this job** (AI summary, §16), then **Job description** (heading + the "Show job description" toggle), then **Your CV for this job** (§15, §16).
+
+**Order (decided by the author, 2026-11-20):** what the user needs first comes first: status, own notes and the timeline with Add update; then the signal from other members; then preparation and reference (job summary, job description, CV). A Medium or High **ghost badge** (§18) also sits in the status row after the status label, so the warning is seen before scrolling.
 
 ### Full-screen detail sheet (mobile)
 `role="dialog"`, `aria-modal`, `surface`. Header 60 px (`base`): 44 px ✕ "Close and go back to applications", title "Application" (15, 600), Edit (36 px). Same envelope inside with 16 px margin (slightly smaller stamp and postmark); the channel/date line wraps to its own row. Sticky footer (`base`, top `rule`): **Delete** (danger outline with trash, 48 px) and **Add update** (primary, 48 px), side by side.
@@ -582,7 +585,7 @@ Applied and update dates are calendar dates in the user's own day. "Today or ear
 
 Matched and missing differ by the check and the border style, never by colour alone.
 
-### Match panel ("CV match", in the envelope between Notes and Timeline)
+### Match panel ("CV match", in the envelope, last (order in §12))
 - Heading like Notes and Timeline (`label`, 600, `ink-2`); when ready, "3 of 5 skills · 60%" at the right in DM Mono (`label`, `ink`). **No gauge or ring:** the share is plain text.
 - **Ready:** "Your CV shows" + matched chips, "Missing from your CV" + missing chips (captions in `caption`, `ink-muted`), then "Skills named in the role and posting text, compared with your CV."
 - **No CV:** "This job asks for" + missing chips, then "Upload your CV to see which of these it shows." with a link to the CV page.
@@ -598,10 +601,10 @@ Matched and missing differ by the check and the border style, never by colour al
 ### Groups and headings (decided by the author, 2026-11-19, after testing)
 The AI and match sections were hard to tell apart, so the detail groups them under two titles, each a dashed `rule-strong` top border with 10 px above the text, `cell` 600 `ink`: **About this job** (Job summary) and **Your CV for this job** (Skills match, then How to improve your CV). Group titles are `h3`, section headings `h4`. Sections an LLM wrote carry a small **AI tag** at the right of their heading: 20 px high, radius 3, `field-border` border, `caption` 500 `ink-2`, plain text "AI" (screen readers hear "written by AI"); the skills match, worked out exactly, has none.
 
-### Job posting (application detail, after Notes; added at the author's request, 2026-11-19)
-The posting text was only visible in Edit. Heading "Job posting" like Notes, then the CV page's stored-text pattern (§15): a ghost "Show job description" / "Hide job description" (renamed from "posting text" by the author, 2026-11-20) with the turning chevron, revealing the text as entered (`small`, `ink`, line breaks kept) on `surface` with a `rule` border, radius 4, at most 384 px high, scrolling. Closed by default and again when another application opens; not shown without posting text.
+### Job posting (application detail, after the job summary (order in §12); added at the author's request, 2026-11-19)
+The posting text was only visible in Edit. Heading "Job description" like Notes, then the CV page's stored-text pattern (§15): a ghost "Show job description" / "Hide job description" (renamed from "posting text" by the author, 2026-11-20) with the turning chevron, revealing the text as entered (`small`, `ink`, line breaks kept) on `surface` with a `rule` border, radius 4, at most 384 px high, scrolling. Closed by default and again when another application opens; not shown without posting text.
 
-### Job summary (posting analysis; application detail, "About this job", between Notes and the CV group)
+### Job summary (posting analysis; application detail, "About this job", after the stats from other members (order in §12))
 - Heading "Job summary" like Notes (`label`, 600, `ink-2`) with the AI tag; the "About this job" title shows only with it. Hidden while loading and when the application has no posting text (the match panel already asks for it).
 - **Not requested:** "AI can summarize this job for you: title, seniority, work mode, location and the skills it asks for." + 28 px secondary **Summarize job** (44 px below lg) and, beside it, the usage line in DM Mono `label` `ink-muted`: "28 of 30 left today · resets 03:00" (the reset in the user's own time zone, 24-hour).
 - **Queued / running:** spinner "Summarizing the job…" (`role="status"`); the panel checks again every 3 seconds.
