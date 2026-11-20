@@ -43,7 +43,7 @@ type SectionView =
     Spinner,
   ],
   host: {
-    class: 'flex flex-col gap-3 border-t border-dashed border-rule-strong pt-3',
+    class: 'flex flex-col gap-3 border-t border-dashed border-field-border pt-3',
     role: 'region',
     'aria-labelledby': 'community-title',
   },
@@ -157,7 +157,7 @@ type SectionView =
           <app-icon name="chevron-right" [size]="12" />
         </a>
       } @else {
-        <p class="border-t border-dashed border-rule-strong pt-2 text-label text-ink-2">
+        <p class="border-t border-dashed border-field-border pt-2 text-label text-ink-2">
           Company stats and the list of your applications at this company aren’t available here,
           because this application was added before companies were linked.
         </p>

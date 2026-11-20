@@ -49,7 +49,9 @@ type RequestProblem =
   host: { class: 'flex flex-col gap-2 empty:hidden' },
   template: `
     @if (visible()) {
-      <h3 class="border-t border-dashed border-rule-strong pt-2.5 text-cell font-semibold text-ink">
+      <h3
+        class="border-t border-dashed border-field-border pt-2.5 text-cell font-semibold text-ink"
+      >
         About this job
       </h3>
       <div class="flex items-center justify-between gap-2">
