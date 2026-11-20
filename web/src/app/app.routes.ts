@@ -25,7 +25,7 @@ export const routes: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'applications' },
       {
         path: 'applications',
-        title: 'Applications · Heardback',
+        title: 'Job applications · Heardback',
         loadComponent: () =>
           import('./features/applications/applications-page').then((page) => page.ApplicationsPage),
       },

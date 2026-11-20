@@ -158,7 +158,7 @@ describe('ApplicationDetail', () => {
     expect(detail().getAttribute('role')).toBe('dialog');
     expect(detail().getAttribute('aria-modal')).toBe('true');
     expect(detail().getAttribute('aria-labelledby')).toBe('application-detail-title');
-    expect(button('Close and go back to applications')).toBeTruthy();
+    expect(button('Close and go back to job applications')).toBeTruthy();
   });
 
   it('close_Clicked_EmitsClosed', async () => {

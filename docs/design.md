@@ -291,7 +291,7 @@ Header 60 px, `surface`, bottom `rule`: logo 24 px + wordmark 20 px + 44 px menu
 7. **Timeline**: heading + "Add update" secondary button (28 px); ordered list of events. Each event = **timeline stamp** + text. The stamp is 42 × 46, `base` fill, 2 px dotted outer + 1 px inner border in the event's status colour (the inner border is dashed for No response), month (8 px caps) above the day number (DM Mono 15/500). Text: status name (13.5, 600, status colour; Applied stays `ink`) + short date (DM Mono 12, `ink-muted`), and a description line (12.5, `ink-2`). The stamp is `aria-hidden`; the date is repeated in the text.
 
 ### Full-screen detail sheet (mobile)
-`role="dialog"`, `aria-modal`, `surface`. Header 60 px (`base`): 44 px ✕ "Close and go back to applications", title "Application" (15, 600), Edit (36 px). Same envelope inside with 16 px margin (slightly smaller stamp and postmark); the channel/date line wraps to its own row. Sticky footer (`base`, top `rule`): **Delete** (danger outline with trash, 48 px) and **Add update** (primary, 48 px), side by side.
+`role="dialog"`, `aria-modal`, `surface`. Header 60 px (`base`): 44 px ✕ "Close and go back to job applications", title "Application" (15, 600), Edit (36 px). Same envelope inside with 16 px margin (slightly smaller stamp and postmark); the channel/date line wraps to its own row. Sticky footer (`base`, top `rule`): **Delete** (danger outline with trash, 48 px) and **Add update** (primary, 48 px), side by side.
 
 ### Dialog — `app-dialog` (CDK Dialog)
 `base`, 1 px `rule-strong`, radius 5, `shadow-dialog`. Header: padding 16 20 14, bottom `rule`; title (`dialog-title`), close icon button (30–32 px, bordered). Body: padding 18 20 20, fields 14 px apart, two-column rows where shown. Footer: `surface`, top `rule`, right-aligned Cancel/Done (secondary) + primary action. `aria-modal`, `aria-labelledby` = title, focus trapped, Escape closes, focus returns to the trigger.
@@ -361,7 +361,7 @@ Heading "Create account", line "Heardback is invite only. You need a code to joi
 Sidebar or mobile header, as §8. Admin section only when `user.isAdmin`. Full-page session loading on reload. Sign out in the sidebar footer / mobile menu.
 
 ### No access (admin page opened by a member, 403)
-Shell stays. No-access envelope illustration, heading "You don't have access to this page", text "Only admins can manage invite codes. If you think you should have access, ask the person who invited you.", secondary link-button "Go to Applications" (full width on mobile).
+Shell stays. No-access envelope illustration, heading "You don't have access to this page", text "Only admins can manage invite codes. If you think you should have access, ask the person who invited you.", secondary link-button "Go to job applications" (full width on mobile).
 
 ### Invite codes (`/admin/invite-codes`, admin)
 Heading "Invite codes", summary "34 codes · 9 active" (total from the paged response; the active count is added to the list response in the same phase), primary "Create invite code" at the right (full width under the heading on mobile). Table: Code (DM Mono + copy icon button "Copy code K7QM-…"), Status (Active / Used / Expired label), Created, Expires, Used (date or "—" in `ink-muted`). Newest first, 20 per page, pagination bar. Mobile: list items with code (DM Mono 16) + 44 px copy button, then status label + one meta line ("Expires 01 Dec" / "Used 22 Nov" / "Expired 22 Nov").
@@ -464,7 +464,7 @@ Timeline/chip glyphs: **Note** = circle with two short lines in `ink-2`; **No ch
 Segmented control at the right of the page heading: 1 px `field-border`, radius 4, two buttons with `aria-pressed`. Off: `base`, `ink-2`, 400. On: `nav-active`, inset 2 px `accent` bar at the bottom, `ink`, 600. Desktop 34 px with list/board icons; mobile without icons. The handoff shows 40 px on mobile; it is built at **44 px** (touch rule, §5) **(decided)**.
 
 ### Board page, desktop
-- **Header:** "Applications" (`page-title`), summary "8 applications · 2 with no response" (`small`, `ink-2`, tabular numbers), view toggle (`ml-auto`), primary "Add application" (36 px, plus icon).
+- **Header:** "Job applications" (`page-title`), summary "8 applications · 2 with no response" (`small`, `ink-2`, tabular numbers), view toggle (`ml-auto`), primary "Add application" (36 px, plus icon).
 - **Toolbar:** Search (320 px, placeholder "Company or role") and Applied via ("All" + the six channels) as toolbar field groups (§8). **No Status filter** on the board, because the columns are the statuses.
 - **Columns:** a 4-column grid with 12 px gaps: **Applied, Interview, Offer, Rejected**. "No response · N days" is a label on Applied cards, **not a column**. Each column: `surface`, 1 px `rule`, radius 4, padding 8, gap 8, min height 520. Column heading (`<h2>`): status glyph + name (13.5, 600, `ink`) + count at the right (DM Mono 12.5, `ink-muted`), padding 4 4 8, bottom `rule`. Cards sit in an `<ol>`.
 - **Card** (`<article>`, `aria-label` "Company, Role"): `base`, 1 px `rule-strong`, radius 4, padding 10 6 10 12, gap 6, `cursor: grab`; hover border `field-border`. Content: company (14, 600) and role (13, `ink-2`) together as one link that opens the detail; meta "Channel · 12 Nov 2026" (12.5, `ink-2`, date in DM Mono); optional "No response · N days" status label (§8, table form).
@@ -494,7 +494,7 @@ Escape cancels the drag. Keyboard and screen reader users use "Move to…". A mo
 
 ### Board, mobile (< 1024 px)
 - **Header:** logo + wordmark + primary **"Add"** button (plus icon, `aria-label` "Add application") + menu button. No sticky bottom bar on this page. The handoff's Add button is 40 px tall; it is built at **44 px** **(decided)**.
-- Below the header: "Applications" (`page-title-sm`) + view toggle; then Search (icon-only label, flex) and Applied via (150 px, option "All"), both 44 px.
+- Below the header: "Job applications" (`page-title-sm`) + view toggle; then Search (icon-only label, flex) and Applied via (150 px, option "All"), both 44 px.
 - **Status tabs** (`role="tablist"`, one column at a time, **no dragging**): 4 equal tabs, 54 px, `surface` strip with `rule` lines above and below. Each tab: glyph + name (13) over the count (DM Mono 12, `ink-muted`). Selected: `base`, inset 3 px `accent` bar at the bottom, `ink`, 600, `aria-selected="true"`. Others: transparent, `ink-2`, 500.
 - **Tab panel:** padding 12 16, gap 8. Cards: padding 12 10 10 14; company 15 / 600, role 13.5 `ink-2`, meta 12.5; on the right a 44 px secondary **"Move to…"** button (move icon + text, `aria-haspopup="dialog"`).
 - **Move to sheet:** bottom sheet with `scrim-sheet`: title "Move to" (`dialog-title`), line "Larkspur Labs · Backend Engineering Intern · now in Applied" (13.5, `ink-2`), a bordered list (`rule`, radius 4) of the three other statuses as 52 px rows (glyph + name, 15), the note "This also adds an entry dated today to the timeline." (12.5, `ink-muted`), and a full-width 48 px Cancel.
@@ -646,7 +646,7 @@ The posting text was only visible in Edit. Heading "Job posting" like Notes, the
 - **Response rate** and **Time until the first reply** side by side from lg: the headline number in DM Mono at `page-title` size, a short word beside it ("heard back", "on average"), and a caption with the counts behind it ("8 of 19 applications got an answer: an interview, an offer or a rejection.", "Median 4 days, from 8 responses."). No responses: "No responses yet."
 - **Applications per week:** 12 bars in equal cells, 8 units wide, radius 1; past weeks `rule-strong`, empty weeks a 2-unit stub in `rule`, this week `accent`. Under the bars the count of each week (DM Mono `caption` `ink-2`), then the first week's date and "This week" (`caption` `ink-muted`). Each bar has a native tooltip; a visually hidden table repeats the numbers. One series, so no legend.
 - **By how you applied:** per channel the label, "2 of 9 · 22%" (DM Mono `label`) and an 8 px meter (`rule` track, `ink-2` fill, radius 2). **How far they got:** Applied, Interview, Offer with meters relative to Applied and the counts at the right; caption "The furthest stage each application reached. 4 were rejected." Meters are decorative; the numbers carry the meaning.
-- **States:** loading spinner "Working out your numbers…"; error banner "Couldn’t load your numbers" + Try again; no applications: envelope empty state "No numbers yet" / "Add your first application to see how your search is going." + primary "Go to Applications"; follow-ups failing alone: inline "Couldn’t load the applications to follow up." + Try again; a failed mark: "Couldn’t save. Try again." on that row.
+- **States:** loading spinner "Working out your numbers…"; error banner "Couldn’t load your numbers" + Try again; no applications: envelope empty state "No numbers yet" / "Add your first application to see how your search is going." + primary "Go to job applications"; follow-ups failing alone: inline "Couldn’t load the applications to follow up." + Try again; a failed mark: "Couldn’t save. Try again." on that row.
 
 ## 18. Community signals (Phase 6 handoff)
 
@@ -674,11 +674,11 @@ Inside the envelope, right after the status / channel row, with a 1 px dashed `r
 
 ### Company page (`/applications/companies/:key`)
 Reached only from the "All your applications at {Company}" link; inside the normal app shell. The URL sits under `/applications` (the handoff says `/companies/:key`) so **Applications** stays the active nav item. No search, no list of companies.
-- **Desktop:** "Back to Applications" with a left chevron (13, `ink-2`, no underline), which opens the application the page was opened from again (`?from=` in the URL; decided by the author, 2026-11-20), then the company name (Newsreader 28 / 34, 600, −0.01em) (no caption under it). Two columns, gap 24, from the xl breakpoint; between lg and xl the stats box sits under the list:
+- **Desktop:** "Back to job applications" with a left chevron (13, `ink-2`, no underline), which opens the application the page was opened from again (`?from=` in the URL; decided by the author, 2026-11-20), then the company name (Newsreader 28 / 34, 600, −0.01em) (no caption under it). Two columns, gap 24, from the xl breakpoint; between lg and xl the stats box sits under the list:
   - **Your applications at {Company}** (16, 600) + "Only your own applications are listed. Select one to open it." (12.5, `ink-2`). Table (columns sized by their content; dates, "Last update" and headers never wrap): 1 px `rule`, radius 4; header 40 px `surface`, 12.5 / 600 `ink-2`, `rule-strong` underline; rows at least 48 px with `row-hover`: **Role** (link, 600, `ink`, opens the application), **Status** (status label + ghost badge, wrapping), **Applied** (DM Mono 12.5), **Last update** (right-aligned, `ink-2`, relative such as "14 days ago").
   - **Stats box** (440 px from lg, so its heading fits on one line; the handoff's 360 px wrapped it; `envelope`, 1 px `rule-strong`, radius 4, padding 16, gap 10): heading "Stats from other members who applied to this company" (15, 600; no separate description line), the same five rows in one 96 px column, and the privacy line ending "Their postings and roles are never shown."
-- **Mobile:** the same "Back to Applications" link at 44 px height (the app header is already on screen, so no second header bar). Name (Newsreader 24 / 30), then "Your applications at {Company}" as a list (role 15 / 600 with the short applied date at the right in DM Mono 12 `ink-muted`; status label + badge below; `rule` dividers), then the stats box (96 px value column; privacy line "Based on other members only. You are not counted. Shown once at least 3 others applied.").
-- **States:** *loading*: spinner "Loading company…" with a skeleton title, three 40 px row bars and a box outline. *Not enough data*: your applications still show; the box holds the dashed "Not enough data yet" card ("…applied to this company…"). *Error*: back link + error banner "Couldn’t load this company" / "The server didn’t respond. Your applications are safe." + Try again. *Not found*: envelope illustration (§9 empty state), "You have no applications at this company" (Newsreader 22, mobile 24), "Company pages only open from your own applications. The link may be old, or the application was deleted." and secondary "Go to Applications" (36 px; full-width 48 px on mobile).
+- **Mobile:** the same "Back to job applications" link at 44 px height (the app header is already on screen, so no second header bar). Name (Newsreader 24 / 30), then "Your applications at {Company}" as a list (role 15 / 600 with the short applied date at the right in DM Mono 12 `ink-muted`; status label + badge below; `rule` dividers), then the stats box (96 px value column; privacy line "Based on other members only. You are not counted. Shown once at least 3 others applied.").
+- **States:** *loading*: spinner "Loading company…" with a skeleton title, three 40 px row bars and a box outline. *Not enough data*: your applications still show; the box holds the dashed "Not enough data yet" card ("…applied to this company…"). *Error*: back link + error banner "Couldn’t load this company" / "The server didn’t respond. Your applications are safe." + Try again. *Not found*: envelope illustration (§9 empty state), "You have no applications at this company" (Newsreader 22, mobile 24), "Company pages only open from your own applications. The link may be old, or the application was deleted." and secondary "Go to job applications" (36 px; full-width 48 px on mobile).
 
 ### Aligned with the API (decided by the author, 2026-11-20: no new design round; the rules above already include these)
 1. **Only one group has numbers.** The handoff draws "both groups" and "posting only"; with about 15 members the most common case is the company passing the minimum while the posting does not. That case uses the one-column table headed "This company" with "Not enough members for this posting yet." above it (and the mirror for posting only).
@@ -686,3 +686,24 @@ Reached only from the "All your applications at {Company}" link; inside the norm
 3. **"Last update" on the company page** comes from a new `updatedAt` on the company page items (relative time, like the list).
 4. **Plain headings** (decided by the author after testing the demo, 2026-11-20): the same day an app-wide plain-language pass followed (one word for the listing, "job"; "Channel" became "Applied via"; clearer CV, AI and Edit hints), keeping "Ghost risk" as designed. Here: headings say what the numbers are instead of "Community" / "Community numbers", the link says where it goes ("All your applications at {Company}"), "Other members" became "Members who applied", the one-column case explains itself, and captions that repeat a heading (or only said "Company name as you saved it") are gone.
 5. The handoff's sample sidebar (Dashboard / CV / Settings) and sample numbers ("Medium · 3 of 5" from two one-point reasons) are mock data; the real shell and API values are used.
+
+## 19. UI terms and code names
+
+The UI uses plain words for the people who use Heardback; the code, API and database keep the domain names
+from PLAN.md and the ADRs. Both are deliberate (decided by the author, 2026-11-20): UI copy can change without
+renaming API fields, columns and migrations. When the two differ:
+
+| On screen | In code, API and database |
+| --- | --- |
+| Job applications (nav item and page title) | `Application`, `/api/applications` |
+| Job description | `postingText` (`posting_text`) |
+| Job link | `url` |
+| Applied via | `channel` (`ApplicationChannel`) |
+| Job (the listing several members can share) | `JobPosting` in the Postings module (ADR-0004) |
+| Add update / timeline entry | `ApplicationEvent` |
+| No response · N days | derived from `NoResponseRule`, never stored |
+| Stats from other members | community outcomes, `ICommunityOutcomes`, `/api/community` (ADR-0013) |
+| Members who applied | `CommunityOutcome.Members` (other members only) |
+| Ghost risk, warning signs | `GhostSignal`, `GhostReason` (ADR-0013) |
+| All your applications at {Company} | company page, `/api/community/companies/{key}` (`CompanyKey`) |
+| Removed (CV skills) | excluded skills, `excludedSkills` |

@@ -103,7 +103,7 @@ describe('CompanyPage', () => {
     await render();
 
     const back = Array.from(root().querySelectorAll('a')).find((link) =>
-      link.textContent?.includes('Back to Applications'),
+      link.textContent?.includes('Back to job applications'),
     );
     expect(back?.getAttribute('href')).toBe('/applications?id=app-7');
   });
@@ -113,7 +113,7 @@ describe('CompanyPage', () => {
     await render();
 
     const back = Array.from(root().querySelectorAll('a')).find((link) =>
-      link.textContent?.includes('Back to Applications'),
+      link.textContent?.includes('Back to job applications'),
     );
     expect(back?.getAttribute('href')).toBe('/applications');
   });
@@ -134,7 +134,7 @@ describe('CompanyPage', () => {
     expect(root().querySelector('h1')?.textContent).toContain(
       'You have no applications at this company',
     );
-    expect(text()).toContain('Go to Applications');
+    expect(text()).toContain('Go to job applications');
   });
 
   it('load_ServerDown_ShowsErrorAndTryAgainReloads', async () => {

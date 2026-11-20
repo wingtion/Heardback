@@ -68,7 +68,7 @@ describe('AppShell', () => {
     const root = await openAs({ isAdmin: false });
 
     const link = root.querySelector<HTMLElement>('nav[aria-label="Main"] a[href="/applications"]');
-    expect(link?.textContent?.replace(/\s+/g, ' ').trim()).toBe('Applications 8');
+    expect(link?.textContent?.replace(/\s+/g, ' ').trim()).toBe('Job applications 8');
   });
 
   it('render_Member_HidesTheAdminSection', async () => {
@@ -88,7 +88,7 @@ describe('AppShell', () => {
     const root = await openAs({ isAdmin: false });
 
     const current = root.querySelector('a[aria-current=page]');
-    expect(current?.textContent).toContain('Applications');
+    expect(current?.textContent).toContain('Job applications');
   });
 
   it('signOut_Clicked_EndsTheSessionAndGoesToSignIn', async () => {

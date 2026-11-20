@@ -24,7 +24,7 @@ import { SHELL_ROUTES } from '../../shell/nav-items';
         [routerLink]="applicationsPath"
         class="mt-1 max-lg:mt-1.5 max-lg:h-12 max-lg:w-full max-lg:text-ui-lg"
       >
-        Go to Applications
+        Go to job applications
       </a>
     </div>
   `,
