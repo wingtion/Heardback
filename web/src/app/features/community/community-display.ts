@@ -31,8 +31,8 @@ export function showsBadge(rating: GhostRating | null): rating is GhostRating {
 /** The line under the ghost-risk heading for Medium and High. */
 export function ghostHint(level: GhostLevel): string {
   return level === 'High'
-    ? 'This posting is likely inactive. Here is why:'
-    : 'This posting may be inactive. Here is why:';
+    ? 'This job is likely inactive. Here is why:'
+    : 'This job may be inactive. Here is why:';
 }
 
 /** The five table rows for one or two groups. */

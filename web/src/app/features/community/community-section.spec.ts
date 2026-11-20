@@ -126,7 +126,7 @@ describe('CommunitySection', () => {
 
     expect(text(element)).toContain('Ghost risk: High');
     expect(text(element)).toContain('5 of 5');
-    expect(text(element)).toContain('This posting is likely inactive. Here is why:');
+    expect(text(element)).toContain('This job is likely inactive. Here is why:');
     expect(Array.from(element.querySelectorAll('li'), (li) => li.textContent!.trim())).toEqual(
       HIGH.reasons.map((reason) => reason.text),
     );
@@ -161,7 +161,7 @@ describe('CommunitySection', () => {
       ghost: { score: 2, maxScore: 5, level: 'Medium', reasons: [] },
     });
 
-    expect(text(element)).toContain('This posting may be inactive.');
+    expect(text(element)).toContain('This job may be inactive.');
     expect(text(element)).not.toContain('so only job numbers are shown.');
     expect(text(element)).toContain('added before companies were linked');
     expect(element.querySelector('a')).toBeNull();

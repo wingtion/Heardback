@@ -3,7 +3,7 @@ import { CommunityNumbers } from './community.models';
 import { NO_TIME, hasMissingTime, statRows } from './community-display';
 
 export interface NumbersColumn {
-  /** "This posting" or "This company"; the company page's single column has none. */
+  /** "This job" or "This company"; the company page's single column has none. */
   readonly heading: string | null;
   readonly numbers: CommunityNumbers;
 }
