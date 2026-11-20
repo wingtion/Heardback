@@ -25,6 +25,7 @@ import { Spinner } from '../../../shared/ui/spinner/spinner';
 import { PostingAnalysisPanel } from '../../ai/posting-analysis-panel';
 import { TailoringPanel } from '../../ai/tailoring-panel';
 import { MatchPanel } from '../../cv/match-panel';
+import { CommunitySection } from '../../community/community-section';
 import { StatusGlyphIcon } from '../../../shared/ui/status-label/status-glyph';
 import { StatusLabel } from '../../../shared/ui/status-label/status-label';
 import {
@@ -79,6 +80,7 @@ type DetailView =
     Banner,
     Button,
     Icon,
+    CommunitySection,
     InlineSuccess,
     MatchPanel,
     PostingAnalysisPanel,

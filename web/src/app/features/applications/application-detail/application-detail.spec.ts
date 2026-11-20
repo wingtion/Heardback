@@ -1,3 +1,4 @@
+import { provideCommunityQuiet } from '../../community/community.testing';
 import { provideAiOff } from '../../ai/ai.testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
@@ -51,6 +52,7 @@ describe('ApplicationDetail', () => {
         provideRouter([]),
         provideHttpClient(),
         provideHttpClientTesting(),
+        ...provideCommunityQuiet(),
         // The match panel has its own tests; here it only needs an answer.
         { provide: CvApi, useValue: { match: () => of(NO_MATCH) } },
         // The AI panels have their own tests; here AI is off, so they stay hidden.
