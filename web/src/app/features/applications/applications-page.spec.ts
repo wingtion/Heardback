@@ -350,7 +350,7 @@ describe('ApplicationsPage', () => {
       await render();
 
       expect(TestBed.inject(Router).url).toBe('/applications?view=board&id=app-1');
-      buttonIn(root(), 'Close and go back to job applications').click();
+      buttonIn(root(), 'Close and go back to applications').click();
       await render();
       expect(TestBed.inject(Router).url).toBe('/applications?view=board');
     });

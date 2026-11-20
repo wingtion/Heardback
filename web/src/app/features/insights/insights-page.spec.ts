@@ -114,7 +114,7 @@ describe('InsightsPage', () => {
     const element = await create(EMPTY, { items: [], totalCount: 0 });
 
     expect(element.textContent).toContain('No numbers yet');
-    expect(element.querySelector('a')?.textContent).toContain('Go to job applications');
+    expect(element.querySelector('a')?.textContent).toContain('Go to Applications');
   });
 
   it('load_Numbers_ShowsRatesWithTheCountsBehindThem', async () => {

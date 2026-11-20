@@ -19,7 +19,7 @@ export const SHELL_ROUTES = {
  * added in the phase that builds them.
  */
 export const MAIN_NAV: readonly NavItem[] = [
-  { label: 'Job applications', path: SHELL_ROUTES.applications },
+  { label: 'Applications', path: SHELL_ROUTES.applications },
   { label: 'CV', path: SHELL_ROUTES.cv },
   { label: 'Overview', path: SHELL_ROUTES.overview },
 ];
