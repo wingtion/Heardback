@@ -11,7 +11,7 @@ public sealed class GhostSignalCalculatorTests
 
     private static readonly TrackedApplication Application = new(
         Guid.NewGuid(), Guid.NewGuid(), "Northwind", "northwind", "Backend Engineer", RoleKey,
-        ApplicationStage.Applied, new DateOnly(2026, 10, 1), NoResponseDays: 50);
+        ApplicationStage.Applied, new DateOnly(2026, 10, 1), NoResponseDays: 50, Now);
 
     [Fact]
     public void Calculate_NoGroupPassedTheMinimum_IsNull()

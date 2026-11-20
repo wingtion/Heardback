@@ -77,6 +77,7 @@ internal sealed class CommunityOutcomesReader(
                 application.Status,
                 application.AppliedOn,
                 application.LastActivityOn,
+                application.UpdatedAt,
             })
             .ToListAsync(cancellationToken);
 
@@ -90,7 +91,8 @@ internal sealed class CommunityOutcomesReader(
                 row.RoleKey,
                 ApplicationStages.From(row.Status),
                 row.AppliedOn,
-                noResponse.DaysFor(row.Status, row.LastActivityOn)))
+                noResponse.DaysFor(row.Status, row.LastActivityOn),
+                row.UpdatedAt))
             .ToList();
     }
 

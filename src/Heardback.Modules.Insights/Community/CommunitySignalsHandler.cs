@@ -76,6 +76,7 @@ internal sealed class CommunitySignalsHandler(
                     application.Stage.ToString(),
                     application.AppliedOn,
                     application.NoResponseDays,
+                    application.UpdatedAt,
                     Ghost(snapshot, application)?.Level))
                 .ToList());
     }

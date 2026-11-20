@@ -172,6 +172,22 @@ public sealed class CommunityTests(PostgresFixture postgres) : ApplicationsTestB
     }
 
     [Fact]
+    public async Task ForCompany_YourApplications_CarryTheirLastUpdate()
+    {
+        var alices = await ApplyAsync(Alice);
+        await AdvanceDaysAsync(2);
+        await AddUpdateAsync(Alice, alices, status: null, daysAgo: 0, note: "Called the recruiter");
+        using var detail = await Client.GetApplicationAsync(Alice, alices);
+        var updatedAt = (await detail.ReadAsync<ApplicationDto>()).UpdatedAt;
+
+        var community = await GetForApplicationAsync(Alice, alices);
+        var company = await GetForCompanyAsync(Alice, community.CompanyKey!);
+
+        var item = Assert.Single(company.Applications);
+        Assert.Equal(updatedAt, item.UpdatedAt);
+    }
+
+    [Fact]
     public async Task ForCompany_OneMemberWithManyApplications_CountsAsOneMember()
     {
         var alices = await ApplyAsync(Alice, url: "https://jobs.example.com/a");
@@ -336,6 +352,7 @@ internal sealed record CompanyApplicationDto(
     string Status,
     DateOnly AppliedOn,
     int? NoResponseDays,
+    DateTimeOffset UpdatedAt,
     string? Ghost);
 
 internal sealed record CompanyDto(

@@ -10,6 +10,7 @@ namespace Heardback.Modules.Applications.Contracts;
 /// <param name="Stage">Current status.</param>
 /// <param name="AppliedOn">The applied date.</param>
 /// <param name="NoResponseDays">Days without a response when "No response" applies; otherwise null.</param>
+/// <param name="UpdatedAt">When the user last changed anything, timeline included ("Last update").</param>
 public sealed record TrackedApplication(
     Guid ApplicationId,
     Guid PostingId,
@@ -19,4 +20,5 @@ public sealed record TrackedApplication(
     string? RoleKey,
     ApplicationStage Stage,
     DateOnly AppliedOn,
-    int? NoResponseDays);
+    int? NoResponseDays,
+    DateTimeOffset UpdatedAt);
