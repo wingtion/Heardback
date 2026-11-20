@@ -169,6 +169,7 @@ public sealed class CommunityTests(PostgresFixture postgres) : ApplicationsTestB
         Assert.Equal("Northwind", company.Company);
         Assert.Equal(3, company.Numbers!.Members);
         Assert.Equal([alices], company.Applications.Select(application => application.ApplicationId));
+        Assert.Equal(new GhostRatingDto("Medium", 2), company.Applications[0].Ghost);
     }
 
     [Fact]
@@ -353,7 +354,9 @@ internal sealed record CompanyApplicationDto(
     DateOnly AppliedOn,
     int? NoResponseDays,
     DateTimeOffset UpdatedAt,
-    string? Ghost);
+    GhostRatingDto? Ghost);
+
+internal sealed record GhostRatingDto(string Level, int Score);
 
 internal sealed record CompanyDto(
     string CompanyKey,

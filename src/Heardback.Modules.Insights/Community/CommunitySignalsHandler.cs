@@ -77,7 +77,7 @@ internal sealed class CommunitySignalsHandler(
                     application.AppliedOn,
                     application.NoResponseDays,
                     application.UpdatedAt,
-                    Ghost(snapshot, application)?.Level))
+                    Rating(Ghost(snapshot, application))))
                 .ToList());
     }
 
@@ -88,6 +88,9 @@ internal sealed class CommunitySignalsHandler(
             CompanyOf(snapshot, application),
             timeProvider.GetUtcNow(),
             settings.Value);
+
+    private static GhostRating? Rating(GhostSignal? signal) =>
+        signal is null ? null : new GhostRating(signal.Level, signal.Score);
 
     private static CompanyOutcome? CompanyOf(CommunitySnapshot snapshot, TrackedApplication application) =>
         application.CompanyKey is { } key ? snapshot.Companies.GetValueOrDefault(key) : null;

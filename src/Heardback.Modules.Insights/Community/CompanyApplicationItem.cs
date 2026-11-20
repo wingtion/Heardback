@@ -7,7 +7,7 @@ namespace Heardback.Modules.Insights.Community;
 /// <param name="AppliedOn">The applied date.</param>
 /// <param name="NoResponseDays">Days without a response when "No response" applies; otherwise null.</param>
 /// <param name="UpdatedAt">When the viewer last changed it ("Last update").</param>
-/// <param name="Ghost">Ghost-risk level of its posting; null when there is not enough community data.</param>
+/// <param name="Ghost">Ghost-risk level and score of its posting; null when there is not enough community data.</param>
 internal sealed record CompanyApplicationItem(
     Guid ApplicationId,
     string Role,
@@ -15,4 +15,4 @@ internal sealed record CompanyApplicationItem(
     DateOnly AppliedOn,
     int? NoResponseDays,
     DateTimeOffset UpdatedAt,
-    GhostLevel? Ghost);
+    GhostRating? Ghost);
