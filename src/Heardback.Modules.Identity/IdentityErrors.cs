@@ -22,6 +22,12 @@ internal static class IdentityErrors
     public static readonly Error RefreshSuperseded =
         Error.Conflict("auth.refresh_superseded", "This session was just refreshed by another request. Retry the refresh.");
 
+    public static readonly Error WrongPassword =
+        Error.Validation("account.wrong_password", "password", "This password is incorrect.");
+
+    public static readonly Error LastAdmin =
+        Error.Conflict("account.last_admin", "You are the only admin, so this account cannot be deleted.");
+
     public static readonly Error UserNotFound =
         Error.Unauthorized("auth.user_not_found", "Your account no longer exists. Please sign in again.");
 }

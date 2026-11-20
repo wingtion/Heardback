@@ -1,5 +1,6 @@
 using Heardback.Infrastructure.Llm.Jobs;
 using Heardback.Modules.Applications.Contracts;
+using Heardback.Modules.Matching.Account;
 using Heardback.Modules.Matching.Cvs;
 using Heardback.Modules.Matching.Cvs.Extraction;
 using Heardback.Modules.Matching.Endpoints;
@@ -7,6 +8,7 @@ using Heardback.Modules.Matching.MatchResults;
 using Heardback.Modules.Matching.Persistence;
 using Heardback.Modules.Matching.Tailoring;
 using Heardback.Shared.Persistence;
+using Heardback.Shared.Privacy;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -47,6 +49,7 @@ public static class MatchingModule
         services.AddScoped<RequestTailoringHandler>();
         services.AddScoped<AiConsentHandler>();
         services.AddScoped<IApplicationDeletedHandler, DeleteTailoringOnApplicationDeleted>();
+        services.AddScoped<IUserDataEraser, MatchingDataEraser>();
 
         return services;
     }

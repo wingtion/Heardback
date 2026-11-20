@@ -1,3 +1,4 @@
+using Heardback.Infrastructure.Llm.Account;
 using Heardback.Infrastructure.Llm.Jobs;
 using Heardback.Infrastructure.Llm.Persistence;
 using Heardback.Infrastructure.Llm.Providers;
@@ -7,6 +8,7 @@ using Heardback.Infrastructure.Llm.Quotas;
 using Heardback.Infrastructure.Llm.Settings;
 using Heardback.Infrastructure.Llm.Structured;
 using Heardback.Shared.Persistence;
+using Heardback.Shared.Privacy;
 using Heardback.Shared.Users;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -48,6 +50,7 @@ public static class LlmModule
         services.AddScoped<AnalysisJobRunner>();
         services.TryAddScoped<BackgroundUser>();
         services.AddHostedService<AnalysisJobWorker>();
+        services.AddScoped<IUserDataEraser, LlmDataEraser>();
 
         return services;
     }

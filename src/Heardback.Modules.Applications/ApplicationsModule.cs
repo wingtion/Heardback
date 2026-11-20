@@ -1,4 +1,5 @@
 using Heardback.Infrastructure.Llm.Jobs;
+using Heardback.Modules.Applications.Account;
 using Heardback.Modules.Applications.Analysis;
 using Heardback.Modules.Applications.Board;
 using Heardback.Modules.Applications.Community;
@@ -13,6 +14,7 @@ using Heardback.Modules.Applications.Samples;
 using Heardback.Modules.Applications.Timeline;
 using Heardback.Modules.Applications.Update;
 using Heardback.Shared.Persistence;
+using Heardback.Shared.Privacy;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -49,6 +51,7 @@ public static class ApplicationsModule
         services.AddScoped<UpdateApplicationHandler>();
         services.AddScoped<DeleteApplicationHandler>();
         services.AddScoped<UnusedPostingCleanup>();
+        services.AddScoped<IUserDataEraser, ApplicationsDataEraser>();
         services.AddScoped<AddEventHandler>();
         services.AddScoped<GetBoardHandler>();
         services.AddScoped<IApplicationPostings, ApplicationPostings>();
