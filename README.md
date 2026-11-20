@@ -65,6 +65,21 @@ To try things out quickly, the admin sees **Add sample applications** on the App
 eight realistic applications with posting text to the admin's own list. It is on only where
 `Applications:SampleDataEnabled` is true (`appsettings.Development.json`), never by default in production.
 
+
+### Forgotten passwords
+
+There is no email. An admin opens the member list (`GET /api/admin/members`), sees the member's email and
+issues a one-time reset code, which the member enters with a new password (`POST /api/auth/reset-password`).
+Codes work once and expire after 24 hours. Admins cannot reset other admins; the owner does that on the
+server, where the API binary doubles as a command line tool and never starts the web server for these:
+
+```bash
+dotnet run --project src/Heardback.Api -- reset-code someone@example.com   # prints a code, admins included
+dotnet run --project src/Heardback.Api -- list-admins                      # names and emails of the admins
+```
+
+In production run the same commands inside the API's container (`Heardback.Api reset-code <email>`).
+
 ### Adding a database migration
 
 ```powershell
@@ -83,7 +98,7 @@ Heardback is a **modular monolith**: one deployable API, split into modules with
 ```
 src/
   Heardback.Api/                  host: DI, middleware, maps module endpoints
-  Heardback.Modules.Identity/     users, invite codes, sessions
+  Heardback.Modules.Identity/     users, invite codes, sessions, account deletion/export, recovery
   Heardback.Modules.Applications/ applications, status history, notes, reminders
   Heardback.Modules.Postings/     shared job postings, dedup
   Heardback.Modules.Matching/     CV text, skills, match results
@@ -152,6 +167,13 @@ docs/design.md                   design system: tokens, type, components, screen
   companies the viewer tracks can be asked about. One Applications contract is the single cross-user read and
   returns counts only. In the app, Medium and High hints show as badges in the list and board, the
   application detail has a Community section, and each company you applied to has its own page.
+- **Privacy & recovery** ([ADR-0015](docs/adr/0015-account-deletion-export-and-recovery.md)): members can
+  download all their data as one JSON file (`GET /api/account/export`) and delete their account
+  (`DELETE /api/account`, password required). Every module erases its own data through one Shared contract;
+  a posting text is deleted with the last application that uses it, guarded by a per-posting advisory lock.
+  A test scans every table with a user id column after a deletion. A new password (reset code or change)
+  ends every session, and access tokens of a deleted account or older than the last password change are
+  rejected.
 - **Background jobs:** LLM work runs from a Postgres job table (`llm` schema) processed by an in-process
   worker. Jobs hold only ids and hashes, never user text. Claims use row locks and leases, so jobs run
   once even with several instances and survive a crash; failures retry with backoff and then fail.
