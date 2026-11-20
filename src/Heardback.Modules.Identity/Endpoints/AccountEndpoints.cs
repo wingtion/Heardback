@@ -27,12 +27,37 @@ internal static class AccountEndpoints
             .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
+        // Checks a password, so it shares the per-IP budget of sign-in.
+        account.MapPost("/password", ChangePasswordAsync)
+            .WithSummary("Change the password. Ends every session; this browser gets a new one.")
+            .RequireRateLimiting(AuthRateLimiting.CredentialsPolicy)
+            .Produces<AuthResponse>()
+            .ProducesValidationProblem()
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests);
+
         account.MapGet("/export", ExportAsync)
             .WithSummary("Download everything the signed-in user can see about themselves as one JSON file.")
             .RequireRateLimiting(AccountRateLimiting.ExportPolicy)
             .Produces<AccountExport>()
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status429TooManyRequests);
+    }
+
+    private static async Task<IResult> ChangePasswordAsync(
+        ChangePasswordRequest request,
+        ChangePasswordHandler handler,
+        HttpResponse response,
+        CancellationToken cancellationToken)
+    {
+        var result = await handler.HandleAsync(request, cancellationToken);
+        if (!result.IsSuccess)
+        {
+            return result.Error.ToProblem();
+        }
+
+        RefreshTokenCookie.Append(response, result.Value.RefreshToken);
+        return TypedResults.Ok(AuthResponse.From(result.Value));
     }
 
     private static async Task<IResult> ExportAsync(

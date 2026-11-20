@@ -76,6 +76,13 @@ account, and member reset codes are valid for 24 hours and work once.
   the normal password policy. It is limited per IP with the credentials policy. On success the password changes,
   the code is used up and **every session of that member is revoked**. A wrong or expired code gives one generic
   error that does not say which.
+- **Every way back in ends the old sessions.** A new password (reset or change) revokes every refresh token and
+  stores `PasswordChangedAt`; access tokens issued before that second are rejected on every request, as are
+  tokens of a deleted user. Tokens carry whole seconds, so a token issued earlier in the very second of the change
+  still works; that is under a second.
+- **Changing the password** (`POST /api/account/password`, current password + new one, per-IP credentials
+  limit) ends every session too, and gives this browser a new one so the member stays signed in here.
+- **Limits:** an admin may issue 10 reset codes per hour; the export is limited to 5 per member per hour.
 - **Forgotten email:** the member asks an admin, who can see it in the member list.
 - **Admins:** an admin cannot issue a code for another admin (403), so one admin cannot take over another. Admins
   recover through the owner command.

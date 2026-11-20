@@ -5,7 +5,10 @@ using Heardback.Modules.Identity.Domain;
 using Heardback.Modules.Identity.Endpoints;
 using Heardback.Modules.Identity.Invites;
 using Heardback.Modules.Identity.Login;
+using Heardback.Modules.Identity.Members;
+using Heardback.Modules.Identity.Owner;
 using Heardback.Modules.Identity.Persistence;
+using Heardback.Modules.Identity.Recovery;
 using Heardback.Modules.Identity.Registration;
 using Heardback.Modules.Identity.Sessions;
 using Heardback.Shared.Persistence;
@@ -60,12 +63,19 @@ public static class IdentityModule
         services.AddScoped<ListInviteCodesHandler>();
         services.AddScoped<DeleteAccountHandler>();
         services.AddScoped<ExportAccountHandler>();
+        services.AddScoped<ChangePasswordHandler>();
+        services.AddScoped<PasswordChanger>();
+        services.AddScoped<ResetCodeIssuer>();
+        services.AddScoped<ResetPasswordHandler>();
+        services.AddScoped<ListMembersHandler>();
+        services.AddScoped<IssueResetCodeHandler>();
+        services.AddScoped<OwnerCommandRunner>();
 
         return services;
     }
 
     /// <summary>
-    /// Maps the Identity module's HTTP endpoints (<c>/api/auth/*</c>, <c>/api/me</c>, <c>/api/account</c>, <c>/api/admin/invite-codes</c>).
+    /// Maps the Identity module's HTTP endpoints (<c>/api/auth/*</c>, <c>/api/me</c>, <c>/api/account</c>, <c>/api/admin/invite-codes</c>, <c>/api/admin/members</c>).
     /// </summary>
     /// <param name="routes">The application's endpoint route builder.</param>
     /// <returns>The same route builder, for chaining.</returns>
@@ -77,7 +87,37 @@ public static class IdentityModule
         routes.MapCurrentUserEndpoints();
         routes.MapAccountEndpoints();
         routes.MapInviteCodeEndpoints();
+        routes.MapMemberEndpoints();
 
         return routes;
+    }
+
+    /// <summary>
+    /// Runs an owner command (<c>reset-code &lt;email&gt;</c> or <c>list-admins</c>) when the process was started with
+    /// one, instead of the web server (ADR-0015).
+    /// </summary>
+    /// <param name="services">The built application's services.</param>
+    /// <param name="args">The process arguments.</param>
+    /// <param name="output">Where the command writes its result, normally the console.</param>
+    /// <param name="cancellationToken">Cancels the database work.</param>
+    /// <returns>The process exit code, or <see langword="null"/> when the arguments are not an owner command.</returns>
+    public static async Task<int?> TryRunOwnerCommandAsync(
+        this IServiceProvider services,
+        IReadOnlyList<string> args,
+        TextWriter output,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(args);
+        ArgumentNullException.ThrowIfNull(output);
+
+        if (!OwnerCommandRunner.IsCommand(args))
+        {
+            return null;
+        }
+
+        await using var scope = services.CreateAsyncScope();
+        return await scope.ServiceProvider.GetRequiredService<OwnerCommandRunner>()
+            .RunAsync(args, output, cancellationToken);
     }
 }

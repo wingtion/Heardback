@@ -75,6 +75,55 @@ namespace Heardback.Modules.Identity.Persistence.Migrations
                     b.ToTable("invite_codes", "identity");
                 });
 
+            modelBuilder.Entity("Heardback.Modules.Identity.Domain.PasswordResetCode", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("CodeHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character(64)")
+                        .HasColumnName("code_hash")
+                        .IsFixedLength();
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<Guid?>("IssuedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("issued_by_user_id");
+
+                    b.Property<DateTimeOffset?>("UsedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("used_at");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_password_reset_codes");
+
+                    b.HasIndex("CodeHash")
+                        .IsUnique()
+                        .HasDatabaseName("ix_password_reset_codes_code_hash");
+
+                    b.HasIndex("IssuedByUserId")
+                        .HasDatabaseName("ix_password_reset_codes_issued_by_user_id");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_password_reset_codes_user_id");
+
+                    b.ToTable("password_reset_codes", "identity");
+                });
+
             modelBuilder.Entity("Heardback.Modules.Identity.Domain.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -164,6 +213,10 @@ namespace Heardback.Modules.Identity.Persistence.Migrations
                         .HasColumnType("character varying(254)")
                         .HasColumnName("normalized_email");
 
+                    b.Property<DateTimeOffset?>("PasswordChangedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("password_changed_at");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text")
@@ -193,6 +246,22 @@ namespace Heardback.Modules.Identity.Persistence.Migrations
                         .HasForeignKey("UsedByUserId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_invite_codes_users_used_by_user_id");
+                });
+
+            modelBuilder.Entity("Heardback.Modules.Identity.Domain.PasswordResetCode", b =>
+                {
+                    b.HasOne("Heardback.Modules.Identity.Domain.User", null)
+                        .WithMany()
+                        .HasForeignKey("IssuedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_password_reset_codes_users_issued_by_user_id");
+
+                    b.HasOne("Heardback.Modules.Identity.Domain.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_password_reset_codes_users_user_id");
                 });
 
             modelBuilder.Entity("Heardback.Modules.Identity.Domain.RefreshToken", b =>

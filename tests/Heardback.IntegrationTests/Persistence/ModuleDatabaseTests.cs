@@ -38,7 +38,7 @@ public sealed class ModuleDatabaseTests(PostgresFixture postgres)
 
         await postgres.DropDatabaseAsync(connectionString, CancellationToken);
 
-        Assert.Equal(["__ef_migrations_history", "invite_codes", "refresh_tokens", "users"], tables);
+        Assert.Equal(["__ef_migrations_history", "invite_codes", "password_reset_codes", "refresh_tokens", "users"], tables);
     }
 
     private static async Task<List<string>> ListTablesAsync(string connectionString, string schema)

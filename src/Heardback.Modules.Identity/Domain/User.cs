@@ -25,6 +25,12 @@ internal sealed class User
 
     public DateTimeOffset CreatedAt { get; private set; }
 
+    /// <summary>
+    /// When the password last changed after registration, or null. Access tokens issued before this second are
+    /// rejected, so a reset or change also ends sessions whose access token has not expired yet (ADR-0015).
+    /// </summary>
+    public DateTimeOffset? PasswordChangedAt { get; private set; }
+
     public static User Create(string email, string displayName, bool isAdmin, DateTimeOffset now) =>
         new()
         {
@@ -39,4 +45,11 @@ internal sealed class User
     public static string NormalizeEmail(string email) => email.Trim().ToUpperInvariant();
 
     public void SetPasswordHash(string passwordHash) => PasswordHash = passwordHash;
+
+    /// <summary>Replaces the password; the caller also ends the user's sessions.</summary>
+    public void ChangePassword(string passwordHash, DateTimeOffset now)
+    {
+        PasswordHash = passwordHash;
+        PasswordChangedAt = now;
+    }
 }

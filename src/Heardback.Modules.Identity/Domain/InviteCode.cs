@@ -42,11 +42,14 @@ internal sealed class InviteCode
         new()
         {
             Id = Guid.CreateVersion7(now),
-            Code = RandomNumberGenerator.GetString(Alphabet, CodeLength),
+            Code = GenerateCodeText(),
             CreatedByUserId = createdByUserId,
             CreatedAt = now,
             ExpiresAt = now + lifetime,
         };
+
+    /// <summary>A new random code in normalized form; password reset codes use the same shape.</summary>
+    public static string GenerateCodeText() => RandomNumberGenerator.GetString(Alphabet, CodeLength);
 
     /// <summary>Accepts any casing, separators and surrounding whitespace.</summary>
     public static string Normalize(string input) =>
