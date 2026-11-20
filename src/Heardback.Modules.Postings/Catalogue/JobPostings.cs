@@ -40,9 +40,11 @@ internal sealed partial class JobPostings(
 
         for (var attempt = 1; attempt <= MaxAttempts; attempt++)
         {
-            if (await FindMatchAsync(normalizedUrl, contentHash, cancellationToken) is { } existingId)
+            // A match deleted between the lookup and the update (its last application went away, ADR-0015) updates
+            // nothing; then the submission becomes a new posting.
+            if (await FindMatchAsync(normalizedUrl, contentHash, cancellationToken) is { } existingId
+                && await RecordSubmittedAgainAsync(existingId, now, cancellationToken) > 0)
             {
-                await RecordSubmittedAgainAsync(existingId, now, cancellationToken);
                 return existingId;
             }
 
@@ -68,6 +70,20 @@ internal sealed partial class JobPostings(
             .Where(posting => posting.NormalizedUrl == normalizedUrl)
             .Select(posting => (Guid?)posting.Id)
             .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public Task<bool> ExistsAsync(Guid postingId, CancellationToken cancellationToken) =>
+        dbContext.JobPostings.AnyAsync(posting => posting.Id == postingId, cancellationToken);
+
+    public async Task DeleteAsync(Guid postingId, CancellationToken cancellationToken)
+    {
+        var deleted = await dbContext.JobPostings
+            .Where(posting => posting.Id == postingId)
+            .ExecuteDeleteAsync(cancellationToken);
+        if (deleted > 0)
+        {
+            LogPostingDeleted(postingId);
+        }
     }
 
     public async Task<IReadOnlyDictionary<Guid, DateTimeOffset>> FirstSeenAsync(
@@ -134,4 +150,7 @@ internal sealed partial class JobPostings(
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Job posting {PostingId} created")]
     private partial void LogPostingCreated(Guid postingId);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Job posting {PostingId} deleted, no application uses it")]
+    private partial void LogPostingDeleted(Guid postingId);
 }

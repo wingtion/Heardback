@@ -48,6 +48,7 @@ public static class ApplicationsModule
         services.AddScoped<FindTrackedApplicationHandler>();
         services.AddScoped<UpdateApplicationHandler>();
         services.AddScoped<DeleteApplicationHandler>();
+        services.AddScoped<UnusedPostingCleanup>();
         services.AddScoped<AddEventHandler>();
         services.AddScoped<GetBoardHandler>();
         services.AddScoped<IApplicationPostings, ApplicationPostings>();

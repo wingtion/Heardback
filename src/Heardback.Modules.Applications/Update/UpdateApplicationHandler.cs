@@ -1,4 +1,5 @@
 using Heardback.Modules.Applications.Create;
+using Heardback.Modules.Applications.Delete;
 using Heardback.Modules.Applications.Domain;
 using Heardback.Modules.Applications.Persistence;
 using Heardback.Modules.Applications.Responses;
@@ -10,6 +11,7 @@ namespace Heardback.Modules.Applications.Update;
 internal sealed class UpdateApplicationHandler(
     ApplicationsDbContext dbContext,
     PostingLinks postingLinks,
+    UnusedPostingCleanup postingCleanup,
     NoResponseClock noResponse,
     TimeProvider timeProvider)
 {
@@ -44,16 +46,44 @@ internal sealed class UpdateApplicationHandler(
 
         // The shared posting is never edited (ADR-0004). When the keys that identify the posting change, the
         // application is linked to whichever posting matches now; otherwise it keeps its posting.
-        if (previousKeys != (application.NormalizedUrl, application.ContentHash))
+        if (previousKeys == (application.NormalizedUrl, application.ContentHash))
         {
-            var linked = await postingLinks.LinkAsync(application, cancellationToken);
-            if (!linked.IsSuccess)
-            {
-                return linked.Error;
-            }
+            var saved = await dbContext.SaveApplicationAsync(cancellationToken);
+            return saved.IsSuccess ? ApplicationResponse.From(application, noResponse) : saved.Error;
+        }
+
+        var previousPostingId = application.PostingId;
+        var relinked = await RelinkAndSaveAsync(application, cancellationToken);
+        if (!relinked.IsSuccess)
+        {
+            return relinked.Error;
+        }
+
+        // The posting and analysis the application used before may now be unused.
+        await postingCleanup.RemoveUnusedAsync(
+            application.PostingId == previousPostingId ? [] : [previousPostingId],
+            previousKeys.ContentHash is { } previousHash && previousHash != application.ContentHash ? [previousHash] : [],
+            cancellationToken);
+        return ApplicationResponse.From(application, noResponse);
+    }
+
+    // The posting lock taken while linking lasts until this transaction ends (ADR-0015).
+    private async Task<Result> RelinkAndSaveAsync(Application application, CancellationToken cancellationToken)
+    {
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        var linked = await postingLinks.LinkAsync(application, cancellationToken);
+        if (!linked.IsSuccess)
+        {
+            return linked.Error;
         }
 
         var saved = await dbContext.SaveApplicationAsync(cancellationToken);
-        return saved.IsSuccess ? ApplicationResponse.From(application, noResponse) : saved.Error;
+        if (!saved.IsSuccess)
+        {
+            return saved.Error;
+        }
+
+        await transaction.CommitAsync(cancellationToken);
+        return Result.Success();
     }
 }

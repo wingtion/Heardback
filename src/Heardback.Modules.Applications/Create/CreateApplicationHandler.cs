@@ -25,6 +25,9 @@ internal sealed partial class CreateApplicationHandler(
         }
 
         var application = created.Value;
+
+        // The posting lock taken while linking lasts until this transaction ends (ADR-0015).
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
         var linked = await postingLinks.LinkAsync(application, cancellationToken);
         if (!linked.IsSuccess)
         {
@@ -37,6 +40,8 @@ internal sealed partial class CreateApplicationHandler(
         {
             return saved.Error;
         }
+
+        await transaction.CommitAsync(cancellationToken);
 
         LogCreated(application.Id, application.PostingId);
         return ApplicationResponse.From(application, noResponse);
