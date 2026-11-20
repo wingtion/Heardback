@@ -155,14 +155,21 @@
                       {{ channelLabels[item.channel] }} ·
                       <span class="font-mono">{{ item.appliedOn | date: dateFormat }}</span>
                     </span>
-                    @if (noResponse) {
-                      @let status = statusOf(item.status, item.noResponseDays);
-                      <app-status-label
-                        class="self-start"
-                        [label]="status.label"
-                        [tone]="status.tone"
-                        [glyph]="status.glyph"
-                      />
+                    @let badge = badgeFor(item.id);
+                    @if (noResponse || badge) {
+                      <div class="flex flex-wrap gap-1.5">
+                        @if (noResponse) {
+                          @let status = statusOf(item.status, item.noResponseDays);
+                          <app-status-label
+                            [label]="status.label"
+                            [tone]="status.tone"
+                            [glyph]="status.glyph"
+                          />
+                        }
+                        @if (badge) {
+                          <app-ghost-badge [level]="badge.level" [score]="badge.score" />
+                        }
+                      </div>
                     }
                     @if (failedMove) {
                       <div
@@ -307,14 +314,21 @@
                         {{ channelLabels[item.channel] }} ·
                         <span class="font-mono">{{ item.appliedOn | date: mobileDateFormat }}</span>
                       </span>
-                      @if (item.noResponseDays !== null) {
-                        @let status = statusOf(item.status, item.noResponseDays);
-                        <app-status-label
-                          class="self-start"
-                          [label]="status.label"
-                          [tone]="status.tone"
-                          [glyph]="status.glyph"
-                        />
+                      @let badge = badgeFor(item.id);
+                      @if (item.noResponseDays !== null || badge) {
+                        <div class="flex flex-wrap gap-1.5">
+                          @if (item.noResponseDays !== null) {
+                            @let status = statusOf(item.status, item.noResponseDays);
+                            <app-status-label
+                              [label]="status.label"
+                              [tone]="status.tone"
+                              [glyph]="status.glyph"
+                            />
+                          }
+                          @if (badge) {
+                            <app-ghost-badge [level]="badge.level" [score]="badge.score" />
+                          }
+                        </div>
                       }
                     </div>
                     <button

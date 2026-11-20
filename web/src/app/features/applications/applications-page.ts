@@ -31,6 +31,10 @@ import {
 } from './application-display';
 import { ApplicationsApi } from './applications-api';
 import { ApplicationsSummaryStore } from './applications-summary';
+import { CommunityBadgesStore } from '../community/community-badges';
+import { CommunityBadge } from '../community/community.models';
+import { showsBadge } from '../community/community-display';
+import { GhostBadge } from '../community/ghost-badge';
 import { SampleDataButton } from './sample-data/sample-data-button';
 import {
   APPLICATION_LIMITS,
@@ -78,6 +82,7 @@ type ListView =
     ApplicationDetail,
     ApplicationsBoard,
     ApplicationsEmptyState,
+    GhostBadge,
     ApplicationsViewToggle,
     SampleDataButton,
     Banner,
@@ -100,6 +105,7 @@ export class ApplicationsPage {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly summaryStore = inject(ApplicationsSummaryStore);
+  private readonly badges = inject(CommunityBadgesStore);
 
   protected readonly statusFilters = STATUS_FILTERS;
   protected readonly channels = CHANNELS;
@@ -108,6 +114,12 @@ export class ApplicationsPage {
   protected readonly searchMaxLength = APPLICATION_LIMITS.search;
   protected readonly skeletonRows = Array.from({ length: SKELETON_ROWS }, (_, index) => index);
   protected readonly selectedParam = SELECTED_PARAM;
+
+  /** The ghost-risk badge of a row or card; Medium and High only (docs/design.md §18). */
+  protected badgeFor(id: string): CommunityBadge | null {
+    const badge = this.badges.badgeFor(id);
+    return showsBadge(badge) ? badge : null;
+  }
   protected readonly statusOf = statusDisplay;
 
   protected readonly search = signal('');
@@ -259,6 +271,7 @@ export class ApplicationsPage {
   /** A board move changed the application: counts and the open detail are out of date. */
   protected onBoardMoved(id: string): void {
     this.summaryStore.reload();
+    this.badges.reload();
     if (id === this.selectedId()) {
       this.detailRevision.update((revision) => revision + 1);
     }
@@ -310,6 +323,7 @@ export class ApplicationsPage {
   // New and changed applications sort first, so the first page is where they show up.
   private refresh(): void {
     this.summaryStore.reload();
+    this.badges.reload();
     if (this.view() === BOARD_VIEW) {
       this.boardRevision.update((revision) => revision + 1);
     } else if (this.page() === 1) {

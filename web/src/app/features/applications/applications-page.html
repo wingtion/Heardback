@@ -165,11 +165,16 @@
                       {{ item.appliedOn | date: dateFormat }}
                     </td>
                     <td class="px-3">
-                      <app-status-label
-                        [label]="status.label"
-                        [tone]="status.tone"
-                        [glyph]="status.glyph"
-                      />
+                      <span class="inline-flex flex-wrap items-center gap-2">
+                        <app-status-label
+                          [label]="status.label"
+                          [tone]="status.tone"
+                          [glyph]="status.glyph"
+                        />
+                        @if (badgeFor(item.id); as badge) {
+                          <app-ghost-badge [level]="badge.level" [score]="badge.score" />
+                        }
+                      </span>
                     </td>
                     <td class="pr-4 pl-3 text-right whitespace-nowrap text-ink-2 tabular-nums">
                       {{ updatedAgo(item) }}
@@ -255,6 +260,9 @@
                       [tone]="status.tone"
                       [glyph]="status.glyph"
                     />
+                    @if (badgeFor(item.id); as badge) {
+                      <app-ghost-badge [level]="badge.level" [score]="badge.score" />
+                    }
                     <span class="text-label text-ink-2">{{ channelLabels[item.channel] }}</span>
                   </span>
                 </a>

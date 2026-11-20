@@ -1,3 +1,4 @@
+import { provideCommunityQuiet } from '../../community/community.testing';
 import { CdkDragEnd } from '@angular/cdk/drag-drop';
 import { provideHttpClient } from '@angular/common/http';
 import {
@@ -67,7 +68,12 @@ describe('ApplicationsBoard', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        ...provideCommunityQuiet(),
+      ],
     });
     http = TestBed.inject(HttpTestingController);
   });

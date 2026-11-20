@@ -1,3 +1,6 @@
+import { provideCommunityQuiet } from '../community/community.testing';
+import { CommunityApi } from '../community/community-api';
+import { CommunityBadgesStore } from '../community/community-badges';
 import { provideHttpClient } from '@angular/common/http';
 import {
   HttpTestingController,
@@ -37,6 +40,7 @@ describe('ApplicationsPage', () => {
         provideRouter([{ path: 'applications', component: ApplicationsPage }]),
         provideHttpClient(),
         provideHttpClientTesting(),
+        ...provideCommunityQuiet(),
         // Both come from the shell in the app.
         ApplicationsSummaryStore,
         ShellActions,
@@ -105,6 +109,21 @@ describe('ApplicationsPage', () => {
 
     expect(root().textContent).toContain('Loading applications…');
     listRequest().flush(applicationPage());
+  });
+
+  it('load_RowWithGhostRisk_ShowsTheBadgeAfterTheStatus', async () => {
+    const api = TestBed.inject(CommunityApi);
+    api.badges = () => of([{ applicationId: 'app-2', level: 'High', score: 4 }]);
+    TestBed.inject(CommunityBadgesStore).reload();
+    await respondToList(
+      applicationPage({
+        items: [applicationItem(), applicationItem({ id: 'app-2', company: 'Brightline' })],
+      }),
+    );
+
+    const rows = root().querySelectorAll('tbody tr');
+    expect(rows[0].querySelector('app-ghost-badge')).toBeNull();
+    expect(rows[1].querySelector('app-ghost-badge')?.textContent).toContain('High');
   });
 
   it('load_WithApplications_ShowsRowsAndTheSummary', async () => {
@@ -378,6 +397,7 @@ describe('ApplicationsPage opened with a status', () => {
         provideRouter([{ path: 'applications', component: ApplicationsPage }]),
         provideHttpClient(),
         provideHttpClientTesting(),
+        ...provideCommunityQuiet(),
         ApplicationsSummaryStore,
         ShellActions,
         { provide: CvApi, useValue: { match: () => of(NO_MATCH) } },

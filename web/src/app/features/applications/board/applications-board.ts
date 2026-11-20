@@ -43,6 +43,10 @@ import {
   localToday,
   statusDisplay,
 } from '../application-display';
+import { CommunityBadgesStore } from '../../community/community-badges';
+import { showsBadge } from '../../community/community-display';
+import { CommunityBadge } from '../../community/community.models';
+import { GhostBadge } from '../../community/ghost-badge';
 import { ApplicationsApi } from '../applications-api';
 import {
   APPLICATION_ERROR_CODES,
@@ -107,6 +111,7 @@ const TAB_KEYS: Readonly<Record<string, number>> = { ArrowLeft: -1, ArrowRight: 
     ApplicationsEmptyState,
     Banner,
     Button,
+    GhostBadge,
     Icon,
     Spinner,
     StatusGlyphIcon,
@@ -121,6 +126,7 @@ export class ApplicationsBoard {
   private readonly injector = inject(Injector);
   private readonly destroyRef = inject(DestroyRef);
   private readonly document = inject(DOCUMENT);
+  private readonly badges = inject(CommunityBadgesStore);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   readonly filter = input.required<BoardFilter>();
@@ -150,6 +156,12 @@ export class ApplicationsBoard {
   protected readonly statuses = APPLICATION_STATUSES;
   protected readonly statusOf = statusDisplay;
   protected readonly emptyTitle = emptyColumnTitle;
+
+  /** The ghost-risk badge of a card; Medium and High only (docs/design.md §18). */
+  protected badgeFor(id: string): CommunityBadge | null {
+    const badge = this.badges.badgeFor(id);
+    return showsBadge(badge) ? badge : null;
+  }
 
   // A new filter cancels the previous request, so a slow response cannot win.
   private readonly resource = rxResource({
