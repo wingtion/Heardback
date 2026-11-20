@@ -150,7 +150,8 @@ docs/design.md                   design system: tokens, type, components, screen
   explainable ghost-listing hint (0-5 points, each with its reason). Numbers appear only once at least 3 other
   members have a settled application in the group; the viewer is never counted, and only postings and
   companies the viewer tracks can be asked about. One Applications contract is the single cross-user read and
-  returns counts only.
+  returns counts only. In the app, Medium and High hints show as badges in the list and board, the
+  application detail has a Community section, and each company you applied to has its own page.
 - **Background jobs:** LLM work runs from a Postgres job table (`llm` schema) processed by an in-process
   worker. Jobs hold only ids and hashes, never user text. Claims use row locks and leases, so jobs run
   once even with several instances and survive a crash; failures retry with backoff and then fail.
