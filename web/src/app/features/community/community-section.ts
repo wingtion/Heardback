@@ -21,7 +21,7 @@ type SectionView =
       readonly kind: 'numbers';
       readonly community: ApplicationCommunity;
       readonly columns: readonly NumbersColumn[];
-      /** "Not enough members for this posting yet." when only one group has numbers. */
+      /** Why only one column shows, when only one group has enough members. */
       readonly missingGroup: string | null;
     };
 
@@ -49,10 +49,10 @@ type SectionView =
   },
   template: `
     <div>
-      <h3 id="community-title" class="text-body font-semibold text-ink">Community</h3>
-      <p class="text-caption text-ink-muted">
-        From other members who applied to the same posting or company.
-      </p>
+      <h3 id="community-title" class="text-body font-semibold text-ink">
+        Stats from other members
+      </h3>
+      <p class="text-caption text-ink-muted">Members who applied to the same posting or company.</p>
     </div>
 
     @let current = view();
@@ -152,13 +152,13 @@ type SectionView =
           [routerLink]="companyPath(key)"
           class="inline-flex items-center gap-1.5 self-start rounded-xs text-cell font-semibold text-link underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
         >
-          View company
+          All your applications at {{ company() }}
           <app-icon name="chevron-right" [size]="12" />
         </a>
       } @else {
         <p class="border-t border-dashed border-rule-strong pt-2 text-label text-ink-2">
-          Company numbers and the company page aren’t available for this application, because it was
-          added before companies were linked.
+          Company stats and the list of your applications at this company aren’t available here,
+          because this application was added before companies were linked.
         </p>
       }
     </ng-template>
@@ -170,6 +170,8 @@ export class CommunitySection {
   readonly applicationId = input.required<string>();
   /** The application's row version: a new one (after Edit or Add update) loads the numbers again. */
   readonly version = input.required<number>();
+  /** The company name as the user typed it, for the link to their applications there. */
+  readonly company = input.required<string>();
 
   protected readonly minimum = COMMUNITY_MINIMUM_MEMBERS;
   protected readonly companyPath = companyPath;
@@ -203,7 +205,7 @@ export class CommunitySection {
   protected hint = ghostHint;
 
   protected tableLabel(columns: readonly NumbersColumn[]): string {
-    return `Community numbers for ${columns.map((column) => column.heading?.toLowerCase()).join(' and ')}`;
+    return `Stats from other members for ${columns.map((column) => column.heading?.toLowerCase()).join(' and ')}`;
   }
 
   protected retry(): void {
@@ -214,10 +216,10 @@ export class CommunitySection {
 // An application without a company key never has company numbers; the section explains that separately.
 function missingGroup(community: ApplicationCommunity): string | null {
   if (!community.posting) {
-    return 'Not enough members for this posting yet.';
+    return `Fewer than ${COMMUNITY_MINIMUM_MEMBERS} other members applied to this exact posting, so only company numbers are shown.`;
   }
   if (!community.company && community.companyKey) {
-    return 'Not enough members for this company yet.';
+    return `Fewer than ${COMMUNITY_MINIMUM_MEMBERS} other members applied to this company, so only posting numbers are shown.`;
   }
   return null;
 }

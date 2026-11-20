@@ -10,7 +10,11 @@ import { TEST_NUMBERS, quietCommunity } from './community.testing';
 
 @Component({
   imports: [CommunitySection],
-  template: `<app-community-section applicationId="app-1" [version]="version()" />`,
+  template: `<app-community-section
+    applicationId="app-1"
+    company="Northwind"
+    [version]="version()"
+  />`,
 })
 class SectionHost {
   readonly version = signal(1);
@@ -107,7 +111,7 @@ describe('CommunitySection', () => {
     expect(text(element)).toContain('Fewer than 3 other members have applied to this posting.');
     expect(element.querySelector('table')).toBeNull();
     const link = element.querySelector('a');
-    expect(link?.textContent).toContain('View company');
+    expect(link?.textContent).toContain('All your applications at Northwind');
     expect(link?.getAttribute('href')).toBe('/applications/companies/northwind');
   });
 
@@ -140,7 +144,9 @@ describe('CommunitySection', () => {
       ghost: { score: 1, maxScore: 5, level: 'Low', reasons: [] },
     });
 
-    expect(text(element)).toContain('Not enough members for this posting yet.');
+    expect(text(element)).toContain(
+      'Fewer than 3 other members applied to this exact posting, so only company numbers are shown.',
+    );
     expect(columnHeadings(element)).toEqual(['This company']);
     expect(text(element)).toContain('Ghost risk: Low. No warning signs from other members so far.');
     expect(text(element)).not.toContain('means nobody has heard back yet');
@@ -156,7 +162,7 @@ describe('CommunitySection', () => {
     });
 
     expect(text(element)).toContain('This posting may be inactive.');
-    expect(text(element)).not.toContain('Not enough members for this company yet.');
+    expect(text(element)).not.toContain('so only posting numbers are shown.');
     expect(text(element)).toContain('added before companies were linked');
     expect(element.querySelector('a')).toBeNull();
   });

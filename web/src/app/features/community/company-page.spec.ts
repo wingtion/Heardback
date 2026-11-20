@@ -92,7 +92,8 @@ describe('CompanyPage', () => {
     expect(rows[0].querySelector('app-ghost-badge')?.textContent).toContain('High');
     // Low gets no badge.
     expect(rows[1].querySelector('app-ghost-badge')).toBeNull();
-    expect(text()).toContain('Community numbers');
+    expect(text()).toContain('Stats from other members who applied to this company');
+    expect(text()).toContain('Your applications at Brightline Payments');
     expect(text()).toContain('Their postings and roles are never shown.');
   });
 

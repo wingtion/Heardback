@@ -24,7 +24,7 @@ describe('community display', () => {
     const rows = statRows([unanswered, answered]);
 
     expect(rows.map((row) => row.label)).toEqual([
-      'Other members',
+      'Members who applied',
       'Applications',
       'Heard back',
       'Average days to first answer',

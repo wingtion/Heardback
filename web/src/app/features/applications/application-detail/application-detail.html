@@ -133,7 +133,11 @@
           </span>
         </div>
 
-        <app-community-section [applicationId]="application.id" [version]="application.version" />
+        <app-community-section
+          [applicationId]="application.id"
+          [version]="application.version"
+          [company]="application.company"
+        />
 
         @if (application.notes; as notes) {
           <section class="flex flex-col gap-1">

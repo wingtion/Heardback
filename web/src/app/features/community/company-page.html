@@ -60,7 +60,6 @@
       <h1 class="font-serif text-page-title-sm font-semibold text-ink lg:text-page-title">
         {{ current.company.company }}
       </h1>
-      <p class="text-small text-ink-muted">Company name as you saved it</p>
     </div>
 
     <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-6">
@@ -70,7 +69,7 @@
       >
         <div>
           <h2 id="own-applications-title" class="text-ui-lg font-semibold text-ink lg:text-ui-xl">
-            Your applications here
+            Your applications at {{ current.company.company }}
           </h2>
           <p class="text-label text-ink-2">
             Only your own applications are listed.<span class="max-lg:hidden">
@@ -191,20 +190,14 @@
       >
         <div>
           <h2 id="company-numbers-title" class="text-ui-lg font-semibold text-ink">
-            Community numbers
+            Stats from other members who applied to this company
           </h2>
-          <p class="text-label text-ink-2">
-            <span class="max-lg:hidden"
-              >Totals from other members who applied to this company.</span
-            >
-            <span class="lg:hidden">Totals from other members who applied here.</span>
-          </p>
         </div>
 
         @if (current.company.numbers; as numbers) {
           <app-community-numbers
             [columns]="[{ heading: null, numbers }]"
-            label="Community numbers for this company"
+            label="Stats from other members who applied to this company"
           />
           <p class="flex gap-2 text-caption text-ink-2">
             <app-icon name="info" [size]="14" class="mt-px shrink-0 max-lg:hidden" />

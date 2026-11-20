@@ -16,7 +16,7 @@ export interface StatRow {
 }
 
 const STAT_LABELS = [
-  'Other members',
+  'Members who applied',
   'Applications',
   'Heard back',
   'Average days to first answer',
