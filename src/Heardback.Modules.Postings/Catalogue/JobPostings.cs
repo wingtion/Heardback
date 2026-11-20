@@ -70,6 +70,23 @@ internal sealed partial class JobPostings(
             .FirstOrDefaultAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyDictionary<Guid, DateTimeOffset>> FirstSeenAsync(
+        IReadOnlyCollection<Guid> postingIds,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(postingIds);
+
+        if (postingIds.Count == 0)
+        {
+            return new Dictionary<Guid, DateTimeOffset>();
+        }
+
+        return await dbContext.JobPostings.AsNoTracking()
+            .Where(posting => postingIds.Contains(posting.Id))
+            .Select(posting => new { posting.Id, posting.FirstSeenAt })
+            .ToDictionaryAsync(posting => posting.Id, posting => posting.FirstSeenAt, cancellationToken);
+    }
+
     // A link match wins over a text match: the link names the posting, while the same text can be reposted.
     private async Task<Guid?> FindMatchAsync(
         string? normalizedUrl,

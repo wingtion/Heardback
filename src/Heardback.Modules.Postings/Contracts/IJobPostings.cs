@@ -25,4 +25,12 @@ public interface IJobPostings
     /// <param name="cancellationToken">Cancels the database work.</param>
     /// <returns>The posting id, or <see langword="null"/> when the link is invalid or no posting has it.</returns>
     Task<Guid?> FindIdByUrlAsync(string url, CancellationToken cancellationToken);
+
+    /// <summary>When each posting was first submitted by anyone, for the "listed a long time" hint (ADR-0013).</summary>
+    /// <param name="postingIds">The postings to look up.</param>
+    /// <param name="cancellationToken">Cancels the database work.</param>
+    /// <returns>The first-seen time per posting id; unknown ids are left out.</returns>
+    Task<IReadOnlyDictionary<Guid, DateTimeOffset>> FirstSeenAsync(
+        IReadOnlyCollection<Guid> postingIds,
+        CancellationToken cancellationToken);
 }

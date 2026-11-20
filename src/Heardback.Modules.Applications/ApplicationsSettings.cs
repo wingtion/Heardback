@@ -10,6 +10,13 @@ internal sealed class ApplicationsSettings
     [Range(1, 365)]
     public int NoResponseAfterDays { get; set; } = 14;
 
+    /// <summary>
+    /// Fewest other members a community group needs before any of its numbers are shown (ADR-0013). Never below 3,
+    /// so no one or two people can be shown on their own.
+    /// </summary>
+    [Range(3, 1000)]
+    public int CommunityMinimumMembers { get; set; } = 3;
+
     /// <summary>Most cards a board column returns; the column count is always the real total (docs/design.md §14).</summary>
     [Range(1, 1000)]
     public int BoardColumnLimit { get; set; } = 200;

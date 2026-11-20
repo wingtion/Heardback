@@ -1,6 +1,7 @@
 using Heardback.Infrastructure.Llm.Jobs;
 using Heardback.Modules.Applications.Analysis;
 using Heardback.Modules.Applications.Board;
+using Heardback.Modules.Applications.Community;
 using Heardback.Modules.Applications.Contracts;
 using Heardback.Modules.Applications.Create;
 using Heardback.Modules.Applications.Delete;
@@ -51,6 +52,7 @@ public static class ApplicationsModule
         services.AddScoped<GetBoardHandler>();
         services.AddScoped<IApplicationPostings, ApplicationPostings>();
         services.AddScoped<IApplicationHistory, ApplicationHistoryReader>();
+        services.AddScoped<ICommunityOutcomes, CommunityOutcomesReader>();
 
         services.AddSingleton<PostingAnalysisPrompt>();
         services.AddScoped<IAnalysisJobHandler, PostingAnalysisJobHandler>();
