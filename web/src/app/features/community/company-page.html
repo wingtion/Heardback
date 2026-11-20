@@ -62,7 +62,7 @@
       </h1>
     </div>
 
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-6">
+    <div class="flex flex-col gap-4 lg:gap-6 xl:flex-row xl:items-start">
       <section
         class="flex min-w-0 flex-1 flex-col gap-2.5"
         aria-labelledby="own-applications-title"
@@ -80,17 +80,11 @@
 
         <!-- Desktop: a table; phones: a list (docs/design.md §18). -->
         <table
-          class="hidden w-full table-fixed border-separate border-spacing-0 rounded-md border border-rule text-cell lg:table"
+          class="hidden w-full border-separate border-spacing-0 rounded-md border border-rule text-cell lg:table"
           aria-labelledby="own-applications-title"
         >
-          <colgroup>
-            <col class="w-55" />
-            <col />
-            <col class="w-30" />
-            <col class="w-27.5" />
-          </colgroup>
           <thead>
-            <tr class="text-label font-semibold text-ink-2">
+            <tr class="text-label font-semibold whitespace-nowrap text-ink-2">
               <th
                 scope="col"
                 class="h-10 rounded-tl-md border-b border-rule-strong bg-surface pl-4 text-left"
@@ -136,14 +130,14 @@
                   </span>
                 </td>
                 <td
-                  class="py-1.5 pr-3 font-mono text-label"
+                  class="py-1.5 pr-3 font-mono text-label whitespace-nowrap"
                   [class.border-b]="!last"
                   [class.border-rule]="!last"
                 >
                   {{ row.item.appliedOn | date: dateFormat }}
                 </td>
                 <td
-                  class="py-1.5 pr-4 text-right text-ink-2"
+                  class="py-1.5 pr-4 text-right text-ink-2 whitespace-nowrap"
                   [class.border-b]="!last"
                   [class.border-rule]="!last"
                 >
@@ -185,11 +179,14 @@
       </section>
 
       <section
-        class="flex flex-col gap-2 rounded-md border border-rule-strong bg-envelope p-3.5 lg:w-90 lg:shrink-0 lg:gap-2.5 lg:p-4"
+        class="flex flex-col gap-2 rounded-md border border-rule-strong bg-envelope p-3.5 lg:w-110 lg:shrink-0 lg:gap-2.5 lg:p-4"
         aria-labelledby="company-numbers-title"
       >
         <div>
-          <h2 id="company-numbers-title" class="text-ui-lg font-semibold text-balance text-ink">
+          <h2
+            id="company-numbers-title"
+            class="text-ui-lg font-semibold text-balance text-ink lg:whitespace-nowrap"
+          >
             Stats from other members who applied to this company
           </h2>
         </div>
