@@ -1,3 +1,4 @@
+using System.Globalization;
 using Heardback.Modules.Identity.Account;
 using Heardback.Modules.Identity.Authentication;
 using Heardback.Shared.Http;
@@ -10,6 +11,8 @@ namespace Heardback.Modules.Identity.Endpoints;
 
 internal static class AccountEndpoints
 {
+    private const string ExportFileDateFormat = "yyyy-MM-dd";
+
     public static void MapAccountEndpoints(this IEndpointRouteBuilder routes)
     {
         var account = routes.MapGroup("/api/account").WithTags("Account");
@@ -23,6 +26,31 @@ internal static class AccountEndpoints
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status429TooManyRequests);
+
+        account.MapGet("/export", ExportAsync)
+            .WithSummary("Download everything the signed-in user can see about themselves as one JSON file.")
+            .RequireRateLimiting(AccountRateLimiting.ExportPolicy)
+            .Produces<AccountExport>()
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests);
+    }
+
+    private static async Task<IResult> ExportAsync(
+        ExportAccountHandler handler,
+        TimeProvider timeProvider,
+        HttpResponse response,
+        CancellationToken cancellationToken)
+    {
+        var result = await handler.HandleAsync(cancellationToken);
+        if (!result.IsSuccess)
+        {
+            return result.Error.ToProblem();
+        }
+
+        var day = timeProvider.GetUtcNow().ToString(ExportFileDateFormat, CultureInfo.InvariantCulture);
+        response.Headers.ContentDisposition = $"attachment; filename=\"heardback-export-{day}.json\"";
+        response.Headers.CacheControl = "no-store";
+        return TypedResults.Ok(result.Value);
     }
 
     private static async Task<IResult> DeleteAsync(

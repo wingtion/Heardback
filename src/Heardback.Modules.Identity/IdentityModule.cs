@@ -46,6 +46,7 @@ public static class IdentityModule
         services.AddModuleDbContext<IdentityDbContext>(IdentityDbContext.Schema);
         services.AddJwtAuthentication();
         services.AddAuthRateLimiting();
+        services.AddAccountRateLimiting();
 
         services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
         services.AddScoped<SessionIssuer>();
@@ -58,6 +59,7 @@ public static class IdentityModule
         services.AddScoped<CreateInviteCodeHandler>();
         services.AddScoped<ListInviteCodesHandler>();
         services.AddScoped<DeleteAccountHandler>();
+        services.AddScoped<ExportAccountHandler>();
 
         return services;
     }

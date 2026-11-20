@@ -8,6 +8,7 @@ namespace Heardback.IntegrationTests.Account;
 internal static class AccountApi
 {
     private static readonly Uri AccountUri = new("/api/account", UriKind.Relative);
+    private static readonly Uri ExportUri = new("/api/account/export", UriKind.Relative);
 
     private static CancellationToken CancellationToken => TestContext.Current.CancellationToken;
 
@@ -20,6 +21,17 @@ internal static class AccountApi
         {
             Content = JsonContent.Create(new { password }),
         };
+        if (accessToken is not null)
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        }
+
+        return await client.SendAsync(request, CancellationToken);
+    }
+
+    public static async Task<HttpResponseMessage> ExportAccountAsync(this HttpClient client, string? accessToken)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, ExportUri);
         if (accessToken is not null)
         {
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);

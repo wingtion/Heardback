@@ -52,6 +52,7 @@ public static class ApplicationsModule
         services.AddScoped<DeleteApplicationHandler>();
         services.AddScoped<UnusedPostingCleanup>();
         services.AddScoped<IUserDataEraser, ApplicationsDataEraser>();
+        services.AddScoped<IUserDataExporter, ApplicationsDataExporter>();
         services.AddScoped<AddEventHandler>();
         services.AddScoped<GetBoardHandler>();
         services.AddScoped<IApplicationPostings, ApplicationPostings>();

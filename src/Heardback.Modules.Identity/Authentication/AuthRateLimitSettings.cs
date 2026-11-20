@@ -2,7 +2,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Heardback.Modules.Identity.Authentication;
 
-/// <summary>Per-client-IP limits for the anonymous auth endpoints, which are the brute-force targets.</summary>
+/// <summary>Per-client-IP limits for the anonymous auth endpoints, which are the brute-force targets, and per-user limits
+/// for heavy account endpoints.</summary>
 internal sealed class AuthRateLimitSettings
 {
     public const string SectionName = "Identity:RateLimits";
@@ -17,4 +18,11 @@ internal sealed class AuthRateLimitSettings
 
     [Range(typeof(TimeSpan), "00:00:01", "01:00:00")]
     public TimeSpan Window { get; set; } = TimeSpan.FromMinutes(1);
+
+    /// <summary>Data exports per signed-in user per <see cref="DataExportWindow"/>; an export reads everything at once.</summary>
+    [Range(1, 100)]
+    public int DataExportsPerWindow { get; set; } = 5;
+
+    [Range(typeof(TimeSpan), "00:01:00", "1.00:00:00")]
+    public TimeSpan DataExportWindow { get; set; } = TimeSpan.FromHours(1);
 }

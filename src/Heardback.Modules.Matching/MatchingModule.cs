@@ -50,6 +50,7 @@ public static class MatchingModule
         services.AddScoped<AiConsentHandler>();
         services.AddScoped<IApplicationDeletedHandler, DeleteTailoringOnApplicationDeleted>();
         services.AddScoped<IUserDataEraser, MatchingDataEraser>();
+        services.AddScoped<IUserDataExporter, MatchingDataExporter>();
 
         return services;
     }
