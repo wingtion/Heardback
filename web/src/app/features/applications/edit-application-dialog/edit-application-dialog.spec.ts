@@ -95,18 +95,20 @@ describe('EditApplicationDialog', () => {
   }
 
   it('open_Application_FillsEveryFieldAndExplainsWhereStatusChanges', () => {
-    expect(control('Job posting link').value).toBe('https://northwind-logistics.example/jobs/4471');
+    expect(control('Job link').value).toBe('https://northwind-logistics.example/jobs/4471');
     expect(control('Company').value).toBe('Northwind Logistics');
     expect(control('Role').value).toBe('Backend Engineer (.NET)');
-    expect(control('Channel').value).toBe('LinkedInEasyApply');
+    expect(control('Applied via').value).toBe('LinkedInEasyApply');
     expect(control('Applied date').value).toBe('2026-11-03');
     expect(control('Notes').value).toBe('Recruiter call went well.');
-    expect(dialog().textContent).toContain('Status changes through the board or Add update.');
+    expect(dialog().textContent).toContain(
+      'To change the status, use Add update or move the card on the board.',
+    );
     expect(dialog().textContent).toContain('optional, only you see these');
   });
 
   it('submit_InvalidFields_ShowsTheErrorsWithoutSaving', async () => {
-    type('Job posting link', 'northwind-logistics/jobs');
+    type('Job link', 'northwind-logistics/jobs');
     type('Company', '  ');
     type('Applied date', '2999-01-01');
     await submit();
@@ -121,7 +123,7 @@ describe('EditApplicationDialog', () => {
   it('submit_Valid_SendsTheWholeFormWithTheVersionAndCloses', async () => {
     type('Role', '  Senior Backend Engineer ');
     type('Notes', '');
-    type('Job posting link', '');
+    type('Job link', '');
     await submit();
 
     const request = saveRequest();

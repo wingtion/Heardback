@@ -82,7 +82,7 @@ type SectionView =
         >
           <span class="text-cell font-semibold text-ink">Not enough data yet</span>
           <span class="text-small text-ink-2">
-            Fewer than {{ minimum }} other members have applied to this posting. To keep everyone
+            Fewer than {{ minimum }} other members have applied to this job. To keep everyone
             anonymous, no numbers are shown until at least {{ minimum }} have.
           </span>
         </div>
@@ -192,7 +192,7 @@ export class CommunitySection {
     const community = this.resource.value();
     const columns: NumbersColumn[] = [];
     if (community.posting) {
-      columns.push({ heading: 'This posting', numbers: community.posting });
+      columns.push({ heading: 'This job', numbers: community.posting });
     }
     if (community.company) {
       columns.push({ heading: 'This company', numbers: community.company });
@@ -222,10 +222,10 @@ export class CommunitySection {
 // An application without a company key never has company numbers; the section explains that separately.
 function missingGroup(community: ApplicationCommunity): string | null {
   if (!community.posting) {
-    return `Fewer than ${COMMUNITY_MINIMUM_MEMBERS} other members applied to this exact posting, so only company numbers are shown.`;
+    return `Fewer than ${COMMUNITY_MINIMUM_MEMBERS} other members applied to this exact job, so only company numbers are shown.`;
   }
   if (!community.company && community.companyKey) {
-    return `Fewer than ${COMMUNITY_MINIMUM_MEMBERS} other members applied to this company, so only posting numbers are shown.`;
+    return `Fewer than ${COMMUNITY_MINIMUM_MEMBERS} other members applied to this company, so only job numbers are shown.`;
   }
   return null;
 }

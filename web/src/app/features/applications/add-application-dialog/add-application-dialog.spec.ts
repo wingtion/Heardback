@@ -86,7 +86,7 @@ describe('AddApplicationDialog', () => {
   // jsdom has no layout); it is checked in the browser instead.
   it('open_Default_StartsWithTodayAndLinkedIn', () => {
     expect(control('Applied date').value).toBe(localToday(new Date()));
-    expect(control('Channel').value).toBe('LinkedInEasyApply');
+    expect(control('Applied via').value).toBe('LinkedInEasyApply');
   });
 
   it('submit_Empty_ShowsTheDesignedFieldErrorsAndSendsNothing', async () => {
@@ -101,7 +101,7 @@ describe('AddApplicationDialog', () => {
 
   it('submit_InvalidLinkAndFutureDate_ShowsTheirErrors', async () => {
     fillRequired();
-    type('Job posting link', 'northwind-logistics/jobs');
+    type('Job link', 'northwind-logistics/jobs');
     type('Applied date', '2999-01-01');
 
     await submit();
@@ -124,7 +124,7 @@ describe('AddApplicationDialog', () => {
     ref.componentInstance?.created.subscribe((value) => (created = value.id));
     fillRequired();
     type('Job description', '  Shipment tracking APIs. ');
-    type('Channel', 'Referral');
+    type('Applied via', 'Referral');
 
     await submit();
 
@@ -175,7 +175,7 @@ describe('AddApplicationDialog', () => {
     let viewed: string | null = null;
     ref.componentInstance?.viewTracked.subscribe((id) => (viewed = id));
 
-    type('Job posting link', 'https://jobs.example.com/4471');
+    type('Job link', 'https://jobs.example.com/4471');
     await new Promise((resolve) => setTimeout(resolve, LOOKUP_WAIT_MS));
     const lookup = http.expectOne((request) => request.url === TRACKED_URL);
     expect(lookup.request.params.get('url')).toBe('https://jobs.example.com/4471');
@@ -189,7 +189,7 @@ describe('AddApplicationDialog', () => {
     });
     await render();
 
-    expect(dialog().textContent).toContain('You already track this posting');
+    expect(dialog().textContent).toContain('You already added this job');
     expect(dialog().textContent).toContain('03 Nov 2026');
     expect(dialog().textContent).not.toContain('Company');
     button('View application').click();
@@ -198,14 +198,14 @@ describe('AddApplicationDialog', () => {
   });
 
   it('link_NotTracked_KeepsTheForm', async () => {
-    type('Job posting link', 'https://jobs.example.com/new');
+    type('Job link', 'https://jobs.example.com/new');
     await new Promise((resolve) => setTimeout(resolve, LOOKUP_WAIT_MS));
     http
       .expectOne((request) => request.url === TRACKED_URL)
       .flush(null, { status: 204, statusText: 'No Content' });
     await render();
 
-    expect(dialog().textContent).not.toContain('You already track this posting');
+    expect(dialog().textContent).not.toContain('You already added this job');
     expect(control('Company')).toBeTruthy();
   });
 

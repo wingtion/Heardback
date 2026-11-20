@@ -96,7 +96,7 @@
 
   <ng-template #channelFilter>
     <app-toolbar-field
-      label="Channel"
+      label="Applied via"
       [class]="view() === 'list' ? '' : 'max-lg:w-37.5 max-lg:shrink-0'"
     >
       <app-select class="h-full min-w-0 flex-1">
@@ -106,9 +106,7 @@
           #channelSelect
           (change)="setChannel(channelSelect.value)"
         >
-          <option value="" [selected]="channel() === null">
-            {{ desktop() ? 'All channels' : 'All' }}
-          </option>
+          <option value="" [selected]="channel() === null">All</option>
           @for (option of channels; track option) {
             <option [value]="option" [selected]="channel() === option">
               {{ channelLabels[option] }}
@@ -130,7 +128,7 @@
             >
               <th scope="col" class="rounded-tl-md pr-3 pl-4">Company</th>
               <th scope="col" class="px-3">Role</th>
-              <th scope="col" class="px-3">Channel</th>
+              <th scope="col" class="px-3">Applied via</th>
               <th scope="col" class="px-3">Applied</th>
               <th scope="col" class="px-3">Status</th>
               <th scope="col" class="rounded-tr-md pr-4 pl-3 text-right">Last update</th>

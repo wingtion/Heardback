@@ -50,8 +50,8 @@ const HIDDEN = ['loading', 'Unavailable', 'NoPostingText', 'NoCv'];
           </p>
           <p class="text-caption text-ink-muted">
             To do that, Heardback sends your CV text (emails, phone numbers, links and addresses
-            already removed) and this posting to Groq, an AI provider. You can stop this at any time
-            on the
+            already removed) and this job description to Groq, an AI provider. You can stop this at
+            any time on the
             <a appLink [routerLink]="cvPath">CV page</a>.
           </p>
           <div>
@@ -110,7 +110,7 @@ const HIDDEN = ['loading', 'Unavailable', 'NoPostingText', 'NoCv'];
           >
             <p class="flex items-start gap-2 text-small text-ink-2">
               <app-icon name="info" [size]="14" class="mt-0.5" />
-              Your CV or this posting changed since these suggestions were written.
+              Your CV or this job description changed since these suggestions were written.
             </p>
             <ng-container
               *ngTemplateOutlet="requestRow; context: { $implicit: 'Update suggestions' }"
@@ -129,7 +129,8 @@ const HIDDEN = ['loading', 'Unavailable', 'NoPostingText', 'NoCv'];
         </ol>
         <p class="flex items-start gap-1.5 text-caption text-ink-muted">
           <app-icon name="info" [size]="12" class="mt-0.5" />
-          Written by AI from your CV and this posting. Check each suggestion before you use it.
+          Written by AI from your CV and this job description. Check each suggestion before you use
+          it.
         </p>
       }
 

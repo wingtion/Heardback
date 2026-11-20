@@ -261,7 +261,7 @@ describe('CvPage', () => {
     request.flush({ ...STORED, excludedSkills: ['Rust'] });
     await render();
 
-    expect(page.textContent).toContain('Not counted');
+    expect(page.textContent).toContain('Removed');
     expect(page.querySelector('button[aria-label="Count Rust again"]')).not.toBeNull();
   });
 

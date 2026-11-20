@@ -130,7 +130,7 @@ type RequestProblem =
               }
             </dl>
             @if (fields.skills.length > 0) {
-              <ul class="flex flex-wrap gap-1.5" aria-label="Skills the posting asks for">
+              <ul class="flex flex-wrap gap-1.5" aria-label="Skills the job asks for">
                 @for (skill of fields.skills; track skill) {
                   <li><app-skill-chip kind="found" [name]="skill" /></li>
                 }

@@ -1,6 +1,6 @@
 <app-dialog heading="Edit application" width="form" fullScreenOnMobile [closeDisabled]="busy()">
   <p appDialogSubtitle class="text-label text-ink-muted">
-    Status changes through the board or Add update.
+    To change the status, use Add update or move the card on the board.
   </p>
 
   <form class="flex min-h-0 flex-1 flex-col" [formGroup]="form" novalidate (ngSubmit)="submit()">
@@ -12,7 +12,7 @@
           </app-banner>
         }
         @case ('already-tracked') {
-          <app-banner kind="error" heading="You already track this posting">
+          <app-banner kind="error" heading="You already added this job">
             Another of your applications uses this link. Open that one instead, or change the link.
           </app-banner>
         }
@@ -50,7 +50,7 @@
         }
       }
 
-      <app-field label="Job posting link" optional [error]="errors().url ?? null">
+      <app-field label="Job link" optional [error]="errors().url ?? null">
         <input
           appInput
           type="url"
@@ -85,7 +85,7 @@
         </app-field>
       </div>
       <div class="grid grid-cols-2 gap-3">
-        <app-field label="Channel" [error]="errors().channel ?? null">
+        <app-field label="Applied via" [error]="errors().channel ?? null">
           <app-select>
             <select appInput formControlName="channel" class="max-lg:h-11">
               @for (channel of channels; track channel) {

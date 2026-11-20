@@ -130,7 +130,7 @@ describe('PostingAnalysisPanel', () => {
     expect(element.textContent).toContain('Hybrid');
     expect(element.textContent).toContain('Not stated');
     const chips = Array.from(
-      element.querySelectorAll('ul[aria-label="Skills the posting asks for"] app-skill-chip'),
+      element.querySelectorAll('ul[aria-label="Skills the job asks for"] app-skill-chip'),
       (chip) => chip.textContent?.trim(),
     );
     expect(chips).toEqual(['.NET', 'PostgreSQL']);

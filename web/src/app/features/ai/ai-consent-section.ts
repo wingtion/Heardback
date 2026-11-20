@@ -27,8 +27,8 @@ import { WithdrawConsentDialog } from './withdraw-consent-dialog';
           <h2 id="ai-consent-title" class="text-body font-semibold text-ink">AI suggestions</h2>
           <p class="text-small text-ink-2">
             For suggestions on an application, Heardback sends your CV text as stored here (emails,
-            phone numbers, links and addresses already removed) and that posting to Groq, an AI
-            provider. It is never sent to providers that may use it to train models.
+            phone numbers, links and addresses already removed) and that job description to Groq, an
+            AI provider. It is never sent to providers that may use it to train models.
           </p>
           @if (consent.allowed) {
             <p class="text-small text-ink">

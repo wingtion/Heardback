@@ -64,14 +64,14 @@ export function matchSummary(matched: number, total: number, score: number): str
             </ul>
           }
           <p class="text-caption text-ink-muted">
-            Skills found in the role and posting, checked against your CV.
+            Skills found in the job title and description, compared with your CV.
           </p>
         }
       }
       @case ('NoCv') {
         @if (match(); as match) {
-          <p class="text-caption text-ink-muted">This posting asks for</p>
-          <ul class="flex flex-wrap gap-1.5" aria-label="Skills this posting asks for">
+          <p class="text-caption text-ink-muted">This job asks for</p>
+          <ul class="flex flex-wrap gap-1.5" aria-label="Skills this job asks for">
             @for (skill of match.missing; track skill.name) {
               <li><app-skill-chip kind="missing" [name]="skill.name" /></li>
             }
@@ -94,7 +94,9 @@ export function matchSummary(matched: number, total: number, score: number): str
         </p>
       }
       @case ('NoSkillsInPosting') {
-        <p class="text-small text-ink-2">No skills Heardback knows were found in this posting.</p>
+        <p class="text-small text-ink-2">
+          No skills Heardback knows were found in this job description.
+        </p>
       }
     }
   `,

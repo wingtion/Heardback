@@ -178,8 +178,8 @@ describe('ApplicationsPage', () => {
     select('Status').value = 'NoResponse';
     select('Status').dispatchEvent(new Event('change'));
     const byStatus = await respondToList();
-    select('Channel').value = 'KariyerNet';
-    select('Channel').dispatchEvent(new Event('change'));
+    select('Applied via').value = 'KariyerNet';
+    select('Applied via').dispatchEvent(new Event('change'));
     const byChannel = await respondToList();
 
     expect(byStatus.request.params.get('status')).toBe('NoResponse');

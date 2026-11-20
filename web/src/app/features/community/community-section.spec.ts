@@ -108,7 +108,7 @@ describe('CommunitySection', () => {
     const { element } = await create(quietCommunity('app-1'));
 
     expect(text(element)).toContain('Not enough data yet');
-    expect(text(element)).toContain('Fewer than 3 other members have applied to this posting.');
+    expect(text(element)).toContain('Fewer than 3 other members have applied to this job.');
     expect(element.querySelector('table')).toBeNull();
     const link = element.querySelector('a');
     expect(link?.textContent).toContain('All your applications at Northwind');
@@ -130,7 +130,7 @@ describe('CommunitySection', () => {
     expect(Array.from(element.querySelectorAll('li'), (li) => li.textContent!.trim())).toEqual(
       HIGH.reasons.map((reason) => reason.text),
     );
-    expect(columnHeadings(element)).toEqual(['This posting', 'This company']);
+    expect(columnHeadings(element)).toEqual(['This job', 'This company']);
     expect(text(element)).toContain('means nobody has heard back yet');
     expect(text(element)).toContain('You are not counted.');
   });
@@ -145,7 +145,7 @@ describe('CommunitySection', () => {
     });
 
     expect(text(element)).toContain(
-      'Fewer than 3 other members applied to this exact posting, so only company numbers are shown.',
+      'Fewer than 3 other members applied to this exact job, so only company numbers are shown.',
     );
     expect(columnHeadings(element)).toEqual(['This company']);
     expect(text(element)).toContain('Ghost risk: Low. No warning signs from other members so far.');
@@ -162,7 +162,7 @@ describe('CommunitySection', () => {
     });
 
     expect(text(element)).toContain('This posting may be inactive.');
-    expect(text(element)).not.toContain('so only posting numbers are shown.');
+    expect(text(element)).not.toContain('so only job numbers are shown.');
     expect(text(element)).toContain('added before companies were linked');
     expect(element.querySelector('a')).toBeNull();
   });
