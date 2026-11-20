@@ -51,7 +51,7 @@ internal static class MatchingErrors
         Error.Conflict("matching.tailoring_needs_cv", "Upload a CV to get suggestions.");
 
     public static readonly Error TailoringNeedsPostingText =
-        Error.Conflict("matching.tailoring_needs_posting_text", "Add the posting text to get suggestions.");
+        Error.Conflict("matching.tailoring_needs_posting_text", "Add the job description to get suggestions.");
 
     public static readonly Error TailoringUnavailable =
         Error.Conflict("matching.tailoring_unavailable", "AI suggestions aren't available right now.");

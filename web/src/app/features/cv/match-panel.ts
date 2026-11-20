@@ -83,7 +83,7 @@ export function matchSummary(matched: number, total: number, score: number): str
       }
       @case ('NoPostingText') {
         <p class="text-small text-ink-2">
-          Add the job posting text to see how your CV matches.
+          Add the job description to see how your CV matches.
           <button
             type="button"
             class="cursor-pointer rounded-xs text-link underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"

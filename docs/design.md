@@ -425,7 +425,7 @@ Decisions the author made where the handoff was silent or showed only a sample.
 | Detail can't load | Error banner "Couldn't load this application" / "The server didn't respond. Try again." + Try again |
 | Detail not found (deleted elsewhere) | Info banner "Couldn't find this application" / "It may have been deleted in another tab or on another device." |
 | Delete fails | Error banner inside the confirm box: "Couldn't delete the application" / "The server didn't respond. Try again." A 404 counts as deleted |
-| Add: same posting text, no link | Error banner "You already track this posting" / "Another of your applications has the same posting text." (the "already tracked" panel needs a link to look the application up) |
+| Add: same posting text, no link | Error banner "You already track this posting" / "Another of your applications has the same job description." (the "already tracked" panel needs a link to look the application up) |
 | Applied date field | The browser's native date field, so the picker and keyboard entry are accessible; it shows the date in the browser's own format (e.g. "18.11.2026") rather than "18 Nov 2026" |
 
 **Decided during the board and forms build** (approved by the author, 2026-11-18). Built from existing components and copy; nothing new visually:
@@ -586,7 +586,7 @@ Matched and missing differ by the check and the border style, never by colour al
 - Heading like Notes and Timeline (`label`, 600, `ink-2`); when ready, "3 of 5 skills · 60%" at the right in DM Mono (`label`, `ink`). **No gauge or ring:** the share is plain text.
 - **Ready:** "Your CV shows" + matched chips, "Missing from your CV" + missing chips (captions in `caption`, `ink-muted`), then "Skills named in the role and posting text, compared with your CV."
 - **No CV:** "This posting asks for" + missing chips, then "Upload your CV to see which of these it shows." with a link to the CV page.
-- **No posting text:** "Add the job posting text to see how your CV matches." + link-button "Edit application" (opens Edit).
+- **No posting text:** "Add the job description to see how your CV matches." + link-button "Edit application" (opens Edit).
 - **No known skills:** "No skills Heardback knows were found in this posting." (neutral, not an error).
 - **Loading:** spinner "Checking your CV…". **Error:** warning icon and "Couldn't check your CV." in `danger` with a 28 px Try again; the rest of the detail stays usable.
 - The panel checks again whenever the application changes (Edit, Add update, a board move).
@@ -605,7 +605,7 @@ The posting text was only visible in Edit. Heading "Job posting" like Notes, the
 - Heading "Job summary" like Notes (`label`, 600, `ink-2`) with the AI tag; the "About this job" title shows only with it. Hidden while loading and when the application has no posting text (the match panel already asks for it).
 - **Not requested:** "AI can summarize this job for you: title, seniority, work mode, location and the skills it asks for." + 28 px secondary **Summarize job** (44 px below lg) and, beside it, the usage line in DM Mono `label` `ink-muted`: "28 of 30 left today · resets 03:00" (the reset in the user's own time zone, 24-hour).
 - **Queued / running:** spinner "Summarizing the job…" (`role="status"`); the panel checks again every 3 seconds.
-- **Ready:** a two-column list (`small`; labels `ink-muted`, values `ink`; "Not stated" in `ink-muted`): Company, Title, Seniority, Work mode, Location; then the skills as **found** chips (§15); caption "Summarized by AI from the posting text on 19 Nov 2026." (date in DM Mono).
+- **Ready:** a two-column list (`small`; labels `ink-muted`, values `ink`; "Not stated" in `ink-muted`): Company, Title, Seniority, Work mode, Location; then the skills as **found** chips (§15); caption "Summarized by AI from the job description on 19 Nov 2026." (date in DM Mono).
 - **Waiting for capacity** (app-wide daily cap): clock icon, `status-no-response` text: "AI has reached its daily limit. Your summary will be ready after 03:00."
 - **Failed:** warning icon, `danger`: "Couldn’t summarize this job." + 28 px Try again (asks again).
 
@@ -635,7 +635,7 @@ The posting text was only visible in Edit. Heading "Job posting" like Notes, the
 | Consent wording | "To do that, Heardback sends your CV text (emails, phone numbers, links and addresses already removed) and this posting to Groq, an AI provider. You can stop this at any time on the CV page." |
 | AI label | "Written by AI from your CV and this posting. Check each suggestion before you use it." |
 | Seniority labels | Not stated, Intern, Junior, Mid-level, Senior, Lead; work mode: Not stated, On-site, Hybrid, Remote |
-| Server error texts | "Add the posting text to analyse it.", "AI analysis isn’t available right now.", "Allow Heardback to send your CV text to the AI provider first.", "Upload a CV to get suggestions." (shown only if the UI and server disagree) |
+| Server error texts | "Add the job description to analyse it.", "Add the job description to get suggestions.", "AI analysis isn’t available right now.", "Allow Heardback to send your CV text to the AI provider first.", "Upload a CV to get suggestions." (shown only if the UI and server disagree) |
 
 ## 17. Overview (Phase 5, composed from the existing system)
 

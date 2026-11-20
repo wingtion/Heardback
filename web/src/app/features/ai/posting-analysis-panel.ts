@@ -137,7 +137,7 @@ type RequestProblem =
               </ul>
             }
             <p class="text-caption text-ink-muted">
-              Summarized by AI from the posting text on
+              Summarized by AI from the job description on
               <span class="font-mono">{{ fields.analyzedAt | date: 'd MMM y' }}</span>.
             </p>
           }

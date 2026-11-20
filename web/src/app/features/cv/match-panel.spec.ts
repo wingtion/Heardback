@@ -110,7 +110,7 @@ describe('MatchPanel', () => {
       missing: [],
     });
 
-    expect(element.textContent).toContain('Add the job posting text to see how your CV matches.');
+    expect(element.textContent).toContain('Add the job description to see how your CV matches.');
     element.querySelector('button')?.click();
 
     expect(host.edits).toBe(1);

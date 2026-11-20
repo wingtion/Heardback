@@ -220,7 +220,7 @@ describe('AddApplicationDialog', () => {
     await render();
 
     expect(dialog().textContent).toContain(
-      'Another of your applications has the same posting text.',
+      'Another of your applications has the same job description.',
     );
   });
 });

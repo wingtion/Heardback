@@ -134,7 +134,7 @@ describe('PostingAnalysisPanel', () => {
       (chip) => chip.textContent?.trim(),
     );
     expect(chips).toEqual(['.NET', 'PostgreSQL']);
-    expect(element.textContent).toContain('Summarized by AI from the posting text');
+    expect(element.textContent).toContain('Summarized by AI from the job description');
   });
 
   it('load_WaitingForCapacity_SaysWhenItRuns', async () => {

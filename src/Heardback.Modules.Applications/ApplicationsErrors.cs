@@ -36,7 +36,7 @@ internal static class ApplicationsErrors
         Error.Validation("applications.same_status", "status", "The application already has this status.");
 
     public static readonly Error NoPostingText =
-        Error.Conflict("applications.no_posting_text", "Add the posting text to analyse it.");
+        Error.Conflict("applications.no_posting_text", "Add the job description to analyse it.");
 
     public static readonly Error AnalysisUnavailable =
         Error.Conflict("applications.analysis_unavailable", "AI analysis isn't available right now.");
