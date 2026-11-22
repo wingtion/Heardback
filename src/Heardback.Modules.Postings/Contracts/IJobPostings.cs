@@ -26,6 +26,21 @@ public interface IJobPostings
     /// <returns>The posting id, or <see langword="null"/> when the link is invalid or no posting has it.</returns>
     Task<Guid?> FindIdByUrlAsync(string url, CancellationToken cancellationToken);
 
+    /// <summary>Whether the posting still exists; it is deleted once no application uses it (ADR-0015).</summary>
+    /// <param name="postingId">The posting to look for.</param>
+    /// <param name="cancellationToken">Cancels the database work.</param>
+    /// <returns><see langword="true"/> when the posting exists.</returns>
+    Task<bool> ExistsAsync(Guid postingId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Deletes a posting. The caller decides that no application uses it any more and guards that decision against
+    /// a concurrent link (ADR-0015). Deleting a posting that is already gone succeeds.
+    /// </summary>
+    /// <param name="postingId">The posting to delete.</param>
+    /// <param name="cancellationToken">Cancels the database work.</param>
+    /// <returns>A task that completes when the posting is gone.</returns>
+    Task DeleteAsync(Guid postingId, CancellationToken cancellationToken);
+
     /// <summary>When each posting was first submitted by anyone, for the "listed a long time" hint (ADR-0013).</summary>
     /// <param name="postingIds">The postings to look up.</param>
     /// <param name="cancellationToken">Cancels the database work.</param>

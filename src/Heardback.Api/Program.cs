@@ -35,6 +35,12 @@ builder.Services
 
 var app = builder.Build();
 
+// "reset-code <email>" or "list-admins" runs an owner command and exits; the web server never starts (ADR-0015).
+if (await app.Services.TryRunOwnerCommandAsync(args, Console.Out, CancellationToken.None) is { } exitCode)
+{
+    return exitCode;
+}
+
 await app.Services.MigrateModuleDatabasesAsync(app.Lifetime.ApplicationStopping);
 
 // The real client IP first: per-IP rate limits depend on it (ClientIp settings, ADR-0002).
@@ -69,3 +75,4 @@ api.MapMatchingEndpoints();
 api.MapInsightsEndpoints();
 
 await app.RunAsync();
+return 0;

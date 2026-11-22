@@ -44,6 +44,7 @@ internal static class AuthenticationSetup
 
         // Keep "sub" and "role" as issued instead of remapping them to long WS-* claim URIs.
         options.MapInboundClaims = false;
+        options.Events = new JwtBearerEvents { OnTokenValidated = ExistingUserCheck.OnTokenValidatedAsync };
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidIssuer = tokenSettings.Issuer,

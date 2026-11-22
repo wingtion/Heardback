@@ -180,7 +180,7 @@ public sealed class ApplicationCrudTests(PostgresFixture postgres) : Application
     }
 
     [Fact]
-    public async Task Delete_OwnApplication_RemovesItAndItsTimelineButKeepsThePosting()
+    public async Task Delete_OwnApplication_RemovesItItsTimelineAndThePostingNobodyElseUses()
     {
         var created = await Client.CreateApplicationOkAsync(Alice, NewApplication());
 
@@ -189,6 +189,31 @@ public sealed class ApplicationCrudTests(PostgresFixture postgres) : Application
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         Assert.Equal(0, await CountRowsAsync("applications.applications"));
         Assert.Equal(0, await CountRowsAsync("applications.application_events"));
+        Assert.Equal(0, await CountRowsAsync("postings.job_postings"));
+    }
+
+    [Fact]
+    public async Task Delete_PostingAnotherUserTracks_KeepsThePosting()
+    {
+        var created = await Client.CreateApplicationOkAsync(Alice, NewApplication());
+        await Client.CreateApplicationOkAsync(Bob, NewApplication());
+
+        using var response = await Client.DeleteApplicationAsync(Alice, created.Id);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.Equal(1, await CountRowsAsync("postings.job_postings"));
+    }
+
+    [Fact]
+    public async Task Create_AfterThePostingWasDeleted_CreatesItAgain()
+    {
+        var first = await Client.CreateApplicationOkAsync(Alice, NewApplication());
+        using var deleted = await Client.DeleteApplicationAsync(Alice, first.Id);
+
+        using var again = await Client.CreateApplicationAsync(Bob, NewApplication());
+
+        Assert.Equal(HttpStatusCode.NoContent, deleted.StatusCode);
+        Assert.Equal(HttpStatusCode.Created, again.StatusCode);
         Assert.Equal(1, await CountRowsAsync("postings.job_postings"));
     }
 

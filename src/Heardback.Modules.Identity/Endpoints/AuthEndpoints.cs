@@ -1,5 +1,6 @@
 using Heardback.Modules.Identity.Authentication;
 using Heardback.Modules.Identity.Login;
+using Heardback.Modules.Identity.Recovery;
 using Heardback.Modules.Identity.Registration;
 using Heardback.Modules.Identity.Sessions;
 using Heardback.Shared.Http;
@@ -37,6 +38,14 @@ internal static class AuthEndpoints
             .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
+        // A reset code is a credential, so guessing one shares the per-IP budget of sign-in.
+        auth.MapPost("/reset-password", ResetPasswordAsync)
+            .WithSummary("Set a new password with a one-time reset code from an admin. Ends every session.")
+            .RequireRateLimiting(AuthRateLimiting.CredentialsPolicy)
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesValidationProblem()
+            .ProducesProblem(StatusCodes.Status429TooManyRequests);
+
         // Anonymous and hits the database, so it shares the refresh budget.
         auth.MapPost("/logout", LogoutAsync)
             .WithSummary("End this session and clear the refresh cookie.")
@@ -61,6 +70,15 @@ internal static class AuthEndpoints
         }
 
         return ToSessionResult(result, response, session => TypedResults.Ok(AuthResponse.From(session)));
+    }
+
+    private static async Task<IResult> ResetPasswordAsync(
+        ResetPasswordRequest request,
+        ResetPasswordHandler handler,
+        CancellationToken cancellationToken)
+    {
+        var result = await handler.HandleAsync(request, cancellationToken);
+        return result.IsSuccess ? TypedResults.NoContent() : result.Error.ToProblem();
     }
 
     private static async Task<IResult> LogoutAsync(

@@ -60,6 +60,19 @@ internal sealed class TailoringJobHandler(
 
         var answer = result.Value with { Suggestions = grounded };
 
+        // The AI call takes seconds; the CV, consent, application or whole account may have been deleted meanwhile,
+        // and a result saved now would outlive them (ADR-0015).
+        var stillThere = await sources.FindAsync(applicationId, cancellationToken);
+        if (stillThere is null || stillThere.CvText is null || !stillThere.HasPostingText)
+        {
+            return AnalysisJobOutcome.Failed(NothingToTailor);
+        }
+
+        if (!stillThere.HasConsent)
+        {
+            return AnalysisJobOutcome.Failed(NoConsent);
+        }
+
         var now = timeProvider.GetUtcNow();
         var stored = await dbContext.TailoringResults
             .FirstOrDefaultAsync(candidate => candidate.ApplicationId == applicationId, cancellationToken);
