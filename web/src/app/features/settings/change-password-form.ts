@@ -62,6 +62,8 @@ const CLIENT_MESSAGES: Readonly<Record<PasswordField, string>> = {
       novalidate
       class="flex flex-col gap-3.5 lg:max-w-80"
     >
+      <!-- Tells password managers which account the new password belongs to. -->
+      <input type="email" autocomplete="username" hidden readonly [value]="email()" />
       <app-field label="Current password" [error]="errors().currentPassword ?? null">
         <input
           appInput
@@ -128,6 +130,7 @@ export class ChangePasswordForm {
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly limits = PASSWORD_LIMITS;
+  protected readonly email = computed(() => this.auth.user()?.email ?? '');
   protected readonly submission = createAuthSubmission();
 
   protected readonly form = inject(NonNullableFormBuilder).group({

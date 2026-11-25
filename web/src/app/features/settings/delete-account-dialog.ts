@@ -61,6 +61,8 @@ const PASSWORD_FIELD = 'password';
     }
 
     <form [formGroup]="form" (ngSubmit)="confirm()" novalidate class="flex flex-col gap-3">
+      <!-- Lets a password manager fill the password for this account. -->
+      <input type="email" autocomplete="username" hidden readonly [value]="email" />
       <app-field label="Your password" hint="To confirm it’s you." [error]="passwordError()">
         <input
           appInput
@@ -109,6 +111,7 @@ export class DeleteAccountDialog {
 
   protected readonly titleId = this.dialogRef.config.ariaLabelledBy ?? undefined;
   protected readonly passwordMax = PASSWORD_LIMITS.max;
+  protected readonly email = this.auth.user()?.email ?? '';
   protected readonly submission = createAuthSubmission();
 
   protected readonly form = inject(NonNullableFormBuilder).group({

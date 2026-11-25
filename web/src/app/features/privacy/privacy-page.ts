@@ -23,11 +23,11 @@ const LIST = 'flex list-disc flex-col gap-1.5 pl-5 text-body text-ink-2 marker:t
   host: { class: 'flex min-h-dvh flex-col bg-base' },
   template: `
     <header
-      class="flex h-15 shrink-0 items-center gap-2.25 border-b border-rule bg-surface pr-2 pl-4.5 lg:px-7"
+      class="flex h-15 shrink-0 items-center gap-2.25 border-b border-rule bg-surface px-4 lg:px-7"
     >
       <app-logo [size]="24" />
       <span class="flex-1 font-serif text-dialog-title font-semibold text-ink">Heardback</span>
-      <a appButton [routerLink]="back().path" class="max-lg:h-11">{{ back().label }}</a>
+      <a appButton [routerLink]="back().path" class="shrink-0 max-lg:h-11">{{ back().label }}</a>
     </header>
 
     <main class="flex w-full max-w-170 flex-col gap-7 px-4 pt-6 pb-12 lg:px-7 lg:pt-8">
