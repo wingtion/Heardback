@@ -18,6 +18,12 @@ export const routes: Routes = [
       import('./features/auth/register/register-page').then((page) => page.RegisterPage),
   },
   {
+    // Public: readable before creating an account and after deleting one.
+    path: 'privacy',
+    title: 'Privacy · Heardback',
+    loadComponent: () => import('./features/privacy/privacy-page').then((page) => page.PrivacyPage),
+  },
+  {
     path: '',
     canActivate: [authGuard],
     loadComponent: () => import('./shell/app-shell').then((shell) => shell.AppShell),
