@@ -2,8 +2,15 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../../core/api-base-url';
-import { AUTH_API } from './auth-paths';
-import { AuthResponse, CurrentUser, LoginRequest, RegisterRequest } from './auth.models';
+import { ACCOUNT_API, AUTH_API } from './auth-paths';
+import {
+  AuthResponse,
+  ChangePasswordRequest,
+  CurrentUser,
+  LoginRequest,
+  RegisterRequest,
+  ResetPasswordRequest,
+} from './auth.models';
 
 /** HTTP calls to the Identity API. State lives in AuthService; components use that, not this. */
 @Injectable({ providedIn: 'root' })
@@ -26,6 +33,21 @@ export class AuthApi {
 
   logout(): Observable<void> {
     return this.http.post<void>(this.url(AUTH_API.logout), null);
+  }
+
+  /** Anonymous: a one-time code from an admin sets a new password and ends every session. */
+  resetPassword(request: ResetPasswordRequest): Observable<void> {
+    return this.http.post<void>(this.url(AUTH_API.resetPassword), request);
+  }
+
+  /** Ends every session; the response is this browser's new one. */
+  changePassword(request: ChangePasswordRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(this.url(ACCOUNT_API.password), request);
+  }
+
+  /** Deletes the account and everything in it. Needs the current password. */
+  deleteAccount(password: string): Observable<void> {
+    return this.http.delete<void>(this.url(ACCOUNT_API.account), { body: { password } });
   }
 
   me(): Observable<CurrentUser> {

@@ -50,6 +50,40 @@ describe('toAuthFailure', () => {
     });
   });
 
+  it('toAuthFailure_InvalidResetCode_PutsDesignCopyOnCodeField', () => {
+    const failure = toAuthFailure(
+      httpError(400, {
+        code: 'auth.invalid_reset_code',
+        errors: { code: ['This reset code is invalid, expired or already used.'] },
+      }),
+    );
+
+    expect(failure).toEqual({
+      kind: 'fields',
+      fieldErrors: { code: 'This reset code is invalid, expired or already used' },
+    });
+  });
+
+  it('toAuthFailure_WrongCurrentPassword_KeepsTheServersField', () => {
+    const failure = toAuthFailure(
+      httpError(400, {
+        code: 'account.wrong_password',
+        errors: { currentPassword: ['This password is incorrect.'] },
+      }),
+    );
+
+    expect(failure).toEqual({
+      kind: 'fields',
+      fieldErrors: { currentPassword: 'This password is incorrect' },
+    });
+  });
+
+  it('toAuthFailure_LastAdmin_ReturnsLastAdmin', () => {
+    const failure = toAuthFailure(httpError(409, { code: 'account.last_admin' }));
+
+    expect(failure).toEqual({ kind: 'last-admin' });
+  });
+
   it('toAuthFailure_ValidationProblem_ReturnsFirstMessagePerField', () => {
     const failure = toAuthFailure(
       httpError(400, { errors: { password: ['Too short.', 'Other.'], email: ['Bad email.'] } }),

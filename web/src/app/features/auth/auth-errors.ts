@@ -7,6 +7,9 @@ export const AUTH_ERROR_CODES = {
   invalidCredentials: 'auth.invalid_credentials',
   invalidInviteCode: 'auth.invalid_invite_code',
   emailTaken: 'auth.email_taken',
+  invalidResetCode: 'auth.invalid_reset_code',
+  wrongPassword: 'account.wrong_password',
+  lastAdmin: 'account.last_admin',
 } as const;
 
 /** Used when a 429 arrives without a readable Retry-After header. */
@@ -17,10 +20,15 @@ export type AuthFailure =
   | { readonly kind: 'invalid-credentials' }
   | { readonly kind: 'rate-limited'; readonly retryAfterSeconds: number }
   | { readonly kind: 'fields'; readonly fieldErrors: Readonly<Record<string, string>> }
+  | { readonly kind: 'last-admin' }
   | { readonly kind: 'unavailable' };
 
-// Field the client shows each coded error on, and the copy from the design (docs/design.md §10).
-const CODED_FIELD_ERRORS: Readonly<Record<string, { field: string; message: string }>> = {
+/**
+ * Field the client shows each coded error on, and the copy from the design (docs/design.md §10).
+ * Without a field, the server's field is used: a wrong password is reported on "password" when
+ * deleting the account and on "currentPassword" when changing it.
+ */
+const CODED_FIELD_ERRORS: Readonly<Record<string, { field?: string; message: string }>> = {
   [AUTH_ERROR_CODES.invalidInviteCode]: {
     field: 'inviteCode',
     message: 'This invite code is invalid, expired or already used',
@@ -29,6 +37,11 @@ const CODED_FIELD_ERRORS: Readonly<Record<string, { field: string; message: stri
     field: 'email',
     message: 'An account with this email already exists',
   },
+  [AUTH_ERROR_CODES.invalidResetCode]: {
+    field: 'code',
+    message: 'This reset code is invalid, expired or already used',
+  },
+  [AUTH_ERROR_CODES.wrongPassword]: { message: 'This password is incorrect' },
 };
 
 /** Another request (e.g. a second tab) refreshed first; the cookie already holds the newer token. */
@@ -50,9 +63,15 @@ export function toAuthFailure(error: unknown): AuthFailure {
     return { kind: 'unavailable' };
   }
 
-  const coded = CODED_FIELD_ERRORS[errorCode(error) ?? ''];
-  if (coded) {
-    return { kind: 'fields', fieldErrors: { [coded.field]: coded.message } };
+  const code = errorCode(error);
+  if (code === AUTH_ERROR_CODES.lastAdmin) {
+    return { kind: 'last-admin' };
+  }
+
+  const coded = CODED_FIELD_ERRORS[code ?? ''];
+  const field = coded?.field ?? Object.keys(validationErrors(error.error))[0];
+  if (coded && field) {
+    return { kind: 'fields', fieldErrors: { [field]: coded.message } };
   }
 
   switch (error.status) {

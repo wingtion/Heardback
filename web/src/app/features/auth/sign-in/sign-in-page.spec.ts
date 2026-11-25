@@ -192,4 +192,16 @@ describe('SignInPage', () => {
 
     expect(root().textContent).toContain('Your session has expired. Please sign in again.');
   });
+
+  it('open_AfterAccountDeleted_SaysTheDataIsGone', async () => {
+    await open('/login?reason=account-deleted');
+
+    expect(root().textContent).toContain('Your account and all its data were deleted.');
+  });
+
+  it('open_UnknownReason_ShowsNoNotice', async () => {
+    await open('/login?reason=anything');
+
+    expect(root().querySelector('app-banner')).toBeNull();
+  });
 });

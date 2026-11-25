@@ -47,6 +47,12 @@ export const routes: Routes = [
           import('./features/insights/insights-page').then((page) => page.InsightsPage),
       },
       {
+        path: 'settings',
+        title: 'Settings · Heardback',
+        loadComponent: () =>
+          import('./features/settings/settings-page').then((page) => page.SettingsPage),
+      },
+      {
         path: 'admin/invite-codes',
         title: 'Invite codes · Heardback',
         canActivate: [adminGuard],

@@ -57,8 +57,9 @@ export class SignInPage {
 
   protected readonly restoreFailed = this.auth.restoreFailed;
 
-  protected readonly sessionExpired =
-    this.route.snapshot.queryParamMap.get(LOGIN_REASON_PARAM) === LOGIN_REASONS.sessionExpired;
+  /** Why the user was sent here, from the URL. Only known reasons show a notice. */
+  protected readonly reason = this.route.snapshot.queryParamMap.get(LOGIN_REASON_PARAM);
+  protected readonly reasons = LOGIN_REASONS;
 
   protected readonly emailError = computed(
     () =>
