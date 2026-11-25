@@ -31,6 +31,11 @@
           @case (reasons.accountDeleted) {
             <app-banner kind="info">Your account and all its data were deleted.</app-banner>
           }
+          @case (reasons.passwordReset) {
+            <app-banner kind="info">
+              Your password was changed. Sign in with the new one.
+            </app-banner>
+          }
         }
       }
     }
@@ -56,6 +61,9 @@
         autocomplete="current-password"
       />
     </app-field>
+    <a appLink [routerLink]="routes.resetPassword" class="-mt-1.5 self-start text-label">
+      Forgot your password?
+    </a>
 
     <button
       appButton="primary"

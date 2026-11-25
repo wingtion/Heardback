@@ -199,6 +199,21 @@ describe('SignInPage', () => {
     expect(root().textContent).toContain('Your account and all its data were deleted.');
   });
 
+  it('open_AfterPasswordReset_AsksToSignInWithTheNewPassword', async () => {
+    await open('/login?reason=password-reset');
+
+    expect(root().textContent).toContain('Your password was changed. Sign in with the new one.');
+  });
+
+  it('open_Anyone_LinksToResetPassword', async () => {
+    await open();
+
+    const link = Array.from(root().querySelectorAll('a')).find(
+      (anchor) => anchor.textContent?.trim() === 'Forgot your password?',
+    );
+    expect(link?.getAttribute('href')).toBe('/reset-password');
+  });
+
   it('open_UnknownReason_ShowsNoNotice', async () => {
     await open('/login?reason=anything');
 

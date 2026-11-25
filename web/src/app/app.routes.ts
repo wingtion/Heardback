@@ -18,6 +18,15 @@ export const routes: Routes = [
       import('./features/auth/register/register-page').then((page) => page.RegisterPage),
   },
   {
+    path: 'reset-password',
+    title: 'Reset password · Heardback',
+    canActivate: [guestGuard],
+    loadComponent: () =>
+      import('./features/auth/reset-password/reset-password-page').then(
+        (page) => page.ResetPasswordPage,
+      ),
+  },
+  {
     // Public: readable before creating an account and after deleting one.
     path: 'privacy',
     title: 'Privacy · Heardback',
