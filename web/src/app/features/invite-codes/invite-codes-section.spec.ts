@@ -7,7 +7,7 @@ import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { INVITE_CODES_API } from './invite-codes-api';
-import { InviteCodesPage } from './invite-codes-page';
+import { InviteCodesSection } from './invite-codes-section';
 import { inviteCode, invitePage } from './invite-codes.testing';
 
 @Component({ template: '<p>No access page</p>' })
@@ -16,7 +16,7 @@ class StubNoAccess {}
 // CDK dialogs read the legacy keyCode to recognise Escape.
 const ESCAPE_KEY_CODE = 27;
 
-describe('InviteCodesPage', () => {
+describe('InviteCodesSection', () => {
   let harness: RouterTestingHarness;
   let http: HttpTestingController;
   let clipboard: { copy: ReturnType<typeof vi.fn> };
@@ -26,7 +26,7 @@ describe('InviteCodesPage', () => {
     TestBed.configureTestingModule({
       providers: [
         provideRouter([
-          { path: 'admin/invite-codes', component: InviteCodesPage },
+          { path: 'admin/invite-codes', component: InviteCodesSection },
           { path: 'no-access', component: StubNoAccess },
         ]),
         provideHttpClient(),
@@ -36,7 +36,7 @@ describe('InviteCodesPage', () => {
     });
     http = TestBed.inject(HttpTestingController);
     harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/admin/invite-codes', InviteCodesPage);
+    await harness.navigateByUrl('/admin/invite-codes', InviteCodesSection);
   });
 
   afterEach(() => {

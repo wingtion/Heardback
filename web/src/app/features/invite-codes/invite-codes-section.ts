@@ -35,17 +35,17 @@ type PageView =
   | { readonly kind: 'list'; readonly data: InviteCodePage };
 
 /**
- * Admin page listing invite codes, newest first, 20 per page, with a dialog to create one
- * (docs/design.md §10). The route guard and the API both require an admin; if the API answers 403
- * mid-session (admin rights removed), the no-access page is shown.
+ * Invite codes on the admin Members page: newest first, 20 per page, with a dialog to create one
+ * (docs/design.md §10, §20). The route guard and the API both require an admin; if the API answers
+ * 403 mid-session (admin rights removed), the no-access page is shown.
  */
 @Component({
-  selector: 'app-invite-codes-page',
+  selector: 'app-invite-codes-section',
   imports: [DatePipe, Banner, Button, EnvelopeIllustration, Icon, Pagination, Spinner, StatusLabel],
-  templateUrl: './invite-codes-page.html',
-  host: { class: 'flex flex-col lg:gap-4.5 lg:px-7 lg:pt-6 lg:pb-5' },
+  templateUrl: './invite-codes-section.html',
+  host: { class: 'flex flex-col lg:gap-3.5' },
 })
-export class InviteCodesPage {
+export class InviteCodesSection {
   private readonly api = inject(InviteCodesApi);
   private readonly dialogs = inject(DialogLauncher);
   private readonly clipboard = inject(Clipboard);

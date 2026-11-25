@@ -12,7 +12,7 @@ export const SHELL_ROUTES = {
   cv: '/cv',
   overview: '/overview',
   settings: '/settings',
-  inviteCodes: '/admin/invite-codes',
+  members: '/admin/members',
 } as const;
 
 /** Only pages that exist are listed (docs/design.md §8). */
@@ -24,5 +24,5 @@ export const MAIN_NAV: readonly NavItem[] = [
 ];
 
 export const ADMIN_NAV: readonly NavItem[] = [
-  { label: 'Invite codes', path: SHELL_ROUTES.inviteCodes, icon: 'mail' },
+  { label: 'Members', path: SHELL_ROUTES.members, icon: 'mail' },
 ];

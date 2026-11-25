@@ -1,0 +1,122 @@
+@if (resetCode(); as resetCode) {
+  <app-dialog heading="Reset code created">
+    <div class="flex flex-col gap-3.5 px-4 pt-3.5 pb-5 lg:gap-3 lg:p-5">
+      <p class="text-small text-ink-2">
+        For <span class="font-semibold text-ink">{{ member.displayName }}</span>
+      </p>
+      <app-code-display [code]="resetCode.code" />
+      <div class="flex justify-between gap-3 text-small text-ink-2 lg:text-label">
+        <span>
+          Expires
+          <span class="font-mono">{{ resetCode.expiresAt | date: expiryFormat }}</span>
+        </span>
+        <span>Single use</span>
+      </div>
+      <div role="status">
+        @if (copied()) {
+          <app-inline-success class="max-lg:text-cell">Copied to clipboard</app-inline-success>
+        } @else {
+          <p class="text-small text-ink-2">
+            Give it to {{ member.displayName }} in person or in a message. It is shown only this
+            once. They enter it on the sign-in page under “Forgot your password?”.
+          </p>
+        }
+      </div>
+    </div>
+    <app-dialog-footer>
+      <button
+        appButton
+        type="button"
+        class="max-lg:h-12 max-lg:flex-1 max-lg:text-ui-lg"
+        (click)="close()"
+      >
+        Done
+      </button>
+      <button
+        #copyButton
+        appButton="primary"
+        type="button"
+        class="max-lg:h-12 max-lg:flex-1 max-lg:text-ui-lg"
+        (click)="copy(resetCode.code)"
+      >
+        @if (copied()) {
+          <app-icon name="check" [size]="14" />
+          Copied
+        } @else {
+          <app-icon name="copy" [size]="14" />
+          Copy
+        }
+      </button>
+    </app-dialog-footer>
+  </app-dialog>
+} @else {
+  <app-dialog heading="Create a reset code" [closeDisabled]="creating()">
+    <div class="flex flex-col gap-3 px-4 pt-3.5 pb-5 lg:px-5 lg:pt-4.5">
+      <p class="text-small text-ink-2">
+        For <span class="font-semibold text-ink">{{ member.displayName }}</span>
+        <span class="break-all"> · {{ member.email }}</span>
+      </p>
+      <p class="text-cell text-ink-2">
+        With this code they can set a new password once, within 24 hours. That signs them out on
+        every device. Only create one when they asked you for it.
+      </p>
+      @if (member.resetCodeExpiresAt) {
+        <app-banner kind="info">They already have an open code. A new one replaces it.</app-banner>
+      }
+
+      @if (problem(); as problem) {
+        @switch (problem.kind) {
+          @case ('gone') {
+            <app-banner kind="error" heading="This member no longer exists">
+              They may have deleted their account. The list has been updated.
+            </app-banner>
+          }
+          @case ('admin') {
+            <app-banner kind="error" heading="Admins can’t get a reset code here">
+              They use the owner command on the server.
+            </app-banner>
+          }
+          @case ('limit') {
+            <app-banner kind="warning" alert heading="Reset code limit reached">
+              You can create {{ perHour }} reset codes an hour. Try again in about
+              <span class="font-mono font-medium">{{ problem.minutes }}</span>
+              {{ problem.minutes === 1 ? 'minute' : 'minutes' }}.
+            </app-banner>
+          }
+          @case ('unavailable') {
+            <app-banner kind="error" heading="Couldn’t create the reset code">
+              The server didn’t respond. Try again.
+            </app-banner>
+          }
+        }
+      }
+    </div>
+    <app-dialog-footer>
+      <button
+        appButton
+        type="button"
+        cdkFocusInitial
+        class="max-lg:h-12 max-lg:flex-1 max-lg:text-ui-lg"
+        [disabled]="creating()"
+        (click)="close()"
+      >
+        Cancel
+      </button>
+      <button
+        appButton="primary"
+        type="button"
+        class="max-lg:h-12 max-lg:flex-1 max-lg:text-ui-lg"
+        [disabled]="creating() || problem()?.kind === 'gone' || problem()?.kind === 'admin'"
+        [attr.aria-busy]="creating() || null"
+        (click)="create()"
+      >
+        @if (creating()) {
+          <app-spinner tone="current" />
+          Creating…
+        } @else {
+          Create reset code
+        }
+      </button>
+    </app-dialog-footer>
+  </app-dialog>
+}
