@@ -93,7 +93,7 @@ export class MembersSection {
     const data: ResetCodeDialogData = { member };
     const ref = this.dialogs.open(ResetCodeDialog, { data });
     ref.componentInstance?.created.subscribe(() => this.members.reload());
-    ref.componentInstance?.gone.subscribe(() => this.members.reload());
+    ref.componentInstance?.outdated.subscribe(() => this.members.reload());
   }
 
   protected goToPage(page: number): void {

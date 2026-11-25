@@ -207,7 +207,7 @@ describe('MembersSection', () => {
     expect(buttonIn(dialog(), 'Create reset code').disabled).toBe(true);
   });
 
-  it('createResetCode_MemberBecameAdmin_ExplainsTheOwnerCommand', async () => {
+  it('createResetCode_MemberBecameAdmin_ExplainsTheOwnerCommandAndReloadsTheList', async () => {
     await respondToList(memberPage({ items: [GRACE] }));
     await openDialogFor('Grace Hopper');
     await createCode();
@@ -215,9 +215,10 @@ describe('MembersSection', () => {
     http
       .expectOne(RESET_URL)
       .flush({ code: 'admin.reset_admin' }, { status: 403, statusText: 'Forbidden' });
-    await render();
+    await respondToList(memberPage({ items: [{ ...GRACE, isAdmin: true }] }));
 
     expect(dialog().textContent).toContain('Admins can’t get a reset code here');
+    expect(buttonIn(dialog(), 'Create reset code').disabled).toBe(true);
   });
 
   it('createResetCode_NoLongerAdmin_ShowsNoAccess', async () => {

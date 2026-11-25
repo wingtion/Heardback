@@ -47,8 +47,8 @@ export interface ResetCodeDialogData {
 /**
  * Create a password reset code for a member, then show it once with Copy (ADR-0015, docs/design.md §20).
  * The first step says what the code does, because it lets whoever holds it into the member's account.
- * Emits `created` as soon as the code exists and `gone` when the member no longer exists, so the list
- * behind can update.
+ * Emits `created` as soon as the code exists and `outdated` when the member was deleted or became an admin
+ * meanwhile, so the list behind can update.
  */
 @Component({
   selector: 'app-reset-code-dialog',
@@ -78,7 +78,7 @@ export class ResetCodeDialog {
   protected readonly perHour = RESET_CODES_PER_HOUR;
 
   readonly created = output<ResetCode>();
-  readonly gone = output();
+  readonly outdated = output();
 
   protected readonly resetCode = signal<ResetCode | null>(null);
   protected readonly creating = signal(false);
@@ -130,9 +130,10 @@ export class ResetCodeDialog {
     const code = problemCode(response?.error);
     if (response?.status === HttpStatusCode.NotFound) {
       this.problem.set({ kind: 'gone' });
-      this.gone.emit();
+      this.outdated.emit();
     } else if (code === MEMBER_ERROR_CODES.resetAdmin) {
       this.problem.set({ kind: 'admin' });
+      this.outdated.emit();
     } else if (response?.status === HttpStatusCode.Forbidden) {
       // Admin rights were removed while the page was open.
       this.dialogRef.close();
