@@ -65,6 +65,18 @@ To try things out quickly, the admin sees **Add sample applications** on the App
 eight realistic applications with posting text to the admin's own list. It is on only where
 `Applications:SampleDataEnabled` is true (`appsettings.Development.json`), never by default in production.
 
+### Demo accounts
+
+**Try the demo** on the sign-in page creates a temporary account with sample applications and a sample CV, no
+invite or password needed ([ADR-0018](docs/adr/0018-demo-accounts.md)). It is removed with its data after a day.
+Demo visitors cannot open admin pages or change a password, get small AI quotas, and see community numbers only
+from four permanent made-up "neighbor" accounts; members never see any demo account in their numbers. At most
+20 demos exist at once, and each IP can start 3 an hour. Settings are under `Identity:Demo`; it is off unless
+`Identity:Demo:Enabled` is true (production turns it on in `fly.toml`). To try it locally:
+
+```bash
+dotnet user-secrets set "Identity:Demo:Enabled" "true" --project src/Heardback.Api
+```
 
 ### Forgotten passwords
 
