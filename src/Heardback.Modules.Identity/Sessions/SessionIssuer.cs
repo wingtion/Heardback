@@ -29,11 +29,16 @@ internal sealed partial class SessionIssuer(
     {
         var now = timeProvider.GetUtcNow();
         var tokenSettings = settings.Value;
+
+        // A demo visitor's session ends with the account, never after it.
+        var absoluteLifetime = user.ExpiresAt is { } accountEnds && accountEnds - now < tokenSettings.AbsoluteSessionLifetime
+            ? accountEnds - now
+            : tokenSettings.AbsoluteSessionLifetime;
         var refreshToken = RefreshToken.StartSession(
             user.Id,
             now,
-            tokenSettings.RefreshTokenLifetime,
-            tokenSettings.AbsoluteSessionLifetime);
+            TimeSpan.FromTicks(Math.Min(tokenSettings.RefreshTokenLifetime.Ticks, absoluteLifetime.Ticks)),
+            absoluteLifetime);
 
         await EndPreviousSessionAsync(previousRefreshToken, now, cancellationToken);
         await PruneEndedSessionsAsync(user.Id, now, cancellationToken);

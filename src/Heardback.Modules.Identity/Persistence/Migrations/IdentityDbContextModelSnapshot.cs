@@ -203,9 +203,19 @@ namespace Heardback.Modules.Identity.Persistence.Migrations
                         .HasColumnType("character varying(254)")
                         .HasColumnName("email");
 
+                    b.Property<DateTimeOffset?>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
                     b.Property<bool>("IsAdmin")
                         .HasColumnType("boolean")
                         .HasColumnName("is_admin");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("kind");
 
                     b.Property<string>("NormalizedEmail")
                         .IsRequired()
@@ -224,6 +234,10 @@ namespace Heardback.Modules.Identity.Persistence.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_users");
+
+                    b.HasIndex("ExpiresAt")
+                        .HasDatabaseName("ix_users_expires_at")
+                        .HasFilter("expires_at IS NOT NULL");
 
                     b.HasIndex("NormalizedEmail")
                         .IsUnique()

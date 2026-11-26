@@ -46,7 +46,7 @@ internal sealed class GetPostingAnalysisHandler(
         jobs.GetUsageAsync(
             PostingAnalysisJobHandler.JobKind,
             currentUser.GetRequiredUserId(),
-            settings.Value.PostingAnalysesPerDay,
+            settings.Value.PostingAnalysesPerDayFor(currentUser),
             cancellationToken);
 
     public async Task<PostingAnalysisResponse> ForContentHashAsync(string contentHash, CancellationToken cancellationToken)

@@ -30,7 +30,10 @@ internal sealed class GetTailoringHandler(
 
     public Task<LlmUsage> GetUsageAsync(CancellationToken cancellationToken) =>
         jobs.GetUsageAsync(
-            TailoringJobHandler.JobKind, currentUser.GetRequiredUserId(), settings.Value.TailoringPerDay, cancellationToken);
+            TailoringJobHandler.JobKind,
+            currentUser.GetRequiredUserId(),
+            settings.Value.TailoringPerDayFor(currentUser),
+            cancellationToken);
 
     public async Task<TailoringResponse> ForSourceAsync(
         Guid applicationId,

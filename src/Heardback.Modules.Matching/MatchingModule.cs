@@ -7,6 +7,7 @@ using Heardback.Modules.Matching.Endpoints;
 using Heardback.Modules.Matching.MatchResults;
 using Heardback.Modules.Matching.Persistence;
 using Heardback.Modules.Matching.Tailoring;
+using Heardback.Shared.Demo;
 using Heardback.Shared.Persistence;
 using Heardback.Shared.Privacy;
 using Microsoft.AspNetCore.Routing;
@@ -50,6 +51,7 @@ public static class MatchingModule
         services.AddScoped<AiConsentHandler>();
         services.AddScoped<IApplicationDeletedHandler, DeleteTailoringOnApplicationDeleted>();
         services.AddScoped<IUserDataEraser, MatchingDataEraser>();
+        services.AddScoped<IDemoDataSeeder, MatchingDemoSeeder>();
         services.AddScoped<IUserDataExporter, MatchingDataExporter>();
 
         return services;

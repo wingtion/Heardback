@@ -1,6 +1,7 @@
 using Heardback.Modules.Identity.Account;
 using Heardback.Modules.Identity.Authentication;
 using Heardback.Modules.Identity.CurrentUser;
+using Heardback.Modules.Identity.Demo;
 using Heardback.Modules.Identity.Domain;
 using Heardback.Modules.Identity.Endpoints;
 using Heardback.Modules.Identity.Invites;
@@ -71,12 +72,28 @@ public static class IdentityModule
         services.AddScoped<ListMembersHandler>();
         services.AddScoped<IssueResetCodeHandler>();
         services.AddScoped<OwnerCommandRunner>();
+        AddDemo(services);
 
         return services;
     }
 
+    private static void AddDemo(IServiceCollection services)
+    {
+        services.AddOptions<DemoSettings>()
+            .BindConfiguration(DemoSettings.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddScoped<IDemoAccounts, DemoAccountsReader>();
+        services.AddScoped<DemoAccountScope>();
+        services.AddScoped<StartDemoHandler>();
+        services.AddScoped<DemoAccountCleaner>();
+        services.AddScoped<DemoNeighborProvisioner>();
+        services.AddHostedService<DemoMaintenanceService>();
+    }
+
     /// <summary>
-    /// Maps the Identity module's HTTP endpoints (<c>/api/auth/*</c>, <c>/api/me</c>, <c>/api/account</c>, <c>/api/admin/invite-codes</c>, <c>/api/admin/members</c>).
+    /// Maps the Identity module's HTTP endpoints (<c>/api/auth/*</c>, <c>/api/me</c>, <c>/api/account</c>, <c>/api/admin/invite-codes</c>, <c>/api/admin/members</c>, <c>/api/demo</c>).
     /// </summary>
     /// <param name="routes">The application's endpoint route builder.</param>
     /// <returns>The same route builder, for chaining.</returns>
@@ -89,6 +106,7 @@ public static class IdentityModule
         routes.MapAccountEndpoints();
         routes.MapInviteCodeEndpoints();
         routes.MapMemberEndpoints();
+        routes.MapDemoEndpoints();
 
         return routes;
     }

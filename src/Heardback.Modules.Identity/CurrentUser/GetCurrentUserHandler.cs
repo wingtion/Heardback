@@ -1,3 +1,4 @@
+using Heardback.Modules.Identity.Domain;
 using Heardback.Modules.Identity.Persistence;
 using Heardback.Shared.Results;
 using Heardback.Shared.Users;
@@ -14,7 +15,13 @@ internal sealed class GetCurrentUserHandler(IdentityDbContext dbContext, ICurren
         var response = await dbContext.Users
             .AsNoTracking()
             .Where(user => user.Id == userId)
-            .Select(user => new CurrentUserResponse(user.Id, user.Email, user.DisplayName, user.IsAdmin))
+            .Select(user => new CurrentUserResponse(
+                user.Id,
+                user.Email,
+                user.DisplayName,
+                user.IsAdmin,
+                user.Kind == UserKind.DemoVisitor,
+                user.ExpiresAt))
             .SingleOrDefaultAsync(cancellationToken);
 
         return response is null ? IdentityErrors.UserNotFound : response;

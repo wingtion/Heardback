@@ -4,8 +4,9 @@ using Microsoft.AspNetCore.Http;
 namespace Heardback.Modules.Identity.Authentication;
 
 /// <summary>
-/// Reads the current user from the validated access token's claims. Outside a request (a background job's scope)
-/// it is the <see cref="BackgroundUser"/> the job queue set from the job row, never an admin.
+/// Reads the current user from the validated access token's claims. A scope that set a <see cref="BackgroundUser"/>
+/// (a background job, or seeding a new demo account) runs as that user instead, and never as an admin or a demo
+/// visitor with its limits.
 /// </summary>
 internal sealed class ClaimsCurrentUser(IHttpContextAccessor httpContextAccessor, BackgroundUser backgroundUser)
     : ICurrentUser
@@ -14,14 +15,15 @@ internal sealed class ClaimsCurrentUser(IHttpContextAccessor httpContextAccessor
     {
         get
         {
-            var httpContext = httpContextAccessor.HttpContext;
-            if (httpContext is null)
+            // Set explicitly for this scope, so it wins over the request's token, which in the demo sign-up
+            // request is anonymous.
+            if (backgroundUser.UserId is { } scopeUser)
             {
-                return backgroundUser.UserId;
+                return scopeUser;
             }
 
-            var principal = httpContext.User;
-            if (principal.Identity?.IsAuthenticated != true)
+            var principal = httpContextAccessor.HttpContext?.User;
+            if (principal?.Identity?.IsAuthenticated != true)
             {
                 return null;
             }
@@ -30,8 +32,13 @@ internal sealed class ClaimsCurrentUser(IHttpContextAccessor httpContextAccessor
         }
     }
 
-    public bool IsAdmin =>
-        httpContextAccessor.HttpContext is { } httpContext
-        && UserId is not null
-        && httpContext.User.IsInRole(IdentityClaims.AdminRole);
+    public bool IsAdmin => IsTokenUser && httpContextAccessor.HttpContext!.User.IsInRole(IdentityClaims.AdminRole);
+
+    public bool IsDemo =>
+        IsTokenUser && httpContextAccessor.HttpContext!.User.HasClaim(IdentityClaims.AccountKind, IdentityClaims.DemoAccount);
+
+    private bool IsTokenUser =>
+        backgroundUser.UserId is null
+        && httpContextAccessor.HttpContext is not null
+        && UserId is not null;
 }

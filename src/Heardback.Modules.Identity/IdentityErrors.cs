@@ -41,6 +41,18 @@ internal static class IdentityErrors
     public static readonly Error LastAdmin =
         Error.Conflict("account.last_admin", "You are the only admin, so this account cannot be deleted.");
 
+    public static readonly Error DemoAccountHasNoPassword =
+        Error.Forbidden("account.demo_no_password", "Demo accounts have no password. Sign out to end the demo.");
+
+    public static readonly Error DemoEmailNotAllowed =
+        Error.Validation("auth.demo_email", "email", "Use your own email address.");
+
+    // A 429 whose reset time is when the oldest demo ends and frees a place.
+    public static Error DemoFull(DateTimeOffset placeFreesAt) =>
+        Error.QuotaExceeded("demo.full", "Every demo place is in use right now. Please try again later.", placeFreesAt);
+
+    public static readonly Error DemoDisabled = Error.NotFound("demo.disabled", "The demo is not available on this server.");
+
     public static readonly Error UserNotFound =
         Error.Unauthorized("auth.user_not_found", "Your account no longer exists. Please sign in again.");
 }

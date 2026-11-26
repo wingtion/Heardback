@@ -56,7 +56,7 @@ internal sealed class RequestTailoringHandler(
             return MatchingErrors.AiConsentRequired;
         }
 
-        var limit = settings.Value.TailoringPerDay;
+        var limit = settings.Value.TailoringPerDayFor(currentUser);
         var queued = await jobs.EnqueueForUserAsync(
             TailoringJobHandler.JobKind,
             TailoringJobHandler.SubjectKeyFor(applicationId),

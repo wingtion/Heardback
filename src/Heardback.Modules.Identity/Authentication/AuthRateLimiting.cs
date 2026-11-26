@@ -1,4 +1,5 @@
 using System.Threading.RateLimiting;
+using Heardback.Modules.Identity.Demo;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
@@ -15,6 +16,7 @@ internal static class AuthRateLimiting
 {
     public const string CredentialsPolicy = "identity-credentials";
     public const string RefreshPolicy = "identity-refresh";
+    public const string DemoPolicy = "identity-demo";
 
     private const string UnknownClient = "unknown";
 
@@ -27,7 +29,7 @@ internal static class AuthRateLimiting
 
         services.AddRateLimiter(_ => { });
         services.AddOptions<RateLimiterOptions>()
-            .Configure<IOptions<AuthRateLimitSettings>>((options, settings) =>
+            .Configure<IOptions<AuthRateLimitSettings>, IOptions<DemoSettings>>((options, settings, demo) =>
             {
                 options.AddPolicy(
                     CredentialsPolicy,
@@ -35,6 +37,9 @@ internal static class AuthRateLimiting
                 options.AddPolicy(
                     RefreshPolicy,
                     context => PerClientIp(context, settings.Value.RefreshesPerWindow, settings.Value.Window));
+                options.AddPolicy(
+                    DemoPolicy,
+                    context => PerClientIp(context, demo.Value.VisitorsPerIp, demo.Value.IpWindow));
             });
 
         return services;

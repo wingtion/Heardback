@@ -13,6 +13,7 @@ using Heardback.Modules.Applications.Read;
 using Heardback.Modules.Applications.Samples;
 using Heardback.Modules.Applications.Timeline;
 using Heardback.Modules.Applications.Update;
+using Heardback.Shared.Demo;
 using Heardback.Shared.Persistence;
 using Heardback.Shared.Privacy;
 using Microsoft.AspNetCore.Routing;
@@ -63,7 +64,9 @@ public static class ApplicationsModule
         services.AddScoped<IAnalysisJobHandler, PostingAnalysisJobHandler>();
         services.AddScoped<GetPostingAnalysisHandler>();
         services.AddScoped<RequestPostingAnalysisHandler>();
+        services.AddScoped<SampleApplicationWriter>();
         services.AddScoped<AddSampleApplicationsHandler>();
+        services.AddScoped<IDemoDataSeeder, ApplicationsDemoSeeder>();
 
         return services;
     }
