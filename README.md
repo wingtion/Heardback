@@ -119,19 +119,20 @@ Host=<ep-...>.eu-central-1.aws.neon.tech;Database=<db>;Username=<user>;Password=
 taken, change `app` in `fly.toml` and the proxy target in `netlify.toml`.
 
 ```bash
+openssl rand -hex 6     # bootstrap code: note it, you sign up with it
+openssl rand -hex 32    # signature secret: note it, Netlify needs the same value
 fly apps create heardback-api
 fly secrets set --app heardback-api \
   "Database__ConnectionString=<Npgsql connection string>" \
   "Identity__Tokens__SigningKey=$(openssl rand -base64 48)" \
-  "Identity__Invites__BootstrapAdminCode=$(openssl rand -hex 6)" \
-  "ClientIp__Netlify__SignatureSecret=<random, at least 32 characters; same value as on Netlify>" \
+  "Identity__Invites__BootstrapAdminCode=<bootstrap code>" \
+  "ClientIp__Netlify__SignatureSecret=<signature secret>" \
   "Llm__Groq__ApiKey=<key>" "Llm__Gemini__ApiKey=<key>"
-fly deploy
+fly deploy --ha=false                               # one machine: rate limits and migrations assume it
 curl https://heardback-api.fly.dev/health          # Healthy; any other path answers 403
 ```
 
-Migrations run when the API starts. Generate the signature secret once (`openssl rand -hex 32`) and use
-it in both places.
+Migrations run when the API starts.
 
 ### 3. Web app (Netlify)
 
