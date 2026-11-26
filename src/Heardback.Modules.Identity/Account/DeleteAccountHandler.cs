@@ -1,6 +1,5 @@
 using Heardback.Modules.Identity.Domain;
 using Heardback.Modules.Identity.Persistence;
-using Heardback.Shared.Privacy;
 using Heardback.Shared.Results;
 using Heardback.Shared.Users;
 using Microsoft.AspNetCore.Identity;
@@ -10,14 +9,14 @@ using Microsoft.Extensions.Logging;
 namespace Heardback.Modules.Identity.Account;
 
 /// <summary>
-/// Deletes the signed-in user's account and everything personal with it (ADR-0015): every module's eraser first,
-/// then sessions, invite codes and the user row. Safe to retry after a failure, because the user row goes last.
+/// Deletes the signed-in user's account and everything personal with it (ADR-0015), after checking the password and
+/// that the last admin stays.
 /// </summary>
 internal sealed partial class DeleteAccountHandler(
     IdentityDbContext dbContext,
     ICurrentUser currentUser,
     IPasswordHasher<User> passwordHasher,
-    IEnumerable<IUserDataEraser> erasers,
+    AccountRemover remover,
     ILogger<DeleteAccountHandler> logger)
 {
     public async Task<Result> HandleAsync(DeleteAccountRequest request, CancellationToken cancellationToken)
@@ -48,30 +47,11 @@ internal sealed partial class DeleteAccountHandler(
             return IdentityErrors.LastAdmin;
         }
 
-        foreach (var eraser in erasers)
-        {
-            await eraser.EraseAsync(userId, cancellationToken);
-        }
-
-        await DeleteIdentityAsync(userId, cancellationToken);
+        await remover.RemoveAsync(userId, cancellationToken);
         await transaction.CommitAsync(cancellationToken);
 
         LogDeleted(userId);
         return Result.Success();
-    }
-
-    // Invite codes only record who invited whom; keeping one would keep the deleted user's id.
-    private async Task DeleteIdentityAsync(Guid userId, CancellationToken cancellationToken)
-    {
-        await dbContext.RefreshTokens
-            .Where(token => token.UserId == userId)
-            .ExecuteDeleteAsync(cancellationToken);
-        await dbContext.InviteCodes
-            .Where(invite => invite.CreatedByUserId == userId || invite.UsedByUserId == userId)
-            .ExecuteDeleteAsync(cancellationToken);
-        await dbContext.Users
-            .Where(candidate => candidate.Id == userId)
-            .ExecuteDeleteAsync(cancellationToken);
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "User {UserId} deleted their account")]

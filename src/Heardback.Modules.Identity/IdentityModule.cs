@@ -61,6 +61,7 @@ public static class IdentityModule
         services.AddScoped<GetCurrentUserHandler>();
         services.AddScoped<CreateInviteCodeHandler>();
         services.AddScoped<ListInviteCodesHandler>();
+        services.AddScoped<AccountRemover>();
         services.AddScoped<DeleteAccountHandler>();
         services.AddScoped<ExportAccountHandler>();
         services.AddScoped<ChangePasswordHandler>();
