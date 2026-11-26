@@ -1,19 +1,86 @@
 # Heardback
 
-A web app for job seekers to track every application in one place and get insight from that data:
-which channels actually get responses, how long companies take to reply, how well a CV matches a
-posting, and community signals such as postings where nobody ever hears back.
+*Named after the question every job seeker asks: "Did I hear back?"*
 
-> **Status:** Phases 0–1 and the design checkpoint are done (design system in
-> [docs/design.md](docs/design.md)); Phase 2 (application tracking) is in progress. See
-> [PLAN.md](PLAN.md) for the roadmap and [CLAUDE.md](CLAUDE.md) for the engineering rules.
+A web app for job seekers to track every application in one place and get insight from that data instead of
+guessing: which channels actually get responses, how long companies take to reply, how well a CV matches a
+posting, and community signals such as postings where nobody ever hears back. It is invite only, built for a
+small group of people who know each other.
+
+**Live: [heardback-app.netlify.app](https://heardback-app.netlify.app)**. Press **Try the demo** on the sign-in
+page to look around with sample data, no account needed. The demo is deleted after a day.
+
+![Applications list with the detail panel of one application](docs/screenshots/applications.png)
+
+## What it does
+
+- **Track applications** as a list or a board: company, role, channel, the posting text and a dated timeline
+  of what happened (interview, offer, rejection, notes). "No response · 31 days" is worked out from the dates.
+- **Overview:** applications per week, response rate per channel, time to the first reply, how far
+  applications got, and a follow-up list of the ones that went quiet.
+- **CV match:** upload a CV once; each application shows which of the posting's skills your CV has and which it
+  lacks. Only the text is kept, with contact details removed, and the PDF is never stored.
+- **AI help, opt-in:** summarise a posting (company, seniority, work mode, skills) and get concrete,
+  checkable suggestions for tailoring your CV to one application. Suggestions quote the CV line they are about.
+- **Community signals:** how other members fared with the same posting and company, and an explainable
+  ghost-listing hint, shown only once at least three other members applied, as counts, never names.
+- **Privacy:** download all your data, delete your account, and a plain privacy page. Admins invite members and
+  can give a member a one-time password reset code.
+
+| Board | Overview |
+|---|---|
+| ![Board with Applied, Interview, Offer and Rejected columns](docs/screenshots/board.png) | ![Overview with response rate, time to first reply and charts](docs/screenshots/overview.png) |
+| **CV and skills** | **Company page with community numbers** |
+| ![CV page with the skills found](docs/screenshots/cv.png) | ![Company page with stats from other members](docs/screenshots/company.png) |
+
+<p align="center"><img src="docs/screenshots/phone-dark.png" width="280" alt="Application detail on a phone in dark mode"></p>
 
 ## Tech stack
 
-- **Backend:** .NET 10, ASP.NET Core minimal APIs, EF Core, PostgreSQL 18
-- **Frontend:** Angular 22 (standalone, signals, zoneless), Angular CDK, Tailwind CSS v4
-- **Tests:** xUnit v3, Testcontainers (real Postgres), Vitest
-- **CI:** GitHub Actions, Dependabot
+- **Backend:** .NET 10, ASP.NET Core minimal APIs, EF Core, PostgreSQL 18, a modular monolith
+- **Frontend:** Angular 22 (standalone, signals, zoneless), Angular CDK, Tailwind CSS v4, a custom design
+  system ([docs/design.md](docs/design.md)), light and dark
+- **AI:** Groq with Gemini as fallback, behind one interface, JSON-schema answers, strict daily limits
+- **Tests:** xUnit v3, Testcontainers (real Postgres), architecture tests, Vitest
+- **Hosting:** Netlify (web), Fly.io (API), Neon (Postgres); GitHub Actions CI and Dependabot
+
+## At a glance
+
+```mermaid
+flowchart LR
+  browser[Browser] -->|HTTPS| netlify["Netlify<br/>Angular app"]
+  netlify -->|"/api/* signed proxy"| fly["Fly.io<br/>.NET 10 API"]
+  fly --> neon[("Neon<br/>PostgreSQL")]
+  fly -->|"opt-in AI calls"| llm["Groq / Gemini"]
+```
+
+```mermaid
+flowchart TB
+  api["Heardback.Api<br/>host"] --> identity[Identity] & applications[Applications] & postings[Postings] & matching[Matching] & insights[Insights]
+  applications -->|contracts| postings
+  matching -->|contracts| applications
+  insights -->|contracts| applications
+  applications & matching --> llm["Infrastructure.Llm<br/>AI client and job queue"]
+```
+
+Each module owns its own Postgres schema and exposes only a small contracts namespace; architecture tests fail
+the build if one module reaches into another's internals. Every user-owned row is filtered to the signed-in
+user by a global query filter, with integration tests proving the isolation.
+
+**Decisions worth reading** (all in [docs/adr](docs/adr)):
+
+| Topic | Record |
+|---|---|
+| Modular monolith with hard boundaries | [ADR-0001](docs/adr/0001-modular-monolith.md) |
+| Sessions, rotating refresh tokens, rate limits, client IP behind a signed proxy | [ADR-0002](docs/adr/0002-authentication-and-sessions.md) |
+| Shared job postings, deduplicated across users without leaking them | [ADR-0004](docs/adr/0004-shared-job-postings.md) |
+| CV upload: text only, PII removed, decompression limits | [ADR-0006](docs/adr/0006-cv-upload-and-text-extraction.md) |
+| LLM features: provider fallback, schemas, quotas, no training on CV text | [ADR-0008](docs/adr/0008-llm-features.md) |
+| Community signals that never reveal an individual | [ADR-0013](docs/adr/0013-community-signals.md) |
+| Account deletion, data export and recovery without email | [ADR-0015](docs/adr/0015-account-deletion-export-and-recovery.md) |
+| "Try the demo": sandboxes, limits, kept apart from members | [ADR-0018](docs/adr/0018-demo-accounts.md) |
+
+The engineering rules every change follows are in [CLAUDE.md](CLAUDE.md), and the roadmap is in [PLAN.md](PLAN.md).
 
 ## Running locally
 
@@ -177,7 +244,7 @@ copy sent by the client. This check proves both, using the sign-in limit (10 att
    It must still answer 429. If it answers 401, Netlify passed the forged header through: stop and fix
    before inviting anyone.
 
-## Architecture
+## Architecture in detail
 
 Heardback is a **modular monolith**: one deployable API, split into modules with hard boundaries
 ([ADR-0001](docs/adr/0001-modular-monolith.md)).
@@ -185,12 +252,12 @@ Heardback is a **modular monolith**: one deployable API, split into modules with
 ```
 src/
   Heardback.Api/                  host: DI, middleware, maps module endpoints
-  Heardback.Modules.Identity/     users, invite codes, sessions, account deletion/export, recovery
-  Heardback.Modules.Applications/ applications, status history, notes, reminders
+  Heardback.Modules.Identity/     users, invite codes, sessions, account deletion/export, recovery, demo accounts
+  Heardback.Modules.Applications/ applications, timelines, posting analysis, community signals, demo data
   Heardback.Modules.Postings/     shared job postings, dedup
   Heardback.Modules.Matching/     CV text, skills, match results
-  Heardback.Modules.Insights/     personal stats, community aggregates
-  Heardback.Infrastructure.Llm/   LLM client abstraction and providers
+  Heardback.Modules.Insights/     personal stats and the follow-up list
+  Heardback.Infrastructure.Llm/   LLM client, providers and the Postgres job queue
   Heardback.Shared/               Result type, current user, paging, module DbContext base, validation
 tests/
   Heardback.UnitTests/            unit and architecture tests
@@ -263,6 +330,11 @@ docs/design.md                   design system: tokens, type, components, screen
   A test scans every table with a user id column after a deletion. A new password (reset code or change)
   ends every session, and access tokens of a deleted account or older than the last password change are
   rejected.
+- **Demo accounts** ([ADR-0018](docs/adr/0018-demo-accounts.md)): "Try the demo" creates a sandbox with sample
+  data through every module's own seeding contract, limited to 3 per IP an hour and 20 at once (checked under
+  an advisory lock). Demo visitors get small AI quotas, cannot reach admin pages or set a password, and see
+  community numbers only from four permanent made-up accounts, so nothing derived from members ever reaches
+  an anonymous visitor. A hosted service removes them after a day, the same way an account deletion does.
 - **Background jobs:** LLM work runs from a Postgres job table (`llm` schema) processed by an in-process
   worker. Jobs hold only ids and hashes, never user text. Claims use row locks and leases, so jobs run
   once even with several instances and survive a crash; failures retry with backoff and then fail.
@@ -273,3 +345,7 @@ docs/design.md                   design system: tokens, type, components, screen
 
 Heardback is developed with AI assistance (Claude Code). The architecture and technical decisions are
 the author's, and every change is reviewed by the author before it is merged.
+
+Every change ships with tests: about 800 .NET tests (unit, architecture, and integration tests against a real
+PostgreSQL in Docker) and about 400 web tests, all run in CI on every pull request. Work is done in small,
+reviewed pull requests with conventional commits, and significant decisions are written down as ADRs.
