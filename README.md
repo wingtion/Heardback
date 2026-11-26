@@ -110,8 +110,11 @@ Create a project in the Frankfurt region. From **Connect**, take the *direct* (n
 details and write them in Npgsql form:
 
 ```
-Host=<ep-...>.eu-central-1.aws.neon.tech;Database=<db>;Username=<user>;Password=<password>;SSL Mode=Require
+Host=<ep-...>.eu-central-1.aws.neon.tech;Database=<db>;Username=<user>;Password=<password>;SSL Mode=Require;Channel Binding=Require;GSS Encryption Mode=Disable
 ```
+
+`GSS Encryption Mode=Disable` stops Npgsql from looking for Kerberos libraries, which the chiseled image
+does not have (harmless, but it logs an error on every connection otherwise).
 
 ### 2. API (Fly.io)
 
