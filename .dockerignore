@@ -1,0 +1,12 @@
+# Only global.json, the Directory.*.props files, .editorconfig and src/ are needed to build the API image.
+**/bin/
+**/obj/
+.git/
+.github/
+.env
+.playwright-mcp/
+docs/
+scripts/
+tests/
+TestResults/
+web/

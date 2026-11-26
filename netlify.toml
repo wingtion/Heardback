@@ -1,0 +1,38 @@
+# Netlify config for the web app. Netlify builds it from main; the API runs on Fly.io (fly.toml).
+
+[build]
+  base = "web"
+  # Same npm as local dev and CI (package.json "packageManager").
+  command = "npm install --global npm@12.2.0 && npm ci && npm run build"
+  publish = "dist/heardback/browser"
+  # Skip the build (and its credits) when nothing the web app is built from has changed.
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ../netlify.toml ../.nvmrc"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# The API is served same-origin under /api (ADR-0002), so the refresh cookie stays first-party.
+# "signed" names the Netlify environment variable holding the shared secret; Netlify then adds an
+# x-nf-sign token to every proxied request, and the API refuses requests without a valid one.
+[[redirects]]
+  from = "/api/*"
+  to = "https://heardback-api.fly.dev/api/:splat"
+  status = 200
+  force = true
+  signed = "API_SIGNATURE_SECRET"
+
+# Client-side routes: any path that is not a file serves the app.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Styles allow 'unsafe-inline' because Angular adds component styles as <style> elements.
+    # Scripts are only the app's own files: the production build emits no inline script.
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=()"

@@ -135,9 +135,10 @@ caller is known).
 - **Client IP behind Netlify (decided in Phase 8).** Fly.io sees Netlify's address, so Fly's own
   client-IP header is useless here; the signed proxy check above replaces it.
   - Netlify documents the `x-nf-sign` token but not the header that carries the client IP to a proxied
-    site, nor whether a client-supplied copy of it is overwritten. Before go-live this is checked
-    against a request-echo service through a throwaway signed rewrite (deploy steps in the README); the
-    header name is a setting so it can follow what Netlify actually sends.
+    site, nor whether a client-supplied copy of it is overwritten. Both are checked once after the first
+    deploy, before anyone is invited, with the sign-in rate limit: two networks get separate budgets,
+    and a forged header does not reset the budget (README, "Deploying"). The header name is a setting so
+    it can follow what Netlify actually sends.
   - **Approved trade-off (author, 2026-11-26): a seen token can be replayed until it expires.** A
     token is valid until its `exp`, so whoever holds one could replay it with an IP of their choosing
     until then, getting around per-IP limits (not per-user ones). Netlify offers no way to bind a
