@@ -12,4 +12,6 @@ public sealed class AnonymousCurrentUser : ICurrentUser
     public Guid? UserId => null;
 
     public bool IsAdmin => false;
+
+    public bool IsDemo => false;
 }

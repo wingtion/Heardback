@@ -78,6 +78,21 @@
   }
 
   <main class="min-w-0 flex-1 lg:overflow-y-auto">
+    @if (demoEnds(); as ends) {
+      <app-banner kind="info" class="mx-4 mt-4 lg:mx-7 lg:mt-5">
+        <p>Demo account with sample data. It and everything you add are deleted {{ ends }}.</p>
+        <button
+          appButton="outline"
+          size="sm"
+          type="button"
+          class="mt-2"
+          [disabled]="signingOut()"
+          (click)="signOut()"
+        >
+          Sign out
+        </button>
+      </app-banner>
+    }
     <router-outlet />
   </main>
 </div>

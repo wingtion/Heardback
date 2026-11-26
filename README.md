@@ -65,6 +65,18 @@ To try things out quickly, the admin sees **Add sample applications** on the App
 eight realistic applications with posting text to the admin's own list. It is on only where
 `Applications:SampleDataEnabled` is true (`appsettings.Development.json`), never by default in production.
 
+### Demo accounts
+
+**Try the demo** on the sign-in page creates a temporary account with sample applications and a sample CV, no
+invite or password needed ([ADR-0018](docs/adr/0018-demo-accounts.md)). It is removed with its data after a day.
+Demo visitors cannot open admin pages or change a password, get small AI quotas, and see community numbers only
+from four permanent made-up "neighbor" accounts; members never see any demo account in their numbers. At most
+20 demos exist at once, and each IP can start 3 an hour. Settings are under `Identity:Demo`; it is off unless
+`Identity:Demo:Enabled` is true (production turns it on in `fly.toml`). To try it locally:
+
+```bash
+dotnet user-secrets set "Identity:Demo:Enabled" "true" --project src/Heardback.Api
+```
 
 ### Forgotten passwords
 
@@ -145,7 +157,7 @@ settings:
 - Environment variables: `API_SIGNATURE_SECRET` = the same secret as `ClientIp__Netlify__SignatureSecret`,
   with a scope that includes **Runtime** (Netlify reads it for signed proxy rewrites).
 - Deploy previews: off, so only `main` builds. Builds are skipped when nothing under `web/` changed.
-- Site name: `heardback` (gives `heardback.netlify.app`).
+- Site name: `heardback-app` (gives `heardback-app.netlify.app`; `heardback` was taken).
 
 Register the first admin at `/register` with the bootstrap code, then remove it:
 `fly secrets unset --app heardback-api Identity__Invites__BootstrapAdminCode`.
@@ -161,7 +173,7 @@ copy sent by the client. This check proves both, using the sign-in limit (10 att
 2. Within the same minute, from a phone on mobile data, a wrong password still answers *wrong email or
    password*. Each client has its own budget, so the header holds the client's IP, not Netlify's.
 3. Within the same minute, from your computer again, send a forged header:
-   `curl -i -X POST https://heardback.netlify.app/api/auth/login -H "Content-Type: application/json" -H "X-Nf-Client-Connection-Ip: 198.51.100.1" -d '{"email":"a@example.com","password":"wrong-password-1"}'`.
+   `curl -i -X POST https://heardback-app.netlify.app/api/auth/login -H "Content-Type: application/json" -H "X-Nf-Client-Connection-Ip: 198.51.100.1" -d '{"email":"a@example.com","password":"wrong-password-1"}'`.
    It must still answer 429. If it answers 401, Netlify passed the forged header through: stop and fix
    before inviting anyone.
 

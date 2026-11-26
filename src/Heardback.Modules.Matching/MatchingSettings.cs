@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Heardback.Shared.Users;
 
 namespace Heardback.Modules.Matching;
 
@@ -37,4 +38,10 @@ internal sealed class MatchingSettings
     /// <summary>Tailoring suggestion requests one user may make per UTC day; a failed one gives its use back.</summary>
     [Range(1, 1000)]
     public int TailoringPerDay { get; set; } = 10;
+
+    /// <summary>The same limit for "Try the demo" visitors, who are anonymous and get far fewer (ADR-0018).</summary>
+    [Range(1, 1000)]
+    public int DemoTailoringPerDay { get; set; } = 2;
+
+    public int TailoringPerDayFor(ICurrentUser user) => user.IsDemo ? DemoTailoringPerDay : TailoringPerDay;
 }

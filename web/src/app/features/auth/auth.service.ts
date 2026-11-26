@@ -27,7 +27,10 @@ import {
 
 /** What is remembered (in memory only) about a session that expired, to pre-fill sign in. */
 export interface ExpiredSession {
-  readonly email: string;
+  /** Pre-fills sign in; null for a demo, whose made-up address nobody can sign in with. */
+  readonly email: string | null;
+  /** The session was a demo that ended (ADR-0018). */
+  readonly demo: boolean;
 }
 
 // A reload's refresh is retried when the server is briefly unreachable or rate limited: waits of
@@ -70,6 +73,7 @@ export class AuthService {
   readonly accessToken = computed<string | null>(() => this.session()?.accessToken ?? null);
   readonly isAuthenticated = computed(() => this.session() !== null);
   readonly isAdmin = computed(() => this.session()?.user.isAdmin ?? false);
+  readonly isDemo = computed(() => this.session()?.user.isDemo ?? false);
   /** True while the session is being restored from the refresh cookie at startup. */
   readonly restoring = this.restoringSession.asReadonly();
   /** The startup restore gave up because the server could not be reached (not because of a 401). */
@@ -83,6 +87,11 @@ export class AuthService {
 
   register(request: RegisterRequest): Observable<CurrentUser> {
     return this.api.register(request).pipe(map((response) => this.start(response)));
+  }
+
+  /** Starts a temporary demo account with sample data (ADR-0018) and signs in to it. */
+  startDemo(): Observable<CurrentUser> {
+    return this.api.startDemo().pipe(map((response) => this.start(response)));
   }
 
   /** Sets a new password with an admin's reset code. For signed-out users; it signs nobody in. */
@@ -175,7 +184,7 @@ export class AuthService {
     const user = this.session()?.user;
     this.session.set(null);
     if (user) {
-      this.expiredSession.set({ email: user.email });
+      this.expiredSession.set({ email: user.isDemo ? null : user.email, demo: user.isDemo });
     }
   }
 

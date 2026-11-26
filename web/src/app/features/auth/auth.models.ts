@@ -5,6 +5,10 @@ export interface CurrentUser {
   readonly email: string;
   readonly displayName: string;
   readonly isAdmin: boolean;
+  /** A "Try the demo" visitor (ADR-0018). */
+  readonly isDemo: boolean;
+  /** When a demo visitor's account and data are removed (ISO time); null for everyone else. */
+  readonly demoEndsAt: string | null;
 }
 
 export interface AuthResponse {

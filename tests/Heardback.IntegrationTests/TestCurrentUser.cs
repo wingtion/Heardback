@@ -7,4 +7,6 @@ internal sealed class TestCurrentUser(Guid? userId) : ICurrentUser
     public Guid? UserId { get; } = userId;
 
     public bool IsAdmin => false;
+
+    public bool IsDemo { get; init; }
 }

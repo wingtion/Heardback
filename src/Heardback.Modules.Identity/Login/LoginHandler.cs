@@ -21,7 +21,7 @@ internal sealed partial class LoginHandler(
     {
         var normalizedEmail = User.NormalizeEmail(request.Email);
         var user = await dbContext.Users.SingleOrDefaultAsync(
-            candidate => candidate.NormalizedEmail == normalizedEmail,
+            candidate => candidate.NormalizedEmail == normalizedEmail && candidate.Kind == UserKind.Member,
             cancellationToken);
 
         if (user is null)

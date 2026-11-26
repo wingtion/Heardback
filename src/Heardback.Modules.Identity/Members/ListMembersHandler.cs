@@ -1,3 +1,4 @@
+using Heardback.Modules.Identity.Domain;
 using Heardback.Modules.Identity.Persistence;
 using Heardback.Shared.Paging;
 using Heardback.Shared.Persistence;
@@ -12,6 +13,7 @@ internal sealed class ListMembersHandler(IdentityDbContext dbContext, TimeProvid
         var now = timeProvider.GetUtcNow();
         return dbContext.Users
             .AsNoTracking()
+            .Where(user => user.Kind == UserKind.Member)
             .OrderBy(user => user.CreatedAt)
             .ThenBy(user => user.NormalizedEmail)
             .Select(user => new MemberResponse(

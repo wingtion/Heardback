@@ -18,6 +18,7 @@ internal sealed class CommunityOutcomesReader(
     ICurrentUser currentUser,
     NoResponseClock noResponse,
     IJobPostings jobPostings,
+    IDemoAccounts demoAccounts,
     IOptions<ApplicationsSettings> settings) : ICommunityOutcomes
 {
     public async Task<CommunitySnapshot> ForCurrentUserAsync(CancellationToken cancellationToken)
@@ -32,7 +33,8 @@ internal sealed class CommunityOutcomesReader(
             .Distinct(StringComparer.Ordinal)
             .ToList();
 
-        var others = await ListOthersAsync(viewerId, postingIds, companyKeys, cancellationToken);
+        var audience = await CommunityAudience.ForAsync(currentUser, demoAccounts, cancellationToken);
+        var others = await ListOthersAsync(viewerId, audience, postingIds, companyKeys, cancellationToken);
         var minimumMembers = settings.Value.CommunityMinimumMembers;
 
         var postingOutcomes = others
@@ -55,7 +57,7 @@ internal sealed class CommunityOutcomesReader(
             .Where(pair => pair.Outcome is not null)
             .ToDictionary(pair => pair.Key, pair => pair.Outcome!, StringComparer.Ordinal);
 
-        var companies = await AddRolePostingsAsync(tracked, companyOutcomes, cancellationToken);
+        var companies = await AddRolePostingsAsync(viewerId, audience, tracked, companyOutcomes, cancellationToken);
         return new CommunitySnapshot(tracked, postings, companies);
     }
 
@@ -98,6 +100,7 @@ internal sealed class CommunityOutcomesReader(
 
     private async Task<List<OtherApplication>> ListOthersAsync(
         Guid viewerId,
+        CommunityAudience audience,
         List<Guid> postingIds,
         List<string> companyKeys,
         CancellationToken cancellationToken)
@@ -111,8 +114,8 @@ internal sealed class CommunityOutcomesReader(
 
         // Deliberately across users (ADR-0013): only groups the viewer tracks, never the viewer's own rows, and
         // the projection keeps text, notes, links and ids other than the grouping keys out.
-        return await dbContext.Applications
-            .IgnoreQueryFilters([ModuleDbContext.UserOwnershipFilter])
+        return await audience
+            .Filter(dbContext.Applications.IgnoreQueryFilters([ModuleDbContext.UserOwnershipFilter]), viewerId)
             .AsNoTracking()
             .Where(application => application.UserId != viewerId
                 && application.AppliedOn <= latestSettled
@@ -133,6 +136,8 @@ internal sealed class CommunityOutcomesReader(
 
     // Only for companies that passed the minimum size, so a lone other member's posting is never hinted at.
     private async Task<Dictionary<string, CompanyOutcome>> AddRolePostingsAsync(
+        Guid viewerId,
+        CommunityAudience audience,
         List<TrackedApplication> tracked,
         Dictionary<string, CommunityOutcome> companyOutcomes,
         CancellationToken cancellationToken)
@@ -149,8 +154,8 @@ internal sealed class CommunityOutcomesReader(
             .Distinct(StringComparer.Ordinal)
             .ToList();
 
-        var rolePostings = await dbContext.Applications
-            .IgnoreQueryFilters([ModuleDbContext.UserOwnershipFilter])
+        var rolePostings = await audience
+            .Filter(dbContext.Applications.IgnoreQueryFilters([ModuleDbContext.UserOwnershipFilter]), viewerId)
             .AsNoTracking()
             .Where(application => application.CompanyKey != null
                 && companyKeys.Contains(application.CompanyKey)

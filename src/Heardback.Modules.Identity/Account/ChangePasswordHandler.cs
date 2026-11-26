@@ -33,6 +33,11 @@ internal sealed partial class ChangePasswordHandler(
             return IdentityErrors.UserNotFound;
         }
 
+        if (user.IsDemo)
+        {
+            return IdentityErrors.DemoAccountHasNoPassword;
+        }
+
         if (passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.CurrentPassword)
             == PasswordVerificationResult.Failed)
         {

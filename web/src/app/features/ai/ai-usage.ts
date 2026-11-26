@@ -1,14 +1,11 @@
 import { HttpStatusCode } from '@angular/common/http';
+import { clockTime } from '../../core/clock-time';
 import { httpErrorOf } from '../../core/http-errors';
 import { AiUsage } from './ai.models';
 
 /** "03:00": a reset time in the user's own time zone, 24-hour. */
 export function resetTime(iso: string): string {
-  return new Intl.DateTimeFormat(undefined, {
-    hour: '2-digit',
-    minute: '2-digit',
-    hourCycle: 'h23',
-  }).format(new Date(iso));
+  return clockTime(iso);
 }
 
 /** "28 of 30 left today · resets 03:00". */

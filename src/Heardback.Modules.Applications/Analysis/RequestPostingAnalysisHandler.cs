@@ -36,7 +36,7 @@ internal sealed class RequestPostingAnalysisHandler(
             return current;
         }
 
-        var limit = settings.Value.PostingAnalysesPerDay;
+        var limit = settings.Value.PostingAnalysesPerDayFor(currentUser);
         var queued = await jobs.EnqueueForUserAsync(
             PostingAnalysisJobHandler.JobKind, contentHash, currentUser.GetRequiredUserId(), limit, cancellationToken);
 

@@ -204,7 +204,28 @@ describe('AuthService', () => {
     http.expectOne(AUTH_API.refresh).flush(null, { status: 401, statusText: 'Unauthorized' });
     await expect(refresh).rejects.toBeTruthy();
 
-    expect(auth.expired()).toEqual({ email: 'ada@example.com' });
+    expect(auth.expired()).toEqual({ email: 'ada@example.com', demo: false });
+  });
+
+  it('startDemo_Success_SignsInAsTheDemoVisitor', async () => {
+    const start = firstValueFrom(auth.startDemo());
+    http.expectOne(AUTH_API.demo).flush(authResponse({ demoEndsAt: '2026-11-27T14:30:00Z' }));
+    await start;
+
+    expect(auth.isAuthenticated()).toBe(true);
+    expect(auth.isDemo()).toBe(true);
+  });
+
+  it('refresh_DemoSessionRejected_IsReportedAsAnEndedDemoWithoutEmail', async () => {
+    const start = firstValueFrom(auth.startDemo());
+    http.expectOne(AUTH_API.demo).flush(authResponse({ demoEndsAt: '2026-11-27T14:30:00Z' }));
+    await start;
+
+    const refresh = firstValueFrom(auth.refresh());
+    http.expectOne(AUTH_API.refresh).flush(null, { status: 401, statusText: 'Unauthorized' });
+    await expect(refresh).rejects.toBeTruthy();
+
+    expect(auth.expired()).toEqual({ email: null, demo: true });
   });
 
   it('logout_SignedIn_IsNotReportedAsExpired', async () => {

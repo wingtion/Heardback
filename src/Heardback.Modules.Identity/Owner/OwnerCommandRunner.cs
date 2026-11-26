@@ -62,7 +62,7 @@ internal sealed partial class OwnerCommandRunner(
     {
         var normalizedEmail = User.NormalizeEmail(email);
         var userId = await dbContext.Users.AsNoTracking()
-            .Where(user => user.NormalizedEmail == normalizedEmail)
+            .Where(user => user.NormalizedEmail == normalizedEmail && user.Kind == UserKind.Member)
             .Select(user => (Guid?)user.Id)
             .FirstOrDefaultAsync(cancellationToken);
         if (userId is null)

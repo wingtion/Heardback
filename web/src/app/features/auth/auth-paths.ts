@@ -7,6 +7,7 @@ export const AUTH_API = {
   refresh: `${AUTH_API_PREFIX}/refresh`,
   logout: `${AUTH_API_PREFIX}/logout`,
   resetPassword: `${AUTH_API_PREFIX}/reset-password`,
+  demo: `${AUTH_API_PREFIX}/demo`,
   me: '/api/me',
 } as const;
 
@@ -35,6 +36,7 @@ export const LOGIN_REASONS = {
   sessionExpired: 'session-expired',
   passwordReset: 'password-reset',
   accountDeleted: 'account-deleted',
+  demoEnded: 'demo-ended',
 } as const;
 
 /**

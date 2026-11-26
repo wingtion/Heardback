@@ -26,6 +26,11 @@ internal sealed class AccessTokenIssuer(IOptions<TokenSettings> settings, TimePr
             claims[IdentityClaims.Role] = IdentityClaims.AdminRole;
         }
 
+        if (user.Kind == UserKind.DemoVisitor)
+        {
+            claims[IdentityClaims.AccountKind] = IdentityClaims.DemoAccount;
+        }
+
         var descriptor = new SecurityTokenDescriptor
         {
             Issuer = tokenSettings.Issuer,

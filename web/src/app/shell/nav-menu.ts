@@ -1,6 +1,7 @@
 import { Component, computed, inject, input, output } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../features/auth/auth.service';
+import { roleLabel } from '../features/auth/role-label';
 import { Button } from '../shared/ui/button/button';
 import { Icon } from '../shared/ui/icon/icon';
 import { ADMIN_NAV, MAIN_NAV } from './nav-items';
@@ -68,7 +69,7 @@ const ACTIVE = 'bg-nav-active font-semibold text-ink! inset-shadow-selection';
             {{ user.displayName }}
           </div>
           <div class="text-ink-muted" [class]="layout() === 'menu' ? 'text-label' : 'text-caption'">
-            {{ user.isAdmin ? 'Admin' : 'Member' }}
+            {{ roleLabel(user) }}
           </div>
         </div>
         <button
@@ -88,6 +89,7 @@ const ACTIVE = 'bg-nav-active font-semibold text-ink! inset-shadow-selection';
 })
 export class NavMenu {
   protected readonly auth = inject(AuthService);
+  protected readonly roleLabel = roleLabel;
   protected readonly mainNav = MAIN_NAV;
   protected readonly adminNav = ADMIN_NAV;
 

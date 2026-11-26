@@ -42,6 +42,11 @@ internal sealed partial class RegisterUserHandler(
             return IdentityErrors.InvalidInviteCode;
         }
 
+        if (User.IsDemoEmail(request.Email))
+        {
+            return IdentityErrors.DemoEmailNotAllowed;
+        }
+
         var normalizedEmail = User.NormalizeEmail(request.Email);
         if (await dbContext.Users.AnyAsync(user => user.NormalizedEmail == normalizedEmail, cancellationToken))
         {

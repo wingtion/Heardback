@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Heardback.Shared.Users;
 
 namespace Heardback.Modules.Applications;
 
@@ -32,9 +33,16 @@ internal sealed class ApplicationsSettings
     [Range(1, 1000)]
     public int PostingAnalysesPerDay { get; set; } = 30;
 
+    /// <summary>The same limit for "Try the demo" visitors, who are anonymous and get far fewer (ADR-0018).</summary>
+    [Range(1, 1000)]
+    public int DemoPostingAnalysesPerDay { get; set; } = 3;
+
     /// <summary>
     /// Lets admins add sample applications to their own list for trying the app out. Off unless configured: on in
     /// appsettings.Development.json, off in production.
     /// </summary>
     public bool SampleDataEnabled { get; set; }
+
+    public int PostingAnalysesPerDayFor(ICurrentUser user) =>
+        user.IsDemo ? DemoPostingAnalysesPerDay : PostingAnalysesPerDay;
 }

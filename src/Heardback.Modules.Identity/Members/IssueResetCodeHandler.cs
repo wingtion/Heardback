@@ -1,3 +1,4 @@
+using Heardback.Modules.Identity.Domain;
 using Heardback.Modules.Identity.Persistence;
 using Heardback.Modules.Identity.Recovery;
 using Heardback.Shared.Results;
@@ -21,7 +22,7 @@ internal sealed partial class IssueResetCodeHandler(
     {
         var adminId = currentUser.GetRequiredUserId();
         var member = await dbContext.Users.AsNoTracking()
-            .Where(user => user.Id == memberId)
+            .Where(user => user.Id == memberId && user.Kind == UserKind.Member)
             .Select(user => new { user.IsAdmin })
             .FirstOrDefaultAsync(cancellationToken);
         if (member is null)

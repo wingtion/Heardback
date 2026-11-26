@@ -214,6 +214,79 @@ describe('SignInPage', () => {
     expect(link?.getAttribute('href')).toBe('/reset-password');
   });
 
+  it('open_AfterDemoEnded_SaysTheDemoDataIsGone', async () => {
+    await open('/login?reason=demo-ended');
+
+    expect(root().textContent).toContain('Your demo has ended, and its data is deleted.');
+  });
+
+  function demoButton(): HTMLButtonElement {
+    const button = Array.from(root().querySelectorAll<HTMLButtonElement>('button')).find(
+      (candidate) => candidate.textContent?.includes('Try the demo'),
+    );
+    if (!button) throw new Error('No demo button');
+    return button;
+  }
+
+  async function startDemo(): Promise<void> {
+    await open();
+    demoButton().click();
+    harness.detectChanges();
+  }
+
+  it('startDemo_Success_GoesHomeSignedInAsTheDemo', async () => {
+    await open();
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+    demoButton().click();
+    harness.detectChanges();
+
+    expect(root().textContent).toContain('Starting the demo…');
+    http.expectOne(AUTH_API.demo).flush(authResponse({ demoEndsAt: '2026-11-27T14:30:00Z' }));
+    await harness.fixture.whenStable();
+
+    expect(TestBed.inject(AuthService).isDemo()).toBe(true);
+    expect(navigate).toHaveBeenCalledWith('/');
+  });
+
+  it('startDemo_DemoFull_SaysWhenAPlaceFreesUp', async () => {
+    await startDemo();
+
+    http
+      .expectOne(AUTH_API.demo)
+      .flush(
+        { code: 'demo.full', resetsAt: '2026-11-27T14:30:00Z' },
+        { status: 429, statusText: 'Too Many Requests' },
+      );
+    harness.detectChanges();
+
+    expect(root().textContent).toContain('The demo is full right now.');
+    expect(root().textContent).toContain('Try again after');
+    expect(demoButton().disabled).toBe(false);
+  });
+
+  it('startDemo_TooManyFromThisIp_SaysHowManyMinutesToWait', async () => {
+    await startDemo();
+
+    http.expectOne(AUTH_API.demo).flush(null, {
+      status: 429,
+      statusText: 'Too Many Requests',
+      headers: { 'Retry-After': '2500' },
+    });
+    harness.detectChanges();
+
+    expect(root().textContent).toContain('You’ve started several demos.');
+    expect(root().textContent).toContain('42');
+  });
+
+  it('startDemo_ServerUnavailable_SaysTheDemoCouldNotStart', async () => {
+    await startDemo();
+
+    http.expectOne(AUTH_API.demo).flush(null, { status: 503, statusText: 'Unavailable' });
+    harness.detectChanges();
+
+    expect(root().textContent).toContain('Couldn’t start the demo');
+  });
+
   it('open_UnknownReason_ShowsNoNotice', async () => {
     await open('/login?reason=anything');
 

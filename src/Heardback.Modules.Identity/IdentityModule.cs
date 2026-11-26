@@ -1,6 +1,7 @@
 using Heardback.Modules.Identity.Account;
 using Heardback.Modules.Identity.Authentication;
 using Heardback.Modules.Identity.CurrentUser;
+using Heardback.Modules.Identity.Demo;
 using Heardback.Modules.Identity.Domain;
 using Heardback.Modules.Identity.Endpoints;
 using Heardback.Modules.Identity.Invites;
@@ -61,6 +62,7 @@ public static class IdentityModule
         services.AddScoped<GetCurrentUserHandler>();
         services.AddScoped<CreateInviteCodeHandler>();
         services.AddScoped<ListInviteCodesHandler>();
+        services.AddScoped<AccountRemover>();
         services.AddScoped<DeleteAccountHandler>();
         services.AddScoped<ExportAccountHandler>();
         services.AddScoped<ChangePasswordHandler>();
@@ -70,8 +72,24 @@ public static class IdentityModule
         services.AddScoped<ListMembersHandler>();
         services.AddScoped<IssueResetCodeHandler>();
         services.AddScoped<OwnerCommandRunner>();
+        AddDemo(services);
 
         return services;
+    }
+
+    private static void AddDemo(IServiceCollection services)
+    {
+        services.AddOptions<DemoSettings>()
+            .BindConfiguration(DemoSettings.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddScoped<IDemoAccounts, DemoAccountsReader>();
+        services.AddScoped<DemoAccountScope>();
+        services.AddScoped<StartDemoHandler>();
+        services.AddScoped<DemoAccountCleaner>();
+        services.AddScoped<DemoNeighborProvisioner>();
+        services.AddHostedService<DemoMaintenanceService>();
     }
 
     /// <summary>
@@ -88,6 +106,7 @@ public static class IdentityModule
         routes.MapAccountEndpoints();
         routes.MapInviteCodeEndpoints();
         routes.MapMemberEndpoints();
+        routes.MapDemoEndpoints();
 
         return routes;
     }

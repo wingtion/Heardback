@@ -10,4 +10,7 @@ public interface ICurrentUser
     Guid? UserId { get; }
 
     bool IsAdmin { get; }
+
+    /// <summary>A "Try the demo" visitor (ADR-0018): smaller AI quotas, and community signals only from demo data.</summary>
+    bool IsDemo { get; }
 }

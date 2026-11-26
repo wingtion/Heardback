@@ -13,6 +13,8 @@ primary_region = "fra"
   Database__ApplyMigrationsOnStartup = "true"
   # Browsers reach the API only through Netlify's signed proxy rewrite (netlify.toml, ADR-0002).
   ClientIp__Source = "NetlifySignedProxy"
+  # "Try the demo": temporary sandboxes with sample data (ADR-0018).
+  Identity__Demo__Enabled = "true"
 
 [http_service]
   internal_port = 8080
