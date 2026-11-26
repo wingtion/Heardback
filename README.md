@@ -33,7 +33,11 @@ page to look around with sample data, no account needed. The demo is deleted aft
 | **CV and skills** | **Company page with community numbers** |
 | ![CV page with the skills found](docs/screenshots/cv.png) | ![Company page with stats from other members](docs/screenshots/company.png) |
 
-<p align="center"><img src="docs/screenshots/phone-dark.png" width="280" alt="Application detail on a phone in dark mode"></p>
+**On a phone**: every screen works on small screens too, in light and dark.
+
+| Applications | Application detail | Overview |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/phone-list.png" width="260" alt="Applications list on a phone in light mode"> | <img src="docs/screenshots/phone-detail.png" width="260" alt="Application detail on a phone in dark mode"> | <img src="docs/screenshots/phone-overview.png" width="260" alt="Overview charts on a phone in dark mode"> |
 
 ## Tech stack
 
