@@ -7,7 +7,7 @@ namespace Heardback.IntegrationTests.Identity;
 /// <summary>Test-side view of "Try the demo" (ADR-0018).</summary>
 internal static class DemoApi
 {
-    private static readonly Uri DemoUri = new("/api/demo", UriKind.Relative);
+    private static readonly Uri DemoUri = new("/api/auth/demo", UriKind.Relative);
 
     private static CancellationToken CancellationToken => TestContext.Current.CancellationToken;
 

@@ -30,7 +30,7 @@ its community signals instead.
 
 ### Starting a demo
 
-- `POST /api/demo`, anonymous, returns the same response and refresh cookie as sign-in. Off unless
+- `POST /api/auth/demo`, anonymous, returns the same response and refresh cookie as sign-in. Off unless
   `Identity:Demo:Enabled` is true (404 otherwise); production turns it on in `fly.toml`.
 - **Limits:** a per-IP fixed window (`VisitorsPerIp`, 3 per `IpWindow`, 1 hour), and a cap of
   `MaxActiveVisitors` (20) unexpired visitors. The cap check and the insert run under a Postgres advisory lock,

@@ -93,7 +93,7 @@ public static class IdentityModule
     }
 
     /// <summary>
-    /// Maps the Identity module's HTTP endpoints (<c>/api/auth/*</c>, <c>/api/me</c>, <c>/api/account</c>, <c>/api/admin/invite-codes</c>, <c>/api/admin/members</c>, <c>/api/demo</c>).
+    /// Maps the Identity module's HTTP endpoints (<c>/api/auth/*</c>, <c>/api/me</c>, <c>/api/account</c>, <c>/api/admin/invite-codes</c>, <c>/api/admin/members</c>).
     /// </summary>
     /// <param name="routes">The application's endpoint route builder.</param>
     /// <returns>The same route builder, for chaining.</returns>

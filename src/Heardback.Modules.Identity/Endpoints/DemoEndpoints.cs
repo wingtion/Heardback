@@ -9,7 +9,8 @@ namespace Heardback.Modules.Identity.Endpoints;
 
 internal static class DemoEndpoints
 {
-    public const string Path = "/api/demo";
+    // Under /api/auth so the browser sends its refresh cookie and the session it replaces is ended (ADR-0002).
+    public const string Path = "/api/auth/demo";
 
     public static void MapDemoEndpoints(this IEndpointRouteBuilder routes)
     {
