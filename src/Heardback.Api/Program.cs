@@ -1,3 +1,4 @@
+using Heardback.Api;
 using Heardback.Api.ClientIp;
 using Heardback.Api.RateLimiting;
 using Heardback.Infrastructure.Llm;
@@ -43,13 +44,14 @@ if (await app.Services.TryRunOwnerCommandAsync(args, Console.Out, CancellationTo
 
 await app.Services.MigrateModuleDatabasesAsync(app.Lifetime.ApplicationStopping);
 
-// The real client IP first: per-IP rate limits depend on it (ClientIp settings, ADR-0002).
-app.UseClientIpResolution();
-
 // Unhandled exceptions become a 500 ProblemDetails without internals; empty error
 // responses (401, 403, 404, 405, 429, ...) also get a ProblemDetails body.
 app.UseExceptionHandler();
 app.UseStatusCodePages();
+
+// The real client IP before anything else reads it: per-IP rate limits depend on it (ClientIp settings,
+// ADR-0002). Behind Netlify this also refuses requests that did not come through the signed proxy.
+app.UseClientIpResolution();
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -65,7 +67,7 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference().AllowAnonymous();
 }
 
-app.MapHealthChecks("/health").AllowAnonymous();
+app.MapHealthChecks(HealthEndpoint.Path).AllowAnonymous();
 
 // All module endpoints hang off one root group so request validation covers every one of them.
 var api = app.MapGroup(string.Empty).WithRequestValidation();

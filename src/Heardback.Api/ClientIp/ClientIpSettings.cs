@@ -12,8 +12,11 @@ internal sealed class ClientIpSettings
 {
     public const string SectionName = "ClientIp";
 
-    [Required(ErrorMessage = "ClientIp:Source must be set to Direct or ForwardedHeaders (see ADR-0002).")]
+    [Required(ErrorMessage =
+        "ClientIp:Source must be set to Direct, ForwardedHeaders or NetlifySignedProxy (see ADR-0002).")]
     public ClientIpSource? Source { get; set; }
+
+    public NetlifyProxySettings Netlify { get; set; } = new();
 
     /// <summary>Proxy addresses allowed to set X-Forwarded-For, e.g. <c>10.0.0.5</c>.</summary>
     public string[] TrustedProxies { get; set; } = [];
@@ -30,4 +33,6 @@ internal sealed class ClientIpSettings
         || ((TrustedProxies.Length > 0 || TrustedNetworks.Length > 0)
             && TrustedProxies.All(proxy => IPAddress.TryParse(proxy, out _))
             && TrustedNetworks.All(network => IPNetwork.TryParse(network, out _)));
+
+    public bool HasValidNetlifySettings() => Source != ClientIpSource.NetlifySignedProxy || Netlify.IsValid();
 }
