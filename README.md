@@ -79,7 +79,8 @@ dotnet run --project src/Heardback.Api -- reset-code someone@example.com   # pri
 dotnet run --project src/Heardback.Api -- list-admins                      # names and emails of the admins
 ```
 
-In production run the same commands inside the API's container (`Heardback.Api reset-code <email>`).
+In production run them inside the API's machine (see [Deploying](#deploying)):
+`fly ssh console -C "dotnet /app/Heardback.Api.dll reset-code someone@example.com"`.
 
 ### Adding a database migration
 
@@ -90,6 +91,79 @@ In production run the same commands inside the API's container (`Heardback.Api r
 The script runs `dotnet ef` and makes the generated classes `internal`, so modules keep exposing only
 their contracts. Review the migration before committing, and never edit one that has been applied. A
 test fails if a module's model has changes that no migration captures yet.
+
+## Deploying
+
+```
+browser ──► Netlify (Angular app, /api/* signed proxy rewrite) ──► Fly.io (API) ──► Neon (Postgres)
+```
+
+The browser only ever talks to Netlify, so the app and the API share one origin and the refresh cookie
+stays first-party. Netlify signs every request it forwards to Fly.io; the API refuses anything unsigned
+except `/health`, and takes the client IP for rate limiting from Netlify's header
+([ADR-0002](docs/adr/0002-authentication-and-sessions.md)). All three run on free or near-free tiers: the
+Fly.io machine stops when idle and starts on the next request (a few seconds), and Neon does the same.
+
+### 1. Database (Neon)
+
+Create a project in the Frankfurt region. From **Connect**, take the *direct* (not pooled) connection
+details and write them in Npgsql form:
+
+```
+Host=<ep-...>.eu-central-1.aws.neon.tech;Database=<db>;Username=<user>;Password=<password>;SSL Mode=Require;Channel Binding=Require;GSS Encryption Mode=Disable
+```
+
+`GSS Encryption Mode=Disable` stops Npgsql from looking for Kerberos libraries, which the chiseled image
+does not have (harmless, but it logs an error on every connection otherwise).
+
+### 2. API (Fly.io)
+
+`fly.toml` and the `Dockerfile` are in the repository root. App names are global; if `heardback-api` is
+taken, change `app` in `fly.toml` and the proxy target in `netlify.toml`.
+
+```bash
+openssl rand -hex 6     # bootstrap code: note it, you sign up with it
+openssl rand -hex 32    # signature secret: note it, Netlify needs the same value
+fly apps create heardback-api
+fly secrets set --app heardback-api \
+  "Database__ConnectionString=<Npgsql connection string>" \
+  "Identity__Tokens__SigningKey=$(openssl rand -base64 48)" \
+  "Identity__Invites__BootstrapAdminCode=<bootstrap code>" \
+  "ClientIp__Netlify__SignatureSecret=<signature secret>" \
+  "Llm__Groq__ApiKey=<key>" "Llm__Gemini__ApiKey=<key>"
+fly deploy --ha=false                               # one machine: rate limits and migrations assume it
+curl https://heardback-api.fly.dev/health          # Healthy; any other path answers 403
+```
+
+Migrations run when the API starts.
+
+### 3. Web app (Netlify)
+
+Import the GitHub repository as a new site; build settings come from `netlify.toml`. Then, in the site
+settings:
+
+- Environment variables: `API_SIGNATURE_SECRET` = the same secret as `ClientIp__Netlify__SignatureSecret`,
+  with a scope that includes **Runtime** (Netlify reads it for signed proxy rewrites).
+- Deploy previews: off, so only `main` builds. Builds are skipped when nothing under `web/` changed.
+- Site name: `heardback` (gives `heardback.netlify.app`).
+
+Register the first admin at `/register` with the bootstrap code, then remove it:
+`fly secrets unset --app heardback-api Identity__Invites__BootstrapAdminCode`.
+
+### 4. Check the client IP once after the first deploy
+
+Netlify documents the signature but not which header carries the client IP, nor whether it overwrites a
+copy sent by the client. This check proves both, using the sign-in limit (10 attempts a minute per IP):
+
+1. From your computer, try to sign in with a wrong password 11 times within a minute. The 11th answers
+   *Too many attempts*. (If every request fails instead, `fly logs` shows `MissingClientIp`: set
+   `ClientIp__Netlify__ClientIpHeader` to the header Netlify really sends.)
+2. Within the same minute, from a phone on mobile data, a wrong password still answers *wrong email or
+   password*. Each client has its own budget, so the header holds the client's IP, not Netlify's.
+3. Within the same minute, from your computer again, send a forged header:
+   `curl -i -X POST https://heardback.netlify.app/api/auth/login -H "Content-Type: application/json" -H "X-Nf-Client-Connection-Ip: 198.51.100.1" -d '{"email":"a@example.com","password":"wrong-password-1"}'`.
+   It must still answer 429. If it answers 401, Netlify passed the forged header through: stop and fix
+   before inviting anyone.
 
 ## Architecture
 

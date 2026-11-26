@@ -15,7 +15,13 @@ internal static class ClientIpResolution
                 settings => settings.HasValidTrustedSources(),
                 "ClientIp:Source=ForwardedHeaders needs at least one valid ClientIp:TrustedProxies address "
                 + "or ClientIp:TrustedNetworks CIDR range.")
+            .Validate(
+                settings => settings.HasValidNetlifySettings(),
+                $"ClientIp:Source=NetlifySignedProxy needs ClientIp:Netlify:SignatureSecret of at least "
+                + $"{NetlifyProxySettings.MinimumSecretLength} characters and a ClientIp:Netlify:ClientIpHeader.")
             .ValidateOnStart();
+
+        services.AddSingleton<NetlifyProxyMiddleware>();
 
         services.AddOptions<ForwardedHeadersOptions>()
             .Configure<IOptions<ClientIpSettings>>((options, settings) =>
@@ -44,6 +50,11 @@ internal static class ClientIpResolution
     public static IApplicationBuilder UseClientIpResolution(this WebApplication app)
     {
         var settings = app.Services.GetRequiredService<IOptions<ClientIpSettings>>().Value;
-        return settings.Source == ClientIpSource.ForwardedHeaders ? app.UseForwardedHeaders() : app;
+        return settings.Source switch
+        {
+            ClientIpSource.ForwardedHeaders => app.UseForwardedHeaders(),
+            ClientIpSource.NetlifySignedProxy => app.UseMiddleware<NetlifyProxyMiddleware>(),
+            _ => app,
+        };
     }
 }

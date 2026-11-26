@@ -4,7 +4,7 @@
 - **Date:** 2026-11-17 (revised the same day: absolute session lifetime, revoke-all on token reuse,
   serialized bootstrap claim, rate limiting; then fixes from the independent Phase 1 review;
   2026-11-18: sign-in ends the browser's previous session; reload keeps the session on brief outages;
-  bootstrap code has the invite code shape)
+  bootstrap code has the invite code shape; 2026-11-26: client IP behind Netlify's signed proxy)
 
 ## Context
 
@@ -100,6 +100,18 @@ connection address is the proxy's, so every user would share one budget.
 - `Direct` means the connection address is the client's. Development and tests use it.
 - `ForwardedHeaders` honours `X-Forwarded-For` only from configured `TrustedProxies` or
   `TrustedNetworks`. A spoofed header from anyone else is ignored.
+- `NetlifySignedProxy` is the production setting. Netlify forwards `/api/*` to Fly.io with a signed
+  proxy rewrite, which adds an `x-nf-sign` token (HS256 JWS with `iss: netlify` and `exp`, signed with
+  a shared secret). Netlify's egress addresses are not published or stable, so a trusted proxy list
+  cannot work; the signature is what proves a request came through Netlify.
+  - Every request except `/health` must carry a valid token: HS256 only, issuer `netlify`, an expiry
+    that has not passed (30 s clock skew), signed with `ClientIp:Netlify:SignatureSecret` (at least
+    32 characters, environment variable). Anything else gets a 403 ProblemDetails. So someone calling
+    the Fly.io host directly reaches nothing but the health check, and cannot choose their own IP.
+  - The client IP is then read from `ClientIp:Netlify:ClientIpHeader` (default
+    `X-Nf-Client-Connection-Ip`). A signed request without a valid IP there is refused too, rather
+    than sharing one budget with everyone. `X-Forwarded-For` is never read in this mode.
+  - The refusal reason is logged; the IP and the token are not.
 
 **Authorization.** A fallback policy requires an authenticated user everywhere. Anonymous endpoints
 (health, register, login, refresh, logout) are marked explicitly. The `Admin` policy requires the
@@ -120,15 +132,18 @@ caller is known).
   closed mid-request), the browser keeps the old token. Its next refresh, more than 30 seconds later,
   looks like theft and revokes all of the user's sessions. This is inherent to reuse detection and rare.
   The user simply signs in again.
-- **Phase 8: the client-IP source must be decided for the real topology (approved to finish then).** The
-  API will not start until it is. With Netlify forwarding `/api/*` to Fly.io, Fly sees Netlify's address,
-  so Fly's own client-IP header holds Netlify's IP, not the user's.
-  - The API has to verify that a request really came through Netlify before trusting Netlify's forwarded
-    client IP, for example with Netlify's signed proxy rewrites. Otherwise anyone reaching Fly directly
-    can spoof it.
-  - A list of trusted proxy networks is enough only where the proxy's egress addresses are known and
-    stable.
-  - Confirm the exact headers against the hosting providers' documentation at deploy time.
+- **Client IP behind Netlify (decided in Phase 8).** Fly.io sees Netlify's address, so Fly's own
+  client-IP header is useless here; the signed proxy check above replaces it.
+  - Netlify documents the `x-nf-sign` token but not the header that carries the client IP to a proxied
+    site, nor whether a client-supplied copy of it is overwritten. Both are checked once after the first
+    deploy, before anyone is invited, with the sign-in rate limit: two networks get separate budgets,
+    and a forged header does not reset the budget (README, "Deploying"). The header name is a setting so
+    it can follow what Netlify actually sends.
+  - **Approved trade-off (author, 2026-11-26): a seen token can be replayed until it expires.** A
+    token is valid until its `exp`, so whoever holds one could replay it with an IP of their choosing
+    until then, getting around per-IP limits (not per-user ones). Netlify offers no way to bind a
+    token to one request. Tokens only travel from Netlify to Fly.io over TLS, so only those two could
+    see one.
 - IPv6 clients are limited per full address. If address rotation becomes a problem, partition by /64.
 - Limits are per instance (in memory). That is fine while the API runs as one instance.
 - Production deployment must keep frontend and API on one origin (proxy or shared site). Splitting

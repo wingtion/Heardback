@@ -1,0 +1,34 @@
+# Fly.io config for the API. Deploy from the repository root: fly deploy
+# Secrets are set with `fly secrets set` (see README, "Deploying"); never put them here.
+
+app = "heardback-api"
+primary_region = "fra"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  ASPNETCORE_ENVIRONMENT = "Production"
+  # One machine, so applying migrations at startup cannot race another instance.
+  Database__ApplyMigrationsOnStartup = "true"
+  # Browsers reach the API only through Netlify's signed proxy rewrite (netlify.toml, ADR-0002).
+  ClientIp__Source = "NetlifySignedProxy"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  # A handful of users: the machine sleeps when idle and wakes on the next request.
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [[http_service.checks]]
+    method = "GET"
+    path = "/health"
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "20s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
