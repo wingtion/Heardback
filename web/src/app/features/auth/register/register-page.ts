@@ -27,6 +27,7 @@ import { AuthCard } from '../auth-card/auth-card';
 import { AUTH_ROUTES } from '../auth-paths';
 import { createAuthSubmission } from '../auth-submission';
 import { AuthService } from '../auth.service';
+import { characterCount } from '../password-count';
 import {
   INVITE_CODE_FORMATTED_LENGTH,
   INVITE_CODE_LENGTH,
@@ -126,10 +127,9 @@ export class RegisterPage {
       : 0;
   });
 
-  protected readonly passwordCount = computed(() => {
-    const length = [...(this.formValue().password ?? '')].length;
-    return `${length} ${length === 1 ? 'character' : 'characters'}`;
-  });
+  protected readonly passwordCount = computed(() =>
+    characterCount(this.formValue().password ?? ''),
+  );
 
   constructor() {
     for (const field of FIELDS) {

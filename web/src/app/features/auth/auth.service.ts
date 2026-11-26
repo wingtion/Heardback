@@ -16,7 +16,14 @@ import {
 } from 'rxjs';
 import { AuthApi } from './auth-api';
 import { isRefreshSuperseded, isUnauthorized, retryAfterSeconds } from './auth-errors';
-import { AuthResponse, CurrentUser, LoginRequest, RegisterRequest } from './auth.models';
+import {
+  AuthResponse,
+  ChangePasswordRequest,
+  CurrentUser,
+  LoginRequest,
+  RegisterRequest,
+  ResetPasswordRequest,
+} from './auth.models';
 
 /** What is remembered (in memory only) about a session that expired, to pre-fill sign in. */
 export interface ExpiredSession {
@@ -76,6 +83,27 @@ export class AuthService {
 
   register(request: RegisterRequest): Observable<CurrentUser> {
     return this.api.register(request).pipe(map((response) => this.start(response)));
+  }
+
+  /** Sets a new password with an admin's reset code. For signed-out users; it signs nobody in. */
+  resetPassword(request: ResetPasswordRequest): Observable<void> {
+    return this.api.resetPassword(request);
+  }
+
+  /**
+   * The server ends every session, including this one, and answers with a new session for this
+   * browser, so the user stays signed in here and is signed out everywhere else.
+   */
+  changePassword(request: ChangePasswordRequest): Observable<void> {
+    return this.api.changePassword(request).pipe(
+      tap((response) => this.session.set(response)),
+      map(() => undefined),
+    );
+  }
+
+  /** The server has deleted the account and its session, so the session ends here too. */
+  deleteAccount(password: string): Observable<void> {
+    return this.api.deleteAccount(password).pipe(tap(() => this.clear()));
   }
 
   /**

@@ -18,6 +18,21 @@ export const routes: Routes = [
       import('./features/auth/register/register-page').then((page) => page.RegisterPage),
   },
   {
+    path: 'reset-password',
+    title: 'Reset password · Heardback',
+    canActivate: [guestGuard],
+    loadComponent: () =>
+      import('./features/auth/reset-password/reset-password-page').then(
+        (page) => page.ResetPasswordPage,
+      ),
+  },
+  {
+    // Public: readable before creating an account and after deleting one.
+    path: 'privacy',
+    title: 'Privacy · Heardback',
+    loadComponent: () => import('./features/privacy/privacy-page').then((page) => page.PrivacyPage),
+  },
+  {
     path: '',
     canActivate: [authGuard],
     loadComponent: () => import('./shell/app-shell').then((shell) => shell.AppShell),
@@ -47,12 +62,20 @@ export const routes: Routes = [
           import('./features/insights/insights-page').then((page) => page.InsightsPage),
       },
       {
-        path: 'admin/invite-codes',
-        title: 'Invite codes · Heardback',
+        path: 'settings',
+        title: 'Settings · Heardback',
+        loadComponent: () =>
+          import('./features/settings/settings-page').then((page) => page.SettingsPage),
+      },
+      {
+        path: 'admin/members',
+        title: 'Members · Heardback',
         canActivate: [adminGuard],
         loadComponent: () =>
-          import('./features/invite-codes/invite-codes-page').then((page) => page.InviteCodesPage),
+          import('./features/members/members-page').then((page) => page.MembersPage),
       },
+      // The invite codes now sit on the Members page; old links and bookmarks still arrive there.
+      { path: 'admin/invite-codes', redirectTo: 'admin/members' },
       {
         path: 'no-access',
         title: 'No access · Heardback',

@@ -16,8 +16,8 @@ import { SHELL_ROUTES } from '../../shell/nav-items';
         You don’t have access to this page
       </h1>
       <p class="text-body text-ink-2">
-        Only admins can manage invite codes. If you think you should have access, ask the person who
-        invited you.
+        Only admins can manage members and invite codes. If you think you should have access, ask
+        the person who invited you.
       </p>
       <a
         appButton

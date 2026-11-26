@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
-import { AUTH_API } from './auth-paths';
+import { ACCOUNT_API, AUTH_API } from './auth-paths';
 import { AuthService } from './auth.service';
 import { authResponse } from './auth.testing';
 
@@ -215,6 +215,73 @@ describe('AuthService', () => {
     await logout;
 
     expect(auth.expired()).toBeNull();
+  });
+
+  it('changePassword_Succeeds_KeepsThisBrowserSignedInWithTheNewSession', async () => {
+    await signIn();
+
+    const change = firstValueFrom(
+      auth.changePassword({ currentPassword: 'old', newPassword: 'new-password-1' }),
+      { defaultValue: undefined },
+    );
+    const request = http.expectOne(ACCOUNT_API.password);
+    expect(request.request.body).toEqual({ currentPassword: 'old', newPassword: 'new-password-1' });
+    request.flush(authResponse({ token: 'after-change' }));
+    await change;
+
+    expect(auth.accessToken()).toBe('after-change');
+    expect(auth.isAuthenticated()).toBe(true);
+  });
+
+  it('changePassword_Fails_KeepsTheOldSession', async () => {
+    await signIn();
+
+    const change = firstValueFrom(
+      auth.changePassword({ currentPassword: 'wrong', newPassword: 'new-password-1' }),
+    );
+    http
+      .expectOne(ACCOUNT_API.password)
+      .flush({ code: 'account.wrong_password' }, { status: 400, statusText: 'Bad Request' });
+    await expect(change).rejects.toBeTruthy();
+
+    expect(auth.accessToken()).toBe('access-token');
+  });
+
+  it('deleteAccount_Succeeds_SendsThePasswordAndSignsOut', async () => {
+    await signIn();
+
+    const deletion = firstValueFrom(auth.deleteAccount('secret'), { defaultValue: undefined });
+    const request = http.expectOne(ACCOUNT_API.account);
+    expect(request.request.method).toBe('DELETE');
+    expect(request.request.body).toEqual({ password: 'secret' });
+    request.flush(null, { status: 204, statusText: 'No Content' });
+    await deletion;
+
+    expect(auth.isAuthenticated()).toBe(false);
+    expect(auth.expired()).toBeNull();
+  });
+
+  it('deleteAccount_Fails_StaysSignedIn', async () => {
+    await signIn();
+
+    const deletion = firstValueFrom(auth.deleteAccount('wrong'));
+    http
+      .expectOne(ACCOUNT_API.account)
+      .flush({ code: 'account.wrong_password' }, { status: 400, statusText: 'Bad Request' });
+    await expect(deletion).rejects.toBeTruthy();
+
+    expect(auth.isAuthenticated()).toBe(true);
+  });
+
+  it('resetPassword_Succeeds_DoesNotSignIn', async () => {
+    const reset = firstValueFrom(
+      auth.resetPassword({ code: 'K7QM2XRD9PLA', newPassword: 'new-password-1' }),
+      { defaultValue: undefined },
+    );
+    http.expectOne(AUTH_API.resetPassword).flush(null, { status: 204, statusText: 'No Content' });
+    await reset;
+
+    expect(auth.isAuthenticated()).toBe(false);
   });
 
   async function signIn(): Promise<void> {

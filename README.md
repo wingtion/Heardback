@@ -56,7 +56,7 @@ Registration needs an invite code. The very first account uses the bootstrap cod
 (`dotnet user-secrets list --project src/Heardback.Api | grep BootstrapAdminCode`): open
 `http://localhost:4200/register`, enter it as the invite code, and that account becomes the admin. After
 that the bootstrap code stops working; remove the setting. The admin creates invite codes for everyone
-else on the **Invite codes** page (`/admin/invite-codes`).
+else on the **Members** page (`/admin/members`), under Invite codes.
 
 The bootstrap code must look like an invite code: 12 characters from 0-9 and A-Z without I, L, O or U
 (dashes are fine). The API refuses to start otherwise, with a message that says how to generate one.
@@ -68,8 +68,9 @@ eight realistic applications with posting text to the admin's own list. It is on
 
 ### Forgotten passwords
 
-There is no email. An admin opens the member list (`GET /api/admin/members`), sees the member's email and
-issues a one-time reset code, which the member enters with a new password (`POST /api/auth/reset-password`).
+There is no email. An admin opens **Members** (`/admin/members`), sees the member's email and creates a
+one-time reset code there. The member enters it with a new password under **Forgot your password?** on the
+sign-in page (`/reset-password`).
 Codes work once and expire after 24 hours. Admins cannot reset other admins; the owner does that on the
 server, where the API binary doubles as a command line tool and never starts the web server for these:
 
@@ -169,7 +170,9 @@ docs/design.md                   design system: tokens, type, components, screen
   application detail has a Community section, and each company you applied to has its own page.
 - **Privacy & recovery** ([ADR-0015](docs/adr/0015-account-deletion-export-and-recovery.md)): members can
   download all their data as one JSON file (`GET /api/account/export`) and delete their account
-  (`DELETE /api/account`, password required). Every module erases its own data through one Shared contract;
+  (`DELETE /api/account`, password required), both from the Settings page (`/settings`), which also changes
+  the password and the theme. The public privacy page (`/privacy`) says what is kept, who sees it and what
+  goes to AI providers. Every module erases its own data through one Shared contract;
   a posting text is deleted with the last application that uses it, guarded by a per-posting advisory lock.
   A test scans every table with a user id column after a deletion. A new password (reset code or change)
   ends every session, and access tokens of a deleted account or older than the last password change are

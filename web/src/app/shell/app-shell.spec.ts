@@ -74,13 +74,13 @@ describe('AppShell', () => {
   it('render_Member_HidesTheAdminSection', async () => {
     const root = await openAs({ isAdmin: false });
 
-    expect(root.textContent).not.toContain('Invite codes');
+    expect(root.querySelector('a[href="/admin/members"]')).toBeNull();
   });
 
   it('render_Admin_ShowsTheAdminSection', async () => {
     const root = await openAs({ isAdmin: true });
 
-    expect(root.textContent).toContain('Invite codes');
+    expect(root.querySelector('a[href="/admin/members"]')?.textContent?.trim()).toBe('Members');
     expect(root.textContent).toContain('Admin');
   });
 

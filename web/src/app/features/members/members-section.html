@@ -1,0 +1,160 @@
+<div class="flex flex-col gap-1 px-4 pt-4 pb-3 lg:flex-row lg:items-baseline lg:gap-3 lg:p-0">
+  <h2 id="members-title" class="font-serif text-dialog-title font-semibold text-ink">
+    Member list
+  </h2>
+  @if (summary(); as text) {
+    <span class="text-small text-ink-2 tabular-nums">{{ text }}</span>
+  }
+</div>
+<p class="px-4 pb-3 text-small text-ink-2 lg:-mt-1.5 lg:p-0">
+  If a member forgot their password, create a reset code and give it to them. Forgot their email? It
+  is listed here.
+</p>
+
+<section aria-labelledby="members-title" class="lg:rounded-md lg:border lg:border-rule">
+  <!-- Desktop table; the header also frames the loading and error states. -->
+  <div class="overflow-x-auto max-lg:hidden">
+    <table class="w-full min-w-190 table-fixed border-collapse text-left text-cell">
+      <colgroup>
+        <col class="w-48" />
+        <col />
+        <col class="w-24" />
+        <col class="w-32" />
+        <col class="w-32" />
+        <col class="w-44" />
+      </colgroup>
+      <thead>
+        <tr class="h-10 border-b border-rule-strong bg-surface text-label font-semibold text-ink-2">
+          <th scope="col" class="rounded-tl-md pl-4">Name</th>
+          <th scope="col">Email</th>
+          <th scope="col">Role</th>
+          <th scope="col">Joined</th>
+          <th scope="col">Reset code</th>
+          <th scope="col" class="rounded-tr-md pr-4"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      @if (view(); as view) {
+        @if (view.kind === 'list') {
+          <tbody>
+            @for (item of view.data.items; track item.id) {
+              <tr class="h-11 border-b border-rule last:border-b-0 hover:bg-row-hover">
+                <td class="truncate pl-4 font-medium text-ink">{{ item.displayName }}</td>
+                <td class="truncate pr-3 text-ink-2">{{ item.email }}</td>
+                <td class="text-ink-2">{{ item.isAdmin ? 'Admin' : 'Member' }}</td>
+                <td class="font-mono text-label text-ink">
+                  {{ item.joinedAt | date: dateFormat }}
+                </td>
+                <td class="text-label">
+                  @if (item.resetCodeExpiresAt; as expiresAt) {
+                    <span class="text-ink-2">
+                      Open until
+                      <span class="font-mono">{{ expiresAt | date: shortDateFormat }}</span>
+                    </span>
+                  } @else {
+                    <span class="text-ink-muted" aria-hidden="true">—</span>
+                    <span class="sr-only">None</span>
+                  }
+                </td>
+                <td class="pr-4 text-right">
+                  @if (!item.isAdmin) {
+                    <button
+                      appButton
+                      size="xs"
+                      type="button"
+                      [attr.aria-label]="'Create a reset code for ' + item.displayName"
+                      (click)="openResetCode(item)"
+                    >
+                      Create reset code
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        }
+      }
+    </table>
+  </div>
+
+  @switch (view().kind) {
+    @case ('loading') {
+      <div
+        role="status"
+        class="flex items-center gap-2 border-rule px-4 py-3 text-small text-ink-2 max-lg:border-t lg:border-b"
+      >
+        <app-spinner />
+        Loading members…
+      </div>
+      <div aria-hidden="true">
+        @for (row of skeletonRows; track row) {
+          <div class="flex h-11 items-center gap-5 border-b border-rule px-4 last:border-b-0">
+            <span class="h-2.25 w-30 rounded-xs bg-skeleton"></span>
+            <span class="h-2 w-40 rounded-xs bg-skeleton"></span>
+            <span class="h-2 w-17.5 rounded-xs bg-skeleton max-lg:hidden"></span>
+          </div>
+        }
+      </div>
+    }
+    @case ('error') {
+      <div class="p-4 max-lg:pt-0">
+        <app-banner kind="error" heading="Couldn’t load members">
+          <p>The server didn’t respond. Try again.</p>
+          <button appButton size="sm" type="button" class="mt-1.5" (click)="retry()">
+            Try again
+          </button>
+        </app-banner>
+      </div>
+    }
+  }
+
+  @if (view(); as view) {
+    @if (view.kind === 'list') {
+      <!-- Phone list -->
+      <ul class="border-t border-rule lg:hidden">
+        @for (item of view.data.items; track item.id) {
+          <li class="flex flex-col gap-1 border-b border-rule px-4 pt-2.5 pb-3">
+            <span class="text-ui-lg font-semibold break-words text-ink">{{
+              item.displayName
+            }}</span>
+            <span class="text-small break-all text-ink-2">{{ item.email }}</span>
+            <span class="text-label text-ink-muted">
+              {{ item.isAdmin ? 'Admin' : 'Member' }} · joined
+              <span class="font-mono">{{ item.joinedAt | date: dateFormat }}</span>
+              @if (item.resetCodeExpiresAt; as expiresAt) {
+                · code open until
+                <span class="font-mono">{{ expiresAt | date: shortDateFormat }}</span>
+              }
+            </span>
+            @if (!item.isAdmin) {
+              <button
+                appButton
+                size="lg"
+                type="button"
+                class="mt-1.5 self-start"
+                [attr.aria-label]="'Create a reset code for ' + item.displayName"
+                (click)="openResetCode(item)"
+              >
+                Create reset code
+              </button>
+            }
+          </li>
+        }
+      </ul>
+
+      <app-pagination
+        [page]="view.data.page"
+        [pageSize]="view.data.pageSize"
+        [totalCount]="view.data.totalCount"
+        [totalPages]="view.data.totalPages"
+        [disabled]="loading()"
+        (pageChange)="goToPage($event)"
+      />
+    }
+  }
+</section>
+
+@if (hasAdmins()) {
+  <p class="px-4 pt-2.5 text-caption text-ink-muted lg:-mt-1.5 lg:p-0">
+    Admins can’t get a reset code here. They use the owner command on the server.
+  </p>
+}

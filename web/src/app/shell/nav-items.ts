@@ -11,19 +11,18 @@ export const SHELL_ROUTES = {
   applications: '/applications',
   cv: '/cv',
   overview: '/overview',
-  inviteCodes: '/admin/invite-codes',
+  settings: '/settings',
+  members: '/admin/members',
 } as const;
 
-/**
- * Only pages that exist are listed (docs/design.md §8). Dashboard, Companies and Settings are
- * added in the phase that builds them.
- */
+/** Only pages that exist are listed (docs/design.md §8). */
 export const MAIN_NAV: readonly NavItem[] = [
   { label: 'Applications', path: SHELL_ROUTES.applications },
   { label: 'CV', path: SHELL_ROUTES.cv },
   { label: 'Overview', path: SHELL_ROUTES.overview },
+  { label: 'Settings', path: SHELL_ROUTES.settings },
 ];
 
 export const ADMIN_NAV: readonly NavItem[] = [
-  { label: 'Invite codes', path: SHELL_ROUTES.inviteCodes, icon: 'mail' },
+  { label: 'Members', path: SHELL_ROUTES.members, icon: 'mail' },
 ];

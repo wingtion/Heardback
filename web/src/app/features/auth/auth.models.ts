@@ -24,3 +24,17 @@ export interface RegisterRequest {
   readonly displayName: string;
   readonly inviteCode: string;
 }
+
+export interface ChangePasswordRequest {
+  readonly currentPassword: string;
+  readonly newPassword: string;
+}
+
+export interface ResetPasswordRequest {
+  /** A one-time code from an admin, in the invite-code shape. */
+  readonly code: string;
+  readonly newPassword: string;
+}
+
+/** Password limits shared with the API (PasswordPolicy). */
+export const PASSWORD_LIMITS = { min: 12, max: 128 } as const;

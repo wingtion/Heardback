@@ -34,7 +34,7 @@ Handoff link (owner access only): https://claude.ai/code/artifact/b8cef516-80a0-
 Light and dark themes are both fully specified. Tokens are CSS custom properties, so components use one class (`bg-surface`) and never `dark:` variants.
 
 - **Default: follow the OS.** Each colour token is `light-dark(light, dark)` and `:root` has `color-scheme: light dark`, so the browser picks the OS theme.
-- **Manual choice (decided):** a Light / Dark / System setting will live on the Settings page. The tokens already support it: `data-theme="light"` or `data-theme="dark"` on `<html>` overrides the OS setting. The choice is stored on the device. The control itself is built with the Settings page, which still needs its design.
+- **Manual choice (built, Phase 7):** Settings › Appearance offers **Same as device / Light / Dark** (§20). `data-theme="light"` or `data-theme="dark"` on `<html>` overrides the OS setting. The choice is stored in this browser only (`localStorage`) and applied before the first render.
 
 Because the theme runs through `color-scheme`, native controls (scrollbars, date pickers, select menus) match it too.
 
@@ -273,9 +273,9 @@ Container: 1 px `rule` border, radius 4, horizontal scroll inside the box when n
 Bar inside the table container: `surface` background, 52 px tall. "Showing 1–20 of 34" on the left (13, `ink-2`), "Page 1 of 2" (13, `ink-muted`) plus Previous / Next secondary buttons (32 px, chevron icons) on the right. Previous is disabled on page 1, Next on the last page. Mobile: 44 px icon-only Previous/Next with `aria-label`, "Showing 1–20 of 34" centred.
 
 ### Sidebar navigation (desktop)
-**Only pages that exist are listed.** Companies and Settings appear in the design but are added in the phase that builds them. Today the list is Applications, CV and Overview (§17) (+ Invite codes for admins).
+**Only pages that exist are listed.** Today the list is Applications, CV, Overview (§17) and Settings (§20) (+ Members for admins).
 
-208 px, `surface`, right border `rule`. Top: logo + wordmark (22 px) with a `rule` divider below. Items 34 px, padding 0 10, radius 3, 14 px `ink-2`; active item per §7. Applications shows its count at the right in DM Mono 12 `ink-muted`. **Admin section** (admins only): divider, small heading "Admin" (12, 600, `ink-muted`), then "Invite codes" with the mail icon. Bottom: divider, user's display name (13.5, 600), role underneath ("Admin" / "Member", 12, `ink-muted`), and a small secondary "Sign out" button.
+208 px, `surface`, right border `rule`. Top: logo + wordmark (22 px) with a `rule` divider below. Items 34 px, padding 0 10, radius 3, 14 px `ink-2`; active item per §7. Applications shows its count at the right in DM Mono 12 `ink-muted`. **Admin section** (admins only): divider, small heading "Admin" (12, 600, `ink-muted`), then "Members" with the mail icon (it was "Invite codes" until Phase 7, §20). Bottom: divider, user's display name (13.5, 600), role underneath ("Admin" / "Member", 12, `ink-muted`), and a small secondary "Sign out" button.
 
 ### Mobile header and menu
 Header 60 px, `surface`, bottom `rule`: logo 24 px + wordmark 20 px + 44 px menu button ("Open menu"). The open menu is a full-screen panel (`surface`) with the header's button switched to ✕ ("Close menu", `aria-expanded="true"`), 48 px items at 16 px, the same Admin section, and the user + 44 px Sign out button pinned at the bottom. It traps focus and closes on Escape.
@@ -316,8 +316,8 @@ Inside the table container: an error banner with title "Couldn't load …", one 
 ### Full-page session loading
 Shown while the session is restored on reload (refresh call in flight). Centred on `base`: 40 px logo + wordmark (30 px; mobile 32 / 26), below it spinner + "Signing you in…" (14, `ink-2`). `role="status"`, `aria-live="polite"`.
 
-### Invite code display (created dialog)
-Code in DM Mono 500, 30 px (mobile 26), +0.06em, centred in a 72 px box: 1 px `accent` inner border, 2 px dotted `accent` outer frame, `envelope` fill. Below: "Expires 01 Dec 2026 · in 7 days" and "Single use" (12.5, `ink-2`).
+### Invite code display (created dialog) — `app-code-display`
+Shared by the invite code and the password reset code (§20). Code in DM Mono 500, 30 px (mobile 26), +0.06em, centred in a 72 px box: 1 px `accent` inner border, 2 px dotted `accent` outer frame, `envelope` fill. Below: "Expires 01 Dec 2026 · in 7 days" and "Single use" (12.5, `ink-2`).
 
 ---
 
@@ -364,10 +364,10 @@ Heading "Create account", line "Heardback is invite only. You need a code to joi
 Sidebar or mobile header, as §8. Admin section only when `user.isAdmin`. Full-page session loading on reload. Sign out in the sidebar footer / mobile menu.
 
 ### No access (admin page opened by a member, 403)
-Shell stays. No-access envelope illustration, heading "You don't have access to this page", text "Only admins can manage invite codes. If you think you should have access, ask the person who invited you.", secondary link-button "Go to Applications" (full width on mobile).
+Shell stays. No-access envelope illustration, heading "You don't have access to this page", text "Only admins can manage members and invite codes. If you think you should have access, ask the person who invited you.", secondary link-button "Go to Applications" (full width on mobile).
 
-### Invite codes (`/admin/invite-codes`, admin)
-Heading "Invite codes", summary "34 codes · 9 active" (total from the paged response; the active count is added to the list response in the same phase), primary "Create invite code" at the right (full width under the heading on mobile). Table: Code (DM Mono + copy icon button "Copy code K7QM-…"), Status (Active / Used / Expired label), Created, Expires, Used (date or "—" in `ink-muted`). Newest first, 20 per page, pagination bar. Mobile: list items with code (DM Mono 16) + 44 px copy button, then status label + one meta line ("Expires 01 Dec" / "Used 22 Nov" / "Expired 22 Nov").
+### Invite codes (admin; since Phase 7 a section of the Members page, §20)
+Section heading "Invite codes" (`dialog-title`; it was the page heading before Phase 7), summary "34 codes · 9 active" (total from the paged response; the active count is added to the list response in the same phase), primary "Create invite code" at the right (full width under the heading on mobile). Table: Code (DM Mono + copy icon button "Copy code K7QM-…"), Status (Active / Used / Expired label), Created, Expires, Used (date or "—" in `ink-muted`). Newest first, 20 per page, pagination bar. Mobile: list items with code (DM Mono 16) + 44 px copy button, then status label + one meta line ("Expires 01 Dec" / "Used 22 Nov" / "Expired 22 Nov").
 
 - **Create invite code dialog:** text "Anyone with the code can create one account. Each code works once."; field "Expires in (days) · optional", number 1–90, default 7, hint "1–90 days. Leave as 7 if you're not sure."; Cancel + "Create invite code".
 - **Invite code created dialog:** code display (§8), expiry line, "Send it to one person. You can find it later in the table."; Done + primary **Copy**. After copying: the line becomes "Copied to clipboard" and the button becomes "Copied" with a check.
@@ -452,6 +452,7 @@ These go back to Claude Design with a brief written from the API that exists at 
 - **Phase 2:** nothing left. The board, Edit application, Add update and Add application on mobile came in the "B refined · Board and forms" handoff (§14).
 - **Phase 3:** nothing left. The CV page and the match panel were composed from the existing system instead of a Claude Design handoff (§15).
 - **Phase 6:** nothing left. Badges, the Community section and the company page came in the "B refined · Community signals" handoff (§18).
+- **Phase 7:** nothing left. Settings, the privacy page, reset password and Members were composed from the existing system (§20).
 
 ---
 
@@ -557,7 +558,6 @@ Footer: Cancel + primary **"Save update"** ("Saving…").
 
 ### Dates
 Applied and update dates are calendar dates in the user's own day. "Today or earlier" is checked in the browser against the local date. The server accepts dates up to one day after the UTC date, so users in time zones ahead of UTC are not rejected.
-- **Settings page** (including the theme setting), Dashboard, Companies: in their phases.
 
 ## 15. CV page and match panel (Phase 3, composed from the existing system)
 
@@ -709,3 +709,34 @@ renaming API fields, columns and migrations. When the two differ:
 | Ghost risk, warning signs | `GhostSignal`, `GhostReason` (ADR-0013) |
 | All your applications at {Company} | company page, `/api/community/companies/{key}` (`CompanyKey`) |
 | Removed (CV skills) | excluded skills, `excludedSkills` |
+
+## 20. Settings, privacy, reset password and Members (Phase 7, composed from the existing system)
+
+**How this was designed (decided by the author, 2026-11-20):** no Claude Design handoff and no ASCII approval step; built from the tokens and components in this document, approved from desktop and phone screenshots (light and dark). Nothing here adds a token, size or pattern. Data and rules come from ADR-0015.
+
+### Settings (`/settings`, sidebar item "Settings" after Overview)
+- **Page:** "Settings" (`page-title`), content at most 800 px wide like the CV page. Four bordered sections (`rule`, radius 4, `base`, padding 14×16, gap 12), headings `body` 600 `ink`, in this order: what the user changes most first, deleting last.
+- **Account:** a two-column list (`small`; labels `ink-muted`): Name, Email, Role. Under a `rule` divider, **Change password** (`label` 600 `ink-2`): Current password, New password (hint "12–128 characters" with the live count, §8), caption "This signs you out on your other devices. You stay signed in here.", primary **Change password** ("Changing password…"). Inputs at most 320 px wide from lg; 44 px below. Success: inline success "Password changed. Your other devices are signed out." and the fields clear. Errors: "Enter your current password", "Use at least 12 characters", "This password is incorrect" on the current password; the sign-in rate-limit banner with countdown; error banner "Couldn’t change your password" / "The server didn’t respond. Your password is unchanged. Try again."
+- **Appearance:** fieldset "Theme" with the Add update radio chips (§14) without glyphs: **Same as device** (default), **Light**, **Dark**; applies at once; caption "Saved in this browser only."
+- **Your data:** what the file holds (account, applications with timelines and notes, job descriptions and summaries, CV text and skills, AI suggestions; no other members' data), secondary **Download my data** ("Preparing your file…"), link "Read the privacy page". After the download: inline success "Your file is downloading". Limit (5 an hour): warning banner (`alert`) "Download limit reached" / "You can download your data 5 times an hour. Try again in about N minutes."; failure: "Couldn’t prepare your file". The file is named `heardback-export-YYYY-MM-DD.json` (the user's own day).
+- **Delete account:** what goes (applications with timelines and notes, CV, AI suggestions; the stats stop counting you at once) and "Download your data first if you want to keep a copy.", then a danger outline **Delete account** with the trash icon (full width, 48 px on phones).
+- **Delete confirm:** the confirm-delete box (§8, `alertdialog`, 420 px) "Delete your account?" / "Your account, applications, notes, CV and AI suggestions are deleted for good. You can’t undo this." with a **Your password** field (hint "To confirm it’s you.") and Cancel + danger-solid **Delete account** ("Deleting…"). **Initial focus is on the password field** (other confirms focus Cancel): nothing happens without the password, so typing it first is the faster safe path. Errors: "Enter your password", "This password is incorrect"; "You’re the only admin" / "Heardback needs at least one admin, so this account can’t be deleted."; the rate-limit banner; "Couldn’t delete your account". Afterwards sign in shows the info banner "Your account and all its data were deleted."
+- Change password and delete carry a hidden `autocomplete="username"` field with the email, so password managers know the account.
+
+### Privacy (`/privacy`, public)
+- Outside the shell, readable signed in or out. Header like the mobile app header (60 px, `surface`, logo + wordmark) with one secondary button at the right: **Go to Applications** when signed in, **Sign in** otherwise.
+- Content at most 680 px, left-aligned: "Privacy" (`page-title`), "Last updated 25 Nov 2026" (`small`, `ink-muted`, date in DM Mono), one intro paragraph, then sections with `dialog-title` headings and bulleted lists (`body`, `ink-2`, lead words in `ink`): What Heardback keeps · Who can see it · What is sent to AI providers · Cookies and this browser · Taking your data out or deleting it · Questions.
+- Linked from Settings › Your data and from Create account ("What Heardback keeps and who sees it: read the privacy page", `label`, `ink-muted`). Its statements follow ADR-0006, 0008, 0013 and 0015 and change with them.
+
+### Reset password (`/reset-password`, signed-out users only)
+- The auth card (§9) like sign in: "Reset your password" / "Ask an admin for a reset code. It works once, within 24 hours." Fields: **Reset code** (the invite-code input: DM Mono, dashes added, hint "12 characters from the admin. Dashes are added for you.", `autocomplete="one-time-code"`) and **New password** (count as on Create account); caption "This signs you out everywhere. Then sign in with the new password."; primary **Set new password** ("Setting password…"). Footer: "Remembered it? **Sign in**" and "Forgot your email too? An admin can look it up." (`label`, `ink-muted`).
+- Errors: "Enter the full 12-character code", "Use at least 12 characters", "This reset code is invalid, expired or already used" (one message for all three, as the server gives); rate limit and "Couldn’t reach Heardback" as on sign in. Success goes to sign in with the info banner "Your password was changed. Sign in with the new one."
+- Sign in links to it under the password field: "Forgot your password?" (`label`, `link`).
+
+### Members (`/admin/members`, admin; replaces Invite codes)
+- Sidebar item **Members** (mail icon) in the admin section; `/admin/invite-codes` redirects here. Page heading "Members" (`page-title`), then two sections with `dialog-title` headings: **Member list** and **Invite codes** (§10, unchanged apart from the heading level).
+- **Member list:** "N members" beside the heading, then "If a member forgot their password, create a reset code and give it to them. Forgot their email? It is listed here." (`small`, `ink-2`). The invite-code table pattern (44 px rows, pagination bar, oldest first, 20 a page): **Name** (500), **Email** (`ink-2`), **Role** (Admin / Member), **Joined** (DM Mono), **Reset code** ("Open until 26 Nov" or "—"), and a 28 px secondary **Create reset code** (`aria-label` "Create a reset code for {name}") for members only. Under the table when an admin is listed: "Admins can’t get a reset code here. They use the owner command on the server." (`caption`, `ink-muted`). Phones: list items with name (15 / 600), email, one meta line ("Member · joined 04 Nov 2026 · code open until 26 Nov") and a 44 px button.
+- **Create a reset code** (dialog, 392 px like the invite dialogs): "For {name} · {email}", "With this code they can set a new password once, within 24 hours. That signs them out on every device. Only create one when they asked you for it.", an info banner "They already have an open code. A new one replaces it." when one is open; Cancel (initial focus) + primary **Create reset code** ("Creating…").
+- **Reset code created:** "For {name}", the code in `app-code-display` (§8), "Expires 26 Nov 2026, 21:20" (the admin's own time, DM Mono) and "Single use", then "Give it to {name} in person or in a message. It is shown only this once. They enter it on the sign-in page under “Forgot your password?”."; Done + primary **Copy** (becomes "Copied" and the line "Copied to clipboard", as for invite codes). The list behind updates at once.
+- **Errors:** member deleted meanwhile (404): "This member no longer exists" / "They may have deleted their account. The list has been updated." and the button is disabled; member became an admin: "Admins can’t get a reset code here" / "They use the owner command on the server." (the button is disabled and the list behind updates); 10 an hour: warning "Reset code limit reached" / "You can create 10 reset codes an hour. Try again in about N minutes."; no answer: "Couldn’t create the reset code" / "The server didn’t respond. Try again."; admin rights removed: the no-access page.
+- **States:** loading "Loading members…" with skeleton rows; error "Couldn’t load members" + Try again. The list is never empty (the admin is on it).

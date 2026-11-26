@@ -25,6 +25,7 @@ import { httpErrorOf, isForbidden, validationErrors } from '../../../core/http-e
 import { AUTH_ROUTES } from '../../auth/auth-paths';
 import { Banner } from '../../../shared/ui/banner/banner';
 import { Button } from '../../../shared/ui/button/button';
+import { CodeDisplay } from '../../../shared/ui/code-display/code-display';
 import { AppDialog } from '../../../shared/ui/dialog/dialog';
 import { DialogFooter } from '../../../shared/ui/dialog/dialog-footer';
 import { Field } from '../../../shared/ui/field/field';
@@ -67,6 +68,7 @@ function expiryDaysValidator(control: AbstractControl<string>): ValidationErrors
     AppDialog,
     Banner,
     Button,
+    CodeDisplay,
     DialogFooter,
     Field,
     Icon,
