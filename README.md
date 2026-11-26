@@ -2,13 +2,13 @@
 
 *Named after the question every job seeker asks: "Did I hear back?"*
 
-A web app for job seekers to track every application in one place and get insight from that data instead of
-guessing: which channels actually get responses, how long companies take to reply, how well a CV matches a
-posting, and community signals such as postings where nobody ever hears back. It is invite only, built for a
-small group of people who know each other.
+A web app for job seekers: track every application in one place and see what the data says, instead of
+guessing. Which channels get answers, how long companies take to reply, how well your CV matches a posting, and
+which postings nobody ever hears back from.
 
 **Live: [heardback-app.netlify.app](https://heardback-app.netlify.app)**. Press **Try the demo** on the sign-in
-page to look around with sample data, no account needed. The demo is deleted after a day.
+page to look around with sample data; nothing to sign up for, and the demo is deleted after a day. Real
+accounts are invite only, for a small group of people who know each other.
 
 ![Applications list with the detail panel of one application](docs/screenshots/applications.png)
 
@@ -22,10 +22,10 @@ page to look around with sample data, no account needed. The demo is deleted aft
   lacks. Only the text is kept, with contact details removed, and the PDF is never stored.
 - **AI help, opt-in:** summarise a posting (company, seniority, work mode, skills) and get concrete,
   checkable suggestions for tailoring your CV to one application. Suggestions quote the CV line they are about.
-- **Community signals:** how other members fared with the same posting and company, and an explainable
-  ghost-listing hint, shown only once at least three other members applied, as counts, never names.
-- **Privacy:** download all your data, delete your account, and a plain privacy page. Admins invite members and
-  can give a member a one-time password reset code.
+- **What other members saw:** for the same posting or company, how many other members heard back and how long
+  it took, plus a warning, with its reasons, when a posting looks like one where nobody ever hears back. Shown
+  only once at least three other members applied, and only as totals, never names.
+- **Your data:** download everything, delete your account, and a plain-language privacy page.
 
 | Board | Overview |
 |---|---|
@@ -33,7 +33,7 @@ page to look around with sample data, no account needed. The demo is deleted aft
 | **CV and skills** | **Company page with community numbers** |
 | ![CV page with the skills found](docs/screenshots/cv.png) | ![Company page with stats from other members](docs/screenshots/company.png) |
 
-**On a phone**: every screen works on small screens too, in light and dark.
+**On a phone:** every screen works on a phone too, in light and dark mode.
 
 | Applications | Application detail | Overview |
 |:---:|:---:|:---:|
@@ -48,7 +48,10 @@ page to look around with sample data, no account needed. The demo is deleted aft
 - **Tests:** xUnit v3, Testcontainers (real Postgres), architecture tests, Vitest
 - **Hosting:** Netlify (web), Fly.io (API), Neon (Postgres); GitHub Actions CI and Dependabot
 
-## At a glance
+Built with AI assistance (Claude Code), with every change reviewed by the author and about 1,200 tests run in
+CI on every pull request; see [How this was built](#how-this-was-built).
+
+## Architecture at a glance
 
 ```mermaid
 flowchart LR
@@ -67,9 +70,9 @@ flowchart TB
   applications & matching --> llm["Infrastructure.Llm<br/>AI client and job queue"]
 ```
 
-Each module owns its own Postgres schema and exposes only a small contracts namespace; architecture tests fail
-the build if one module reaches into another's internals. Every user-owned row is filtered to the signed-in
-user by a global query filter, with integration tests proving the isolation.
+Each module that stores data owns its own Postgres schema, and every module exposes only a small contracts
+namespace; architecture tests fail the build if one module reaches into another's internals. Every user-owned
+row is filtered to the signed-in user by a global query filter, with integration tests proving the isolation.
 
 **Decisions worth reading** (all in [docs/adr](docs/adr)):
 
@@ -88,7 +91,8 @@ The engineering rules every change follows are in [CLAUDE.md](CLAUDE.md), and th
 
 ## Running locally
 
-Prerequisites: .NET 10 SDK, Node 22 (see `.nvmrc`), Docker.
+Prerequisites: .NET 10 SDK, Node 22 (see `.nvmrc`) with npm 12 (`npm install --global npm@12.2.0`, the
+version CI uses), Docker.
 
 ### One-time setup
 
@@ -140,8 +144,9 @@ eight realistic applications with posting text to the admin's own list. It is on
 
 **Try the demo** on the sign-in page creates a temporary account with sample applications and a sample CV, no
 invite or password needed ([ADR-0018](docs/adr/0018-demo-accounts.md)). It is removed with its data after a day.
-Demo visitors cannot open admin pages or change a password, get small AI quotas, and see community numbers only
-from four permanent made-up "neighbor" accounts; members never see any demo account in their numbers. At most
+Demo visitors cannot open admin pages or change a password, get small AI quotas (3 job summaries and 2 CV
+suggestion requests a day), and see community numbers only from four permanent made-up "neighbor" accounts;
+members never see any demo account in their numbers. At most
 20 demos exist at once, and each IP can start 3 an hour. Settings are under `Identity:Demo`; it is off unless
 `Identity:Demo:Enabled` is true (production turns it on in `fly.toml`). To try it locally:
 
@@ -153,7 +158,7 @@ dotnet user-secrets set "Identity:Demo:Enabled" "true" --project src/Heardback.A
 
 There is no email. An admin opens **Members** (`/admin/members`), sees the member's email and creates a
 one-time reset code there. The member enters it with a new password under **Forgot your password?** on the
-sign-in page (`/reset-password`).
+sign-in page, which opens `/reset-password`.
 Codes work once and expire after 24 hours. Admins cannot reset other admins; the owner does that on the
 server, where the API binary doubles as a command line tool and never starts the web server for these:
 
@@ -177,12 +182,8 @@ test fails if a module's model has changes that no migration captures yet.
 
 ## Deploying
 
-```
-browser ──► Netlify (Angular app, /api/* signed proxy rewrite) ──► Fly.io (API) ──► Neon (Postgres)
-```
-
-The browser only ever talks to Netlify, so the app and the API share one origin and the refresh cookie
-stays first-party. Netlify signs every request it forwards to Fly.io; the API refuses anything unsigned
+The hosting is drawn in [Architecture at a glance](#architecture-at-a-glance). The browser only ever talks
+to Netlify, so the app and the API share one origin and the refresh cookie stays first-party. Netlify signs every request it forwards to Fly.io; the API refuses anything unsigned
 except `/health`, and takes the client IP for rate limiting from Netlify's header
 ([ADR-0002](docs/adr/0002-authentication-and-sessions.md)). All three run on free or near-free tiers: the
 Fly.io machine stops when idle and starts on the next request (a few seconds), and Neon does the same.
@@ -227,7 +228,8 @@ settings:
 
 - Environment variables: `API_SIGNATURE_SECRET` = the same secret as `ClientIp__Netlify__SignatureSecret`,
   with a scope that includes **Runtime** (Netlify reads it for signed proxy rewrites).
-- Deploy previews: off, so only `main` builds. Builds are skipped when nothing under `web/` changed.
+- Deploy previews: off, so only `main` builds. Builds are skipped when nothing under `web/`
+  (or `netlify.toml`, `.nvmrc`) changed.
 - Site name: `heardback-app` (gives `heardback-app.netlify.app`; `heardback` was taken).
 
 Register the first admin at `/register` with the bootstrap code, then remove it:
@@ -241,8 +243,8 @@ copy sent by the client. This check proves both, using the sign-in limit (10 att
 1. From your computer, try to sign in with a wrong password 11 times within a minute. The 11th answers
    *Too many attempts*. (If every request fails instead, `fly logs` shows `MissingClientIp`: set
    `ClientIp__Netlify__ClientIpHeader` to the header Netlify really sends.)
-2. Within the same minute, from a phone on mobile data, a wrong password still answers *wrong email or
-   password*. Each client has its own budget, so the header holds the client's IP, not Netlify's.
+2. Within the same minute, from a phone on mobile data, a wrong password still answers *Email or password
+   is incorrect*. Each client has its own budget, so the header holds the client's IP, not Netlify's.
 3. Within the same minute, from your computer again, send a forged header:
    `curl -i -X POST https://heardback-app.netlify.app/api/auth/login -H "Content-Type: application/json" -H "X-Nf-Client-Connection-Ip: 198.51.100.1" -d '{"email":"a@example.com","password":"wrong-password-1"}'`.
    It must still answer 429. If it answers 401, Netlify passed the forged header through: stop and fix
@@ -257,10 +259,10 @@ Heardback is a **modular monolith**: one deployable API, split into modules with
 src/
   Heardback.Api/                  host: DI, middleware, maps module endpoints
   Heardback.Modules.Identity/     users, invite codes, sessions, account deletion/export, recovery, demo accounts
-  Heardback.Modules.Applications/ applications, timelines, posting analysis, community signals, demo data
+  Heardback.Modules.Applications/ applications, timelines, posting analysis, cross-user counts, demo data
   Heardback.Modules.Postings/     shared job postings, dedup
-  Heardback.Modules.Matching/     CV text, skills, match results
-  Heardback.Modules.Insights/     personal stats and the follow-up list
+  Heardback.Modules.Matching/     CV text, skills, match results, CV tailoring
+  Heardback.Modules.Insights/     personal stats, the follow-up list and community signals
   Heardback.Infrastructure.Llm/   LLM client, providers and the Postgres job queue
   Heardback.Shared/               Result type, current user, paging, module DbContext base, validation
 tests/
@@ -307,7 +309,7 @@ docs/design.md                   design system: tokens, type, components, screen
 - **Posting analysis:** on the user's request, an LLM reads the application's own posting text (personal
   details removed) into company, title, seniority, work mode, skills and location. Results are shared by
   content hash, so identical text is analysed once; adding a posting never calls the LLM. Daily limits per
-  user (30 analyses, 10 tailoring suggestions) and an app-wide cap on LLM calls protect the free tiers;
+  user (30 posting analyses, 10 tailoring requests) and an app-wide cap on LLM calls protect the free tiers;
   a failed job gives its use back.
 - **CV tailoring:** with the user's opt-in, an LLM suggests 3-6 concrete changes that rework what the CV
   already says for one application. Each suggestion quotes the CV line it is about; suggestions whose quote
@@ -336,9 +338,10 @@ docs/design.md                   design system: tokens, type, components, screen
   rejected.
 - **Demo accounts** ([ADR-0018](docs/adr/0018-demo-accounts.md)): "Try the demo" creates a sandbox with sample
   data through every module's own seeding contract, limited to 3 per IP an hour and 20 at once (checked under
-  an advisory lock). Demo visitors get small AI quotas, cannot reach admin pages or set a password, and see
-  community numbers only from four permanent made-up accounts, so nothing derived from members ever reaches
-  an anonymous visitor. A hosted service removes them after a day, the same way an account deletion does.
+  an advisory lock). Demo visitors get small AI quotas (3 job summaries, 2 tailoring requests a day), cannot
+  reach admin pages or set a password, and see community numbers only from four permanent made-up accounts,
+  so nothing derived from members ever reaches an anonymous visitor. A hosted service removes them after a
+  day, the same way an account deletion does.
 - **Background jobs:** LLM work runs from a Postgres job table (`llm` schema) processed by an in-process
   worker. Jobs hold only ids and hashes, never user text. Claims use row locks and leases, so jobs run
   once even with several instances and survive a crash; failures retry with backoff and then fail.
