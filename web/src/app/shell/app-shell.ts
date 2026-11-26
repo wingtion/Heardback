@@ -13,6 +13,8 @@ import {
 import { ApplicationsSummaryStore } from '../features/applications/applications-summary';
 import { CommunityBadgesStore } from '../features/community/community-badges';
 import { AuthService } from '../features/auth/auth.service';
+import { demoEndLabel } from '../features/auth/demo';
+import { Banner } from '../shared/ui/banner/banner';
 import { Logo } from '../shared/ui/brand/logo';
 import { Button } from '../shared/ui/button/button';
 import { Icon } from '../shared/ui/icon/icon';
@@ -26,7 +28,7 @@ import { ShellActions } from './shell-actions';
  */
 @Component({
   selector: 'app-shell',
-  imports: [A11yModule, NgTemplateOutlet, RouterOutlet, Logo, Button, Icon, NavMenu],
+  imports: [A11yModule, NgTemplateOutlet, RouterOutlet, Banner, Logo, Button, Icon, NavMenu],
   // Per signed-in session: the shell is destroyed on sign-out, and these with it.
   providers: [ApplicationsSummaryStore, CommunityBadgesStore, ShellActions],
   templateUrl: './app-shell.html',
@@ -39,6 +41,12 @@ export class AppShell {
   protected readonly signingOut = signal(false);
 
   protected readonly mobileAction = inject(ShellActions).mobileAction;
+
+  /** "at 14:30 tomorrow" for a demo visitor; null for everyone else. */
+  protected readonly demoEnds = computed(() => {
+    const endsAt = this.auth.user()?.demoEndsAt;
+    return endsAt ? demoEndLabel(endsAt) : null;
+  });
 
   private readonly summary = inject(ApplicationsSummaryStore).summary;
   protected readonly navCounts = computed(() => {
@@ -61,7 +69,7 @@ export class AppShell {
     effect(() => {
       const expired = this.auth.expired();
       if (expired) {
-        untracked(() => this.goToSignIn());
+        untracked(() => this.goToSignIn(expired.demo));
       }
     });
   }
@@ -81,12 +89,15 @@ export class AppShell {
     });
   }
 
-  private goToSignIn(): void {
+  private goToSignIn(demo: boolean): void {
+    // A demo cannot be signed in to again, so there is nowhere to return to.
     void this.router.navigate([AUTH_ROUTES.login], {
-      queryParams: {
-        [LOGIN_REASON_PARAM]: LOGIN_REASONS.sessionExpired,
-        [RETURN_URL_PARAM]: this.router.url,
-      },
+      queryParams: demo
+        ? { [LOGIN_REASON_PARAM]: LOGIN_REASONS.demoEnded }
+        : {
+            [LOGIN_REASON_PARAM]: LOGIN_REASONS.sessionExpired,
+            [RETURN_URL_PARAM]: this.router.url,
+          },
     });
   }
 }

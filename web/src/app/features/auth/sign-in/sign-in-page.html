@@ -31,6 +31,9 @@
           @case (reasons.accountDeleted) {
             <app-banner kind="info">Your account and all its data were deleted.</app-banner>
           }
+          @case (reasons.demoEnded) {
+            <app-banner kind="info">Your demo has ended, and its data is deleted.</app-banner>
+          }
           @case (reasons.passwordReset) {
             <app-banner kind="info">
               Your password was changed. Sign in with the new one.
@@ -70,7 +73,7 @@
       size="lg"
       type="submit"
       class="mt-1 w-full"
-      [disabled]="submission.submitting() || submission.locked()"
+      [disabled]="submission.submitting() || submission.locked() || demoStarting()"
       [attr.aria-busy]="submission.submitting() || null"
     >
       @if (submission.submitting()) {
@@ -86,4 +89,53 @@
     Have an invite?
     <a appLink [routerLink]="routes.register" class="font-semibold">Create account</a>
   </p>
+
+  <section
+    aria-label="Try the demo"
+    class="flex flex-col gap-2.5 border-t border-dashed border-rule-strong pt-3.5"
+  >
+    <p class="text-cell text-ink-2">
+      Just looking? Try Heardback with sample data. Nothing to sign up for; it is deleted after a
+      day.
+    </p>
+
+    @switch (demoFailure()?.kind) {
+      @case ('full') {
+        <app-banner kind="warning" heading="The demo is full right now." alert>
+          @if (fullUntil(); as time) {
+            Try again after <span class="font-mono font-medium">{{ time }}</span>.
+          } @else {
+            Try again later.
+          }
+        </app-banner>
+      }
+      @case ('rate-limited') {
+        <app-banner kind="warning" heading="You’ve started several demos." alert>
+          Try again in
+          <span class="font-mono font-medium">{{ retryMinutes() }}</span>
+          {{ retryMinutes() === 1 ? 'minute' : 'minutes' }}.
+        </app-banner>
+      }
+      @case ('unavailable') {
+        <app-banner kind="error" heading="Couldn’t start the demo">Try again later.</app-banner>
+      }
+    }
+
+    <button
+      appButton="secondary"
+      size="lg"
+      type="button"
+      class="w-full"
+      [disabled]="demoStarting() || submission.submitting()"
+      [attr.aria-busy]="demoStarting() || null"
+      (click)="startDemo()"
+    >
+      @if (demoStarting()) {
+        <app-spinner tone="current" />
+        Starting the demo…
+      } @else {
+        Try the demo
+      }
+    </button>
+  </section>
 </app-auth-card>

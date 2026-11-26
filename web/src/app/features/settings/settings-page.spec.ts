@@ -109,6 +109,27 @@ describe('SettingsPage', () => {
     });
   });
 
+  describe('demo account', () => {
+    async function becomeDemo(): Promise<void> {
+      const start = firstValueFrom(auth.startDemo());
+      http.expectOne(AUTH_API.demo).flush(authResponse({ demoEndsAt: '2099-01-01T14:30:00Z' }));
+      await start;
+      await render();
+    }
+
+    it('render_DemoVisitor_ExplainsThereIsNoPasswordAndHidesDeletion', async () => {
+      await becomeDemo();
+      const text = root().textContent ?? '';
+
+      expect(text).toContain('Demo accounts have no password. Sign out to end the demo.');
+      expect(text).toContain('Demo');
+      expect(text).not.toContain('ada@example.com');
+      expect(text).not.toContain('Change password');
+      expect(text).not.toContain('Delete account');
+      expect(text).toContain('Your data');
+    });
+  });
+
   describe('change password', () => {
     async function changePassword(current: string, next: string): Promise<void> {
       type(inputLabelled(root(), 'Current password'), current);

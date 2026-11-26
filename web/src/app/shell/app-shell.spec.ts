@@ -45,7 +45,7 @@ describe('AppShell', () => {
 
   afterEach(() => http.verify());
 
-  async function openAs(options: { isAdmin: boolean }): Promise<HTMLElement> {
+  async function openAs(options: { isAdmin: boolean; demoEndsAt?: string }): Promise<HTMLElement> {
     const login = firstValueFrom(auth.login({ email: 'ada@example.com', password: 'pw' }));
     http.expectOne(AUTH_API.login).flush(authResponse(options));
     await login;
@@ -118,6 +118,32 @@ describe('AppShell', () => {
     expect(navigate).toHaveBeenCalledWith(['/login'], {
       queryParams: { reason: 'session-expired', returnUrl: '/applications' },
     });
+  });
+
+  it('render_DemoVisitor_ShowsTheDemoStripAndDemoRole', async () => {
+    const root = await openAs({ isAdmin: false, demoEndsAt: '2099-01-01T14:30:00Z' });
+
+    expect(root.textContent).toContain('Demo account with sample data.');
+    expect(root.textContent).toContain('Demo');
+    expect(root.textContent).not.toContain('Member');
+  });
+
+  it('render_Member_ShowsNoDemoStrip', async () => {
+    const root = await openAs({ isAdmin: false });
+
+    expect(root.textContent).not.toContain('Demo account');
+  });
+
+  it('demoEnded_ServerRejectsRefresh_GoesToSignInSayingTheDemoEnded', async () => {
+    await openAs({ isAdmin: false, demoEndsAt: '2099-01-01T14:30:00Z' });
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate');
+
+    const refresh = firstValueFrom(auth.refresh());
+    http.expectOne(AUTH_API.refresh).flush(null, { status: 401, statusText: 'Unauthorized' });
+    await expect(refresh).rejects.toBeTruthy();
+    harness.detectChanges();
+
+    expect(navigate).toHaveBeenCalledWith(['/login'], { queryParams: { reason: 'demo-ended' } });
   });
 
   it('mobileMenu_OpenedThenEscape_Closes', async () => {

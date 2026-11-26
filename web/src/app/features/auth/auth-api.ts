@@ -50,6 +50,11 @@ export class AuthApi {
     return this.http.delete<void>(this.url(ACCOUNT_API.account), { body: { password } });
   }
 
+  /** Creates a temporary demo account with sample data and signs this browser in to it. */
+  startDemo(): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(this.url(AUTH_API.demo), null);
+  }
+
   me(): Observable<CurrentUser> {
     return this.http.get<CurrentUser>(this.url(AUTH_API.me));
   }

@@ -1,7 +1,9 @@
 import { AuthResponse } from './auth.models';
 
 /** Builds an AuthResponse for tests. */
-export function authResponse(overrides: { token?: string; isAdmin?: boolean } = {}): AuthResponse {
+export function authResponse(
+  overrides: { token?: string; isAdmin?: boolean; demoEndsAt?: string } = {},
+): AuthResponse {
   return {
     accessToken: overrides.token ?? 'access-token',
     accessTokenExpiresAt: '2026-11-17T12:15:00Z',
@@ -10,6 +12,8 @@ export function authResponse(overrides: { token?: string; isAdmin?: boolean } = 
       email: 'ada@example.com',
       displayName: 'Ada',
       isAdmin: overrides.isAdmin ?? false,
+      isDemo: overrides.demoEndsAt !== undefined,
+      demoEndsAt: overrides.demoEndsAt ?? null,
     },
   };
 }
